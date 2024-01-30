@@ -26,7 +26,7 @@ docker compose up
 
 Trigger a job
 ```bash
-docker compose exec python -m prince
+docker compose exec worker python -m prince
 ```
 
 
