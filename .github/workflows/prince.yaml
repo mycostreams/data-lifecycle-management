@@ -3,13 +3,16 @@ on:
   push:
     branches: main
     paths: 
-     - prince/**
-     - .github/workflows/prince.yaml
+     - 'prince/**'
+     - '.github/workflows/prince.yaml'
+
+defaults:
+  run:
+    working-directory: ./prince
 
 jobs:
   static-analysis:
     name: Static analysis
-    working-directory: ./prince
     strategy:
       fail-fast: false
       matrix:
