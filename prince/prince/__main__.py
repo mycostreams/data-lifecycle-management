@@ -1,6 +1,5 @@
-
-from .config import Settings
 from .celery_app import create_archived_timestep
+from .config import Settings
 from .file import get_plate_timesteps
 
 

@@ -5,7 +5,6 @@ from pathlib import Path
 from celery import Celery, signals
 from celery.utils.log import get_task_logger
 from pydantic import validate_call
-from pathlib import Path
 
 from .config import Settings
 from .dto import PlateTimestep
@@ -39,4 +38,3 @@ def create_archived_timestep(data: PlateTimestep, archive_dir: Path) -> dict:
 @signals.worker_ready.connect
 def on_worker_ready(**_):
     LOGGER.info("Worker ready...")
-
