@@ -27,7 +27,7 @@ class File(AbstractFile):
 
     @property
     def path(self):
-        return self.path
+        return self._path
 
     def get_checksum(self) -> str:
         with self._path.open("rb") as file:

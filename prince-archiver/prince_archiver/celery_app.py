@@ -5,7 +5,6 @@ from uuid import uuid4
 
 from celery import Celery, signals
 from celery.utils.log import get_task_logger
-from pydantic import validate_call
 
 from .config import Settings
 from .dto import Archive, ArchivedPlateTimestep, PlateTimestep
@@ -27,20 +26,22 @@ def create_archived_timestep(
     _file_system: FileSystem | None = None,
     _filename: str | None = None,
 ) -> dict:
-    
+
     plate_data = PlateTimestep.model_validate(data)
 
     filename = _filename or f"{uuid4().hex[:6]}.tar"
     file_system = _file_system or FileSystem()
 
     archive = file_system.make_archive(
-        plate_data.raw_img_path, 
-        Path(archive_dir) / filename
+        plate_data.raw_img_path, Path(archive_dir) / filename
     )
 
     archived_timestep = ArchivedPlateTimestep(
-        plate_timestep=plate_data.timestamp,
-        archive=Archive(archive.path, checksum=archive.get_checksum()),
+        plate_timestep=plate_data,
+        archive=Archive(
+            path=archive.path,
+            checksum=archive.get_checksum(),
+        ),
     )
 
     LOGGER.info("Archiving timestep %s", plate_data.experiment_id)
