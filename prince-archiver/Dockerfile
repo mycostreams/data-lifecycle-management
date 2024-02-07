@@ -28,4 +28,4 @@ WORKDIR /app
 
 COPY --from=builder ${VENV_PATH} ${VENV_PATH}
 
-COPY ./prince /app/prince
+COPY ./prince_archiver /app/prince_archiver

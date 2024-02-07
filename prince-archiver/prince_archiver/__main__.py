@@ -1,6 +1,6 @@
 from .celery_app import create_archived_timestep
 from .config import Settings
-from .file import get_plate_timesteps
+from .utils import get_plate_timesteps
 
 
 def main(*, _settings: Settings | None = None):

@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: ["celery", "-A", "prince.celery_app", "worker", "-l", "INFO"]
+    command: ["celery", "-A", "prince_archiver.celery_app", "worker", "-l", "INFO"]
     environment:
       - DATA_DIR=/data/input
       - ARCHIVE_DIR=/data/output

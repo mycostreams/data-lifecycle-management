@@ -32,7 +32,7 @@ class PlateTimestep(BaseModel):
 class Archive(BaseModel):
 
     path: Path
-    hash: str
+    checksum: str
 
 
 class ArchivedPlateTimestep(BaseModel):
