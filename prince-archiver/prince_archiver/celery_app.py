@@ -20,26 +20,30 @@ celery_app.config_from_object(Settings(), namespace="CELERY")
 
 # Define tasks
 @celery_app.task
-@validate_call
 def create_archived_timestep(
-    data: PlateTimestep,
-    archive_dir: Path,
+    data: dict,
+    archive_dir: str,
     *,
-    _filename: str | None = None,
     _file_system: FileSystem | None = None,
+    _filename: str | None = None,
 ) -> dict:
+    
+    plate_data = PlateTimestep.model_validate(data)
 
     filename = _filename or f"{uuid4().hex[:6]}.tar"
     file_system = _file_system or FileSystem()
 
-    archive = file_system.make_archive(data.raw_img_path, archive_dir / filename)
+    archive = file_system.make_archive(
+        plate_data.raw_img_path, 
+        Path(archive_dir) / filename
+    )
 
     archived_timestep = ArchivedPlateTimestep(
-        plate_timestep=data.timestamp,
+        plate_timestep=plate_data.timestamp,
         archive=Archive(archive.path, checksum=archive.get_checksum()),
     )
 
-    LOGGER.info("Archiving timestep %s", data.experiment_id)
+    LOGGER.info("Archiving timestep %s", plate_data.experiment_id)
 
     return archived_timestep.model_dump(mode="json")
 
