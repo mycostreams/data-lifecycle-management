@@ -1,0 +1,11 @@
+
+#!/bin/bash
+#Set job requirements
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --partition=rome
+#SBATCH --time=01:00:00
+
+#Execute program located in $HOME
+echo "Hello world"
