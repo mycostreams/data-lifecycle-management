@@ -34,7 +34,7 @@ class File(AbstractFile):
             return file_digest(file, "sha256").hexdigest()
 
 
-class FileSystem:
+class FileSystem(AbstractFileSystem):
 
     def make_archive(self, source: Path, target: Path) -> File:
 

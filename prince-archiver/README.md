@@ -21,13 +21,7 @@ Get all containers running:
 
 ```bash
 docker compose up
-```
-
-
-Trigger a job
-```bash
-docker compose exec worker python -m prince_archiver
-```
+```å
 
 
 # Local development
@@ -45,8 +39,7 @@ In a seperate terminal, run the worker:
 poetry run celery -A prince.celery_app worker -l INFO
 ```
 
-
-In another terminal, trigger some jobs:
+In a seperate terminal, run the beat:
 ```bash
-poetry run python -m prince
+poetry run celery -A prince.celery_app beat -l INFO
 ```

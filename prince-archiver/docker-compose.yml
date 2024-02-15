@@ -1,20 +1,37 @@
 version: "3.8"
 
+x-celery-variables: &celery-variables
+  DATA_DIR: /data/input
+  ARCHIVE_DIR: /data/output
+  CELERY_BROKER_URL: amqp://guest:guest@rabbitmq:5672/
+  AWS_ACCESS_KEY_ID: aws-access-key-id
+  AWS_ENDPOINT_URL: http://s3mock:9090
+
 services:
   worker:
     build:
       context: .
       dockerfile: Dockerfile
-    command: ["celery", "-A", "prince_archiver.celery_app", "worker", "-l", "INFO"]
-    environment:
-      - DATA_DIR=/data/input
-      - ARCHIVE_DIR=/data/output
-      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672/
+    command: ["celery", "-A", "prince_archiver.celery", "worker", "-l", "INFO"]
+    environment: *celery-variables
     volumes:
       - ./data:/data/
     depends_on:
       rabbitmq:
         condition: service_healthy
+    env_file:
+      - .env
+
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["celery", "-A", "prince_archiver.celery", "beat", "-l", "INFO"]
+    environment: *celery-variables
+    depends_on:
+      - worker
+    env_file:
+      - .env
 
   rabbitmq:
     image: rabbitmq:3.12-management
@@ -26,7 +43,7 @@ services:
       interval: 30s
       timeout: 30s
       retries: 3
-  
+
   flower:
     image: mher/flower:0.9.7
     command: ['flower', '--broker=amqp://guest:guest@rabbitmq:5672/', '--port=5555']
@@ -35,3 +52,12 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+  
+  s3mock:
+    image: adobe/s3mock:3.1.0
+    ports:
+      - 9090:9090
+      - 9191:9191
+    environment:
+      - initialBuckets=mycostreams
+      - validKmsKeys=arn:aws:kms:eu-central-1:1234567890:key/aws-access-key-id
