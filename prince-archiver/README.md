@@ -21,25 +21,27 @@ Get all containers running:
 
 ```bash
 docker compose up
-```å
+```
 
 
 # Local development
 
-Get rabbitmq and flower running
+Get rabbitmq and postgres running
 
 ```bash
-docker compose up rabbitmq flower
+docker compose up postgres rabbitmq s3mock
 ```
 
 
 In a seperate terminal, run the worker:
 
 ```bash
-poetry run celery -A prince.celery_app worker -l INFO
+poetry run celery -A prince_archiver.celery worker -l INFO
 ```
 
-In a seperate terminal, run the beat:
+Start the file watcher:
+
 ```bash
-poetry run celery -A prince.celery_app beat -l INFO
+poetry run watch
 ```
+

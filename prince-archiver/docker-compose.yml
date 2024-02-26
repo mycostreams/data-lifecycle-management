@@ -6,8 +6,21 @@ x-celery-variables: &celery-variables
   CELERY_BROKER_URL: amqp://guest:guest@rabbitmq:5672/
   AWS_ACCESS_KEY_ID: aws-access-key-id
   AWS_ENDPOINT_URL: http://s3mock:9090
+  POSTGRES_DSN: postgresql://postgres:postgres@postgres:5432/postgres
 
 services:
+
+  watcher:
+    build:
+      context: .
+    environment: *celery-variables
+    command: ["python", "-m", "prince_archiver.main"]
+    volumes:
+    - ./data:/data/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
   worker:
     build:
       context: .
@@ -19,17 +32,6 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-    env_file:
-      - .env
-
-  beat:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: ["celery", "-A", "prince_archiver.celery", "beat", "-l", "INFO"]
-    environment: *celery-variables
-    depends_on:
-      - worker
     env_file:
       - .env
 
@@ -61,3 +63,18 @@ services:
     environment:
       - initialBuckets=mycostreams
       - validKmsKeys=arn:aws:kms:eu-central-1:1234567890:key/aws-access-key-id
+  
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+      - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+
+volumes:
+  postgres_data:

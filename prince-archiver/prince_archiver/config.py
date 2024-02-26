@@ -1,9 +1,13 @@
+from functools import lru_cache
 from pathlib import Path
 
+from pydantic import PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+
+    POSTGRES_DSN: PostgresDsn
 
     AWS_ACCESS_KEY_ID: str
     AWS_SECRET_ACCESS_KEY: str
@@ -19,3 +23,8 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
     )
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()

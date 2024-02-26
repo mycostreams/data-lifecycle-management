@@ -1,7 +1,7 @@
+import tarfile
 from abc import ABC, abstractmethod
 from hashlib import file_digest
 from pathlib import Path
-from shutil import make_archive
 
 
 class AbstractFile(ABC):
@@ -37,12 +37,6 @@ class File(AbstractFile):
 class FileSystem(AbstractFileSystem):
 
     def make_archive(self, source: Path, target: Path) -> File:
-
-        make_archive(
-            base_name=str(target.parent / target.stem),
-            format=target.suffix.strip("."),
-            root_dir=source.parent,
-            base_dir=source.name,
-        )
-
+        with tarfile.open(target, "w:gz") as tar:
+            tar.add(source, arcname=".")
         return File(path=target)

@@ -16,7 +16,7 @@ class AbstractObjectStorageClient(ABC):
     def upload(self, key: str, path: Path): ...
 
 
-class AWSObjectStorageClient(AbstractObjectStorageClient):
+class ObjectStorageClient(AbstractObjectStorageClient):
 
     def __init__(
         self,

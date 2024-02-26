@@ -1,0 +1,13 @@
+{
+    "experiment": {
+        "id": "2024_01",
+        "plate": 1,
+        "CrossDate": "2024-02-27"
+    },
+    "prince_position": 4,
+    "img_count": 0,
+    "timestamp": "2024-02-03T23:00:00",
+    "raw_img_path": "./data/input/20240203_2300_Plate04/Img",
+    "experiment_archive_path": "/data/input/2024_01.tar",
+    "archive_name": "20240203_2300.tar.gz"
+}
