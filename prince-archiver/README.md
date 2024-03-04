@@ -23,13 +23,17 @@ Get all containers running:
 docker compose up
 ```
 
+The `prince` container will generate a new mock timestep folder every minute. 
+Both the `watcher` and `prince` containers have shared volumes. This allows the 
+`watcher` container to detect newly added timesteps.
+
 
 # Local development
 
 Get rabbitmq and postgres running
 
 ```bash
-docker compose up postgres rabbitmq s3mock
+docker compose up db rabbitmq s3
 ```
 
 
@@ -44,4 +48,3 @@ Start the file watcher:
 ```bash
 poetry run watch
 ```
-

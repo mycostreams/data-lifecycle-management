@@ -5,14 +5,14 @@ formatters:
 handlers:
   console:
     class: logging.StreamHandler
-    level: DEBUG
+    level: INFO
     formatter: simple
     stream: ext://sys.stdout
 loggers:
   prince_archiver:
     level: DEBUG
     handlers: [console]
-    propagate: no
+    propagate: false
 root:
   level: DEBUG
   handlers: [console]

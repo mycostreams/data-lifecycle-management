@@ -13,7 +13,8 @@ pydantic = "^2.5.3"
 pydantic-settings = "^2.1.0"
 pyyaml = "^6.0.1"
 sqlalchemy = {extras = ["postgresql-psycopg2binary"], version = "^2.0.27"}
-watchdog = "^4.0.0"
+typer = "^0.9.0"
+watchfiles = "^0.21.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.1.1"
@@ -26,7 +27,8 @@ pytest = "^8.0.0"
 types-pyyaml = "^6.0.12.12"
 
 [tool.poetry.scripts]
-watch = "prince_archiver.main:main"
+cli = "prince_archiver.entrypoints.cli:app"
+watch = "prince_archiver.entrypoints.watcher:main"
 
 [tool.isort]
 profile = "black"
