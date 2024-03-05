@@ -7,7 +7,7 @@ x-env-variables: &env-variables
   AWS_BUCKET_NAME: mycostreams
   AWS_ACCESS_KEY_ID: aws-access-key-id
   AWS_SECRET_ACCESS_KEY: aws-access-key-id
-  AWS_ENDPOINT_URL: http://s3mock:9090
+  AWS_ENDPOINT_URL: http://s3:9090
   POSTGRES_DSN: postgresql://postgres:postgres@db:5432/postgres
 
 services:
