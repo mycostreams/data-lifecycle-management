@@ -1,10 +1,14 @@
 version: "3.8"
 
 services:
-  sftp:
-      image: atmoz/sftp
-      volumes:
-        - ./data:/home/foo/tmp/slurm
-      ports:
-        - "2222:22"
-      command: foo:pass:1001
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5

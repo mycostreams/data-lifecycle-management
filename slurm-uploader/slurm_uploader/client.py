@@ -1,8 +1,12 @@
+from datetime import date
 
-from paramiko import SSHClient, AutoAddPolicy
+from paramiko import AutoAddPolicy, SSHClient
 
 
-class SFTPClient:
+class Client:
+
+    # COMMAND = "sbatch $HOME/slurm-uploader/scripts/scheduler.sh {date_str}"
+    COMMAND = 'sbatch --wrap "echo {date_str}" --partition staging'
 
     def __init__(
         self,
@@ -28,10 +32,10 @@ class SFTPClient:
             self.password,
         )
 
-        self.sftp_client = self.ssh_client.open_sftp()
-
     def __exit__(self, *args, **kwargs):
-
         self.ssh_client.close()
-        self.sftp_client.close()
 
+    def submit_job(self, date: date):
+        self.COMMAND.format(date_str=date.strftime("%Y%m%d"))
+        _, stdout, _ = self.ssh_client.exec_command(self.COMMAND)
+        return stdout.read().decode()
