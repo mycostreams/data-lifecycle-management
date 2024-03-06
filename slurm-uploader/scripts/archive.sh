@@ -1,5 +1,12 @@
 #!/bin/bash
+#
+#SBATCH --partion=staging
+#
+# Archive all images for a given day. 
+# Step 1: Download all images for a given day
+# Step 2: Insert them into a per experiment archive
 
+# TODO: set correct directory based on user
 ARCHIVE_DIR=/archive
 
 while getopts "d:p:" opt; do
