@@ -1,33 +1,27 @@
-import asyncio
+from aio_pika import DeliveryMode, Message, connect
 
-import typer
-from aio_pika import DeliveryMode, ExchangeType, Message, connect
+from .config import ExchangeConfig
 
 
-async def publisher(connection_url: str, job_id: str):
+async def publisher(
+    connection_url: str,
+    job_id: str,
+    *,
+    exchange_config: ExchangeConfig | None = None,
+):
+    exchange_config = exchange_config or ExchangeConfig()
 
-    # Perform connection
     connection = await connect(connection_url)
-
     async with connection:
-
         channel = await connection.channel()
         exchange = await channel.declare_exchange(
-            "slurm-uploader",
-            ExchangeType.FANOUT,
+            exchange_config.name,
+            type=exchange_config.type,
         )
 
-        message = Message(job_id, delivery_mode=DeliveryMode.PERSISTENT)
+        message = Message(
+            job_id.encode(),
+            delivery_mode=DeliveryMode.PERSISTENT,
+        )
 
-        await exchange.publish(message, routing_key="slurm-uploader")
-
-
-def main(
-    job_id: str,
-    connection_url: str = "amqp://guest:guest@localhost/",
-):
-    asyncio.run(publisher(connection_url, job_id))
-
-
-if __name__ == "__main__":
-    typer.run(main)
+        await exchange.publish(message, routing_key=exchange_config.routing_key)
