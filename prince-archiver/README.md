@@ -17,7 +17,19 @@ The input directory structure is assumed to have the form:
 
 # Running via docker compose
 
-Get all containers running:
+First run the migraitons. To do this run:
+
+```bash
+docker compose run watcher bash
+```
+
+This enters the watcher service. Then run:
+
+```bash
+alembic migrate head
+```
+
+This executes the migrations. Now you can get all services started with:
 
 ```bash
 docker compose up
@@ -35,7 +47,6 @@ Get rabbitmq and postgres running
 ```bash
 docker compose up db rabbitmq s3
 ```
-
 
 In a seperate terminal, run the worker:
 
