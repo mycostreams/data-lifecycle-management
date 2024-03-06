@@ -19,7 +19,7 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
 
 # The runtime image, used to just run the code provided its virtual environment
-FROM python:3.12-bullseye as runtime
+FROM python:3.12-slim-bullseye as runtime
 
 ENV VENV_PATH=/app/.venv
 ENV PATH=$VENV_PATH/bin:$PATH
@@ -28,7 +28,7 @@ WORKDIR /app
 
 COPY --from=builder ${VENV_PATH} ${VENV_PATH}
 
-COPY ./alembic /app/alembic
+COPY ./alembic a--/alembic
 COPY ./alembic.ini /app/alembic.ini
 
 COPY ./prince_archiver /app/prince_archiver
