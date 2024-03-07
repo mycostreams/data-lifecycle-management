@@ -5,8 +5,7 @@ from paramiko import AutoAddPolicy, SSHClient
 
 class Client:
 
-    # "sbatch $HOME/mycostreams/slurm-uploader/scripts/run-basic.sh {date_str}"
-    COMMAND = 'sbatch --wrap "echo {date_str}" --partition staging'
+    COMMAND = "sbatch $HOME/mycostreams/slurm-uploader/scripts/run-basic.sh"
 
     def __init__(
         self,
