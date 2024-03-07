@@ -6,7 +6,7 @@ authors = ["Isaac Williams <isaac.andrew.williams@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"
 aio-pika = "^9.4.0"
 paramiko = "^3.4.0"
 pydantic-settings = "^2.1.0"

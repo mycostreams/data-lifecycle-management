@@ -11,7 +11,7 @@ module load poetry/1.5.1-GCCcore-12.3.0
 
 PARENT_JOB_ID=${1}
 
-cd $HOME/mycostreams/slurm-uploader
-# poetry run cli publish $PARENT_JOB_ID
+cd $HOME/pycode/mycostreams/slurm-uploader
+poetry run cli publish $PARENT_JOB_ID
 
 echo "$PARENT_JOB_ID completed"
