@@ -9,7 +9,7 @@
 DATE_STR=${1}
 JOB_ID=$(uuidgen)
 
-OUTPUT_DIR=/scratch-local/mycostreams/$JOB_ID
+OUTPUT_DIR=/scratch-shared/mycostreams/$JOB_ID
 mkdir -p $OUTPUT_DIR
 
 cd $HOME/pycode/mycostreams/slurm-uploader
