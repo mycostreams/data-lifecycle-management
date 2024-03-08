@@ -12,14 +12,12 @@ class Client:
         username: str,
         password: str,
         host: str,
-        connection_url: str,
         port: int = 22,
     ):
         self.username = username
         self.password = password
         self.hostname = host
         self.port = port
-        self.connection_url = connection_url
 
     def __enter__(self):
         self.ssh_client = SSHClient()
