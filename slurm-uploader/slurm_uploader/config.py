@@ -6,9 +6,26 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 DEFAULT_CONNECTION_URL = "amqp://guest:guest@localhost/"
 
 
-class Settings(BaseSettings):
+def get_connection_url(connection_url: str | None):
+    if connection_url:
+        return connection_url
+
+    settings = BrokerSettings()
+    return settings.CONNECTION_URL
+
+
+class BrokerSettings(BaseSettings):
 
     CONNECTION_URL: str = DEFAULT_CONNECTION_URL
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+
+class Settings(BaseSettings):
 
     USERNAME: str
     PASSWORD: str
@@ -18,6 +35,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
+        extra="ignore",
     )
 
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --partion=staging
+#SBATCH --partition=staging
 #SBATCH --export=CONNECTION_URL
 #
 # Broacast the result of a archiving job via a message broker
