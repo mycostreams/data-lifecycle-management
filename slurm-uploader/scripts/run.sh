@@ -1,5 +1,4 @@
 #!/bin/bash
-#
 #SBATCH --partition=staging
 #SBATCH --export=CONNECTION_URL
 #
@@ -8,20 +7,26 @@
 #  Step 2: Broadcast the outcome via message broker
 
 DATE_STR=${1}
+JOB_ID=$(uuidgen)
 
-cd $(dirname $0)
+OUTPUT_DIR=/scratch-local/mycostreams/$JOB_ID
+mkdir -p $OUTPUT_DIR
+
+cd $HOME/pycode/mycostreams/slurm-uploader
 
 # Step 1: Archive
 ARCHIVE_JOB_ID=$(sbatch \
     --parsable \
-    "./archive.sh" -d "$DATE_STR" \
+    --output "$OUTPUT_DIR/slurm-%A.out" \
+    "./scripts/archive.sh" -d "$DATE_STR" \
 )
-echo "Archiving job: $ARCHIVE_JOB_ID"
 
-# Step 2: Braodcast
-BROADCAST_JOB_ID=$(sbatch \
+
+# Step 2: Broadcast
+sbatch \
     --parsable \
+    --output "$OUTPUT_DIR/slurm-%A.out" \
     --dependency=afterok:$ARCHIVE_JOB_ID \
-    "./broadcast.sh" "$SLURM_JOB_ID" \
-)
-echo "Broadcasting job: $BROADCAST_JOB_ID"
+    "./scripts/broadcast.sh" "$JOB_ID" \
+
+echo $JOB_ID
