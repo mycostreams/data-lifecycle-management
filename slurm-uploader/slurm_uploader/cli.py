@@ -6,12 +6,11 @@ from typing import Annotated, Optional
 import typer
 
 from .client import Client
-from .config import DEFAULT_CONNECTION_URL, Settings
+from .config import Settings, get_connection_url
 from .publisher import publisher
 from .subscriber import subscriber
 
-ConnectionUrlT = Annotated[Optional[str], typer.Argument(envvar="CONNECTION_URL")]
-
+ConnectionUrlT = Annotated[Optional[str], typer.Option()]
 
 app = typer.Typer()
 
@@ -33,21 +32,25 @@ def submit(
 @app.command()
 def publish(
     job_id: str,
-    connection_url: ConnectionUrlT = DEFAULT_CONNECTION_URL,
+    connection_url: ConnectionUrlT = None,
 ):
     """
     Publish a JOB_ID via the message broker.
     """
+    connection_url = get_connection_url(connection_url)
+
     asyncio.run(publisher(connection_url, job_id))
 
 
 @app.command()
 def subscribe(
-    connection_url: ConnectionUrlT = DEFAULT_CONNECTION_URL,
+    connection_url: ConnectionUrlT = None,
 ):
     """
     Subscribe to messages
     """
+    connection_url = get_connection_url(connection_url)
+
     asyncio.run(subscriber(connection_url))
 
 

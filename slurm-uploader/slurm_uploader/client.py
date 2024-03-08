@@ -5,7 +5,7 @@ from paramiko import AutoAddPolicy, SSHClient
 
 class Client:
 
-    COMMAND = "$HOME/mycostreams/slurm-uploader/scripts/run-basic.sh"
+    COMMAND = "$HOME/pycode/mycostreams/slurm-uploader/scripts/run-basic.sh"
 
     def __init__(
         self,
@@ -38,8 +38,5 @@ class Client:
     def submit_job(self, date: date | datetime):
         self.COMMAND.format(date_str=date.strftime("%Y%m%d"))
 
-        _, stdout, _ = self.ssh_client.exec_command(
-            self.COMMAND,
-            environment={"CONNECTION_URL": self.connection_url},
-        )
+        _, stdout, _ = self.ssh_client.exec_command(self.COMMAND)
         return stdout.read().decode()
