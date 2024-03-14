@@ -1,23 +1,22 @@
 name: prince-stitcher
 on: 
   push:
-    branches: prince-stitcher/**
+    branches: main
     paths: 
      - 'prince-stitcher/**'
      - '.github/workflows/prince-stitcher.yaml'
 
-
 jobs:
-  # static-analysis:
-  #   name: Static Analysis
-  #   runs-on: ubuntu-latest
-  #   defaults:
-  #     run:
-  #       working-directory: ./prince-stitcher
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: black
-  #       uses: psf/black@stable
+  static-analysis:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./prince-stitcher
+    steps:
+      - uses: actions/checkout@v4
+      - name: black
+        uses: psf/black@stable
   
   conda-tests:
     name: Conda Tests
