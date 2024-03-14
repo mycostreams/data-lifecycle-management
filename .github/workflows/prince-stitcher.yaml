@@ -1,0 +1,38 @@
+name: prince-stitcher
+on: 
+  push:
+    branches: main
+    paths: 
+     - 'prince-stitcher/**'
+     - '.github/workflows/prince-stitcher.yaml'
+
+jobs:
+  static-analysis:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./prince-stitcher
+    steps:
+      - uses: actions/checkout@v4
+      - name: black
+        uses: psf/black@stable
+  
+  conda-tests:
+    name: Conda Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+    defaults:
+      run:
+        shell: bash -el {0}
+        working-directory: ./prince-stitcher
+    steps:
+      - uses: actions/checkout@v4
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          environment-file: prince-stitcher/environment.yml
+          activate-environment: image-stitcher
+      - run: ./scripts/install-fiji.sh
+      - name: Run tests
+        run: pytest tests

@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+
+  image-stitcher:
+    build:
+      context: .
+    volumes:
+      - ./image_stitcher:/app/image_stitcher/
+      - ./data:/app/data/
+    platform: linux/amd64
+  
