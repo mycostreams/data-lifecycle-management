@@ -8,7 +8,7 @@ on:
 
 defaults:
   run:
-    working-directory: prince-stitcher
+    working-directory: ./prince-stitcher
 
 jobs:
   # static-analysis:
@@ -23,8 +23,8 @@ jobs:
     name: Dummy
     runs-on: ubuntu-latest
     steps:
-      - run: ls
-
+      - uses: actions/checkout@v4
+      - run: ls .
 
   # conda-tests:
   #   name: Conda Tests
