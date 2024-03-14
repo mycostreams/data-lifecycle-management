@@ -20,7 +20,7 @@ jobs:
         uses: psf/black@stable
 
   conda-tests:
-    name: Conda tests
+    name: Conda Tests
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -33,6 +33,6 @@ jobs:
         with:
           environment-file: prince-stitcher/environment.yml
           activate-environment: image-stitcher
-      - run: ./scripts/install-fiji.sh
+      - run: prince-stitcher/scripts/install-fiji.sh
       - name: Run tests
         run: pytest tests
