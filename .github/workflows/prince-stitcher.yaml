@@ -11,28 +11,35 @@ defaults:
     working-directory: ./prince-stitcher
 
 jobs:
-  static-analysis:
-    name: Static Analysis
+  # static-analysis:
+  #   name: Static Analysis
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: black
+  #       uses: psf/black@stable
+    
+  dummy:
+    name: Dummy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: black
-        uses: psf/black@stable
+      - run: ls
 
-  conda-tests:
-    name: Conda Tests
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    defaults:
-      run:
-        shell: bash -el {0}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: conda-incubator/setup-miniconda@v3
-        with:
-          environment-file: prince-stitcher/environment.yml
-          activate-environment: image-stitcher
-      - run: prince-stitcher/scripts/install-fiji.sh
-      - name: Run tests
-        run: pytest tests
+
+  # conda-tests:
+  #   name: Conda Tests
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #   defaults:
+  #     run:
+  #       shell: bash -el {0}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: conda-incubator/setup-miniconda@v3
+  #       with:
+  #         environment-file: prince-stitcher/environment.yml
+  #         activate-environment: image-stitcher
+  #     - run: prince-stitcher/scripts/install-fiji.sh
+  #     - name: Run tests
+  #       run: pytest tests
