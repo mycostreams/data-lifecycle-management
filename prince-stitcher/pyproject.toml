@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+requires-python = ">=3.10"
+name = "image-stitcher"
+version = "0.1.0" 
+dependencies = [
+    "opencv-python-headless",
+    "pydantic",
+    "pyimagej"
+]
+
+[project.optional-dependencies]
+dev = [
+  "black",
+  "flake8",
+  "flake8-bugbear",
+  "isort",
+  "mypy",
+  "pytest"
+]
+example = [
+  "httpx",
+]
+
+[tool.setuptools]
+packages = ["image_stitcher"]
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+plugins = "pydantic.mypy"

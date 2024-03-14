@@ -1,0 +1,10 @@
+name: image-stitcher
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - openjdk=11
+  - maven
+  - pip
+  - pip:
+    - -e .[dev,example]
