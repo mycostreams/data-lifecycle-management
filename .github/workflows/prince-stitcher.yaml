@@ -36,4 +36,4 @@ jobs:
           activate-environment: image-stitcher
       - run: ./scripts/install-fiji.sh
       - name: Run tests
-        run: pytest test
+        run: pytest tests
