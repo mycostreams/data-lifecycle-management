@@ -1,9 +1,10 @@
 import os
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import ClassVar
+from typing import ClassVar, Generator
 
 import imagej
 from pydantic import BaseModel, Field
@@ -67,6 +68,17 @@ class _PluginParams(BaseModel):
     absolute_displacement_threshold: int
 
 
+@contextmanager
+def set_working_dir() -> Generator[None, None, None]:
+    """Ensure we keep working dir fixed."""
+
+    current_dir = Path.cwd()
+
+    yield
+
+    os.chdir(current_dir)
+
+
 class AbstractStitcher(ABC):
 
     @abstractmethod
@@ -81,7 +93,11 @@ class Stitcher(AbstractStitcher):
         fiji_home: str | None = None,
     ):
         self.defaults = defaults or Defaults()
-        self.ij = imagej.init(fiji_home or os.getenv("FIJI_HOME", "Fiji.app"))
+
+        # NOTE: For local Fiji installations `pyimagej` tries to change
+        # the working dir to the app directory. We do not want this.
+        with set_working_dir():
+            self.ij = imagej.init(fiji_home or os.getenv("FIJI_HOME", "Fiji.app"))
 
     def run_stitch(self, src_dir: Path, target: Path):
         with TemporaryDirectory() as _temp_dir:
