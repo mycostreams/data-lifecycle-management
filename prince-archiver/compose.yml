@@ -63,7 +63,6 @@ services:
     image: postgres:15-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-      - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
     ports:
       - 5432:5432
     environment:
