@@ -1,13 +1,13 @@
 """Celery application."""
 
+import asyncio
+import shutil
 import tarfile
-from pathlib import Path
-from tempfile import TemporaryDirectory
 
+import cv2
+import s3fs
 from celery import shared_task
 from celery.utils.log import get_task_logger
-
-from prince_archiver.dto import TimestepDTO
 
 from .base_task import AbstractTask, ConcreteTask
 
@@ -15,39 +15,73 @@ LOGGER = get_task_logger(__name__)
 
 
 @shared_task(base=ConcreteTask, bind=True)
-def archive_timestep(self: AbstractTask, data: dict):
-    input_data = TimestepDTO.model_validate(data)
+def compress_image(self: AbstractTask, source: str, target: str):
+    """Compress an input image using LZW compression."""
+    LOGGER.info("Compressing %s", target)
 
-    LOGGER.info("Archiving %s", input_data.key)
+    source_path = self.settings.DATA_DIR / source
 
-    with (
-        TemporaryDirectory() as temp_dir,
-        tarfile.open(input_data.experiment_archive_path, "a") as tar,
-    ):
-        timestep_archive = Path(temp_dir) / input_data.archive_name
+    target_path = self.settings.TEMP_FILE_DIR / target
+    target_path.parent.mkdir(parents=True, exist_ok=True)
 
-        file = self.file_system.make_archive(input_data.raw_img_path, timestep_archive)
+    img = cv2.imread(str(source_path))
 
-        tar.add(file.path, arcname=input_data.archive_name)
-
-    LOGGER.info("Archived %s", input_data.key)
+    cv2.imwrite(
+        str(target_path),
+        img,
+        params=(cv2.IMWRITE_TIFF_COMPRESSION, 5),
+    )
 
 
 @shared_task(base=ConcreteTask, bind=True)
-def upload_to_object_store(self: AbstractTask, data: dict):
+def archive_images(self: AbstractTask, source: str, target: str):
+    """Save input as tar file."""
+    LOGGER.info("Creating archive %s", target)
 
-    input_data = TimestepDTO.model_validate(data)
+    source_path = self.settings.TEMP_FILE_DIR / source
 
-    LOGGER.info("Uploading %s to s3.", input_data.key)
+    target_path = self.settings.ARCHIVE_DIR / target
+    target_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with (
-        TemporaryDirectory() as temp_dir,
-        tarfile.open(input_data.experiment_archive_path, "r") as tar,
-    ):
-        tar.extract(input_data.archive_name, temp_dir)
-        self.object_storage_client.upload(
-            input_data.key,
-            Path(temp_dir) / input_data.archive_name,
+    with tarfile.open(target_path, "w") as tar:
+        tar.add(source_path, arcname=".")
+
+    # Remove the temporary files
+    shutil.rmtree(source_path)
+
+
+@shared_task(base=ConcreteTask, bind=True)
+def make_thumbnail(source: str, target: str, scale_factor: float = 0.25):
+    """Make a thumbnail image."""
+    img = cv2.imread(source)
+    resized_img = cv2.resize(
+        img,
+        (0, 0),
+        fx=scale_factor,
+        fy=scale_factor,
+    )
+
+    cv2.imwrite(target, resized_img)
+
+
+@shared_task(base=ConcreteTask, bind=True)
+def upload_to_s3(self: AbstractTask, source: str, target: str):
+    async def _upload_to_s3():
+        s3 = s3fs.S3FileSystem(
+            key=self.settings.AWS_ACCESS_KEY_ID,
+            secret=self.settings.AWS_SECRET_ACCESS_KEY,
+            endpoint_url=self.settings.AWS_ENDPOINT_URL,
+            asynchronous=True,
         )
 
-    LOGGER.info("Uploaded %s to s3", input_data.key)
+        session = await s3.set_session()
+
+        await s3._put_file(
+            self.settings.ARCHIVE_DIR / source,
+            f"{self.settings.AWS_BUCKET_NAME}/{target}",
+            max_concurrency=8,
+        )
+
+        await session.close()
+
+    asyncio.run(_upload_to_s3())

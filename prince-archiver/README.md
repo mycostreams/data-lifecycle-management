@@ -10,7 +10,7 @@ The input directory structure is assumed to have the form:
 ```
 |-- <timestamp>-<Prince position>
 |   |-- Img
-|   |   |-- **/*.tif
+|   |   |-- *.tif
 |   |-- param.json
 ```
 
