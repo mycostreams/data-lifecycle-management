@@ -42,26 +42,26 @@ def add_to_db(data: TimestepDTO, unit_of_work: AbstractUnitOfWork) -> None:
     with unit_of_work:
         timestep = Timestep(
             experiment_id=data.experiment.id,
-            **data.model_dump(),
+            **data.model_dump(by_alias=True),
         )
 
         unit_of_work.timestamps.add(timestep)
         unit_of_work.commit()
 
 
-def archive_timestep(data: TimestepDTO, _: AbstractUnitOfWork) -> None:
+def orchestrate_celery_workflow(data: TimestepDTO, _: AbstractUnitOfWork) -> None:
     LOGGER.info("Initiating archiving of %s", data.key)
 
-    files = list(
-        (data.base_path / data.timestep_dir_name / data.img_dir_name).glob(".tif")
+    target_img_dir = get_random_id()
+
+    compress_args = map(
+        lambda p: (str(p.relative_to(data.base_path)), f"{target_img_dir}/{p.name}"),
+        (data.base_path / data.timestep_dir_name / data.img_dir_name).glob("*.tif"),
     )
 
-    random_dir_name = get_random_id()
-    compress_args = ((p, f"{random_dir_name}/{p.name}") for p in files)
-
     workflow = chain(
-        tasks.compress_image.starmap(compress_args),
-        tasks.archive_images.si(random_dir_name, data.key),
+        tasks.compress_image.starmap(list(compress_args)),
+        tasks.archive_images.si(target_img_dir, data.key),
         tasks.upload_to_s3.si(data.key, data.key),
     )
 

@@ -17,6 +17,8 @@ LOGGER = get_task_logger(__name__)
 @shared_task(base=ConcreteTask, bind=True)
 def compress_image(self: AbstractTask, source: str, target: str):
     """Compress an input image using LZW compression."""
+    LOGGER.info("Compressing %s", target)
+
     source_path = self.settings.DATA_DIR / source
 
     target_path = self.settings.TEMP_FILE_DIR / target
@@ -34,6 +36,8 @@ def compress_image(self: AbstractTask, source: str, target: str):
 @shared_task(base=ConcreteTask, bind=True)
 def archive_images(self: AbstractTask, source: str, target: str):
     """Save input as tar file."""
+    LOGGER.info("Creating archive %s", target)
+
     source_path = self.settings.TEMP_FILE_DIR / source
 
     target_path = self.settings.ARCHIVE_DIR / target
@@ -64,7 +68,7 @@ def make_thumbnail(source: str, target: str, scale_factor: float = 0.25):
 def upload_to_s3(self: AbstractTask, source: str, target: str):
     async def _upload_to_s3():
         s3 = s3fs.S3FileSystem(
-            key=self.settings.AWS_SECRET_ACCESS_KEY,
+            key=self.settings.AWS_ACCESS_KEY_ID,
             secret=self.settings.AWS_SECRET_ACCESS_KEY,
             endpoint_url=self.settings.AWS_ENDPOINT_URL,
             asynchronous=True,
@@ -73,7 +77,7 @@ def upload_to_s3(self: AbstractTask, source: str, target: str):
         session = await s3.set_session()
 
         await s3._put_file(
-            source,
+            self.settings.ARCHIVE_DIR / source,
             f"{self.settings.AWS_BUCKET_NAME}/{target}",
             max_concurrency=8,
         )
