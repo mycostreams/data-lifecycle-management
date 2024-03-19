@@ -23,7 +23,7 @@ def compress_image(self: AbstractTask, source: str, target: str):
     target_path.parent.mkdir(parents=True, exist_ok=True)
 
     img = cv2.imread(str(source_path))
-   
+
     cv2.imwrite(
         str(target_path),
         img,
@@ -38,7 +38,7 @@ def archive_images(self: AbstractTask, source: str, target: str):
 
     target_path = self.settings.ARCHIVE_DIR / target
     target_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     with tarfile.open(target_path, "w") as tar:
         tar.add(source_path, arcname=".")
 
@@ -49,7 +49,6 @@ def archive_images(self: AbstractTask, source: str, target: str):
 @shared_task(base=ConcreteTask, bind=True)
 def make_thumbnail(source: str, target: str, scale_factor: float = 0.25):
     """Make a thumbnail image."""
-
     img = cv2.imread(source)
     resized_img = cv2.resize(
         img,
@@ -82,5 +81,3 @@ def upload_to_s3(self: AbstractTask, source: str, target: str):
         await session.close()
 
     asyncio.run(_upload_to_s3())
-
-

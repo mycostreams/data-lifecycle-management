@@ -28,7 +28,7 @@ WORKDIR /app
 
 COPY --from=builder ${VENV_PATH} ${VENV_PATH}
 
-COPY ./alembic a--/alembic
 COPY ./alembic.ini /app/alembic.ini
+COPY ./alembic /app/alembic
 
 COPY ./prince_archiver /app/prince_archiver

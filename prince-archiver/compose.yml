@@ -2,7 +2,8 @@ version: "3.8"
 
 x-env-variables: &env-variables
   DATA_DIR: /data/input/
-  ARCHIVE_DIR: /data/output/
+  ARCHIVE_DIR: /data/archive/
+  TEMP_FILE_DIR: /data/tmp/
   CELERY_BROKER_URL: amqp://guest:guest@rabbitmq:5672/
   AWS_BUCKET_NAME: mycostreams
   AWS_ACCESS_KEY_ID: aws-access-key-id
@@ -28,7 +29,6 @@ services:
     command: ["python", "-m", "prince_archiver.entrypoints.watcher"]
     volumes:
     - input_data:/data/input
-    - output_data:/data/output
     depends_on:
       db:
         condition: service_healthy
@@ -41,7 +41,8 @@ services:
     environment: *env-variables
     volumes:
     - input_data:/data/input
-    - output_data:/data/output
+    - archive_data:/data/archive
+    - temp_data:/data/tmp
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -96,5 +97,6 @@ services:
 
 volumes:
   input_data:
-  output_data:
+  archive_data:
+  temp_data:
   postgres_data:

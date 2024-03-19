@@ -11,7 +11,6 @@ from prince_archiver.utils import make_timestep_directory
 
 def main():
     """Add new timestep directory every minute."""
-
     configure_logging()
 
     target_dir = Path(os.environ.get("DATA_DIR", "/app/data"))
@@ -24,7 +23,6 @@ def main():
             timestamp=datetime.now(),
             target_dir=target_dir,
         )
-
         logging.info("Directory added: %s", new_folder)
 
         time.sleep(60)

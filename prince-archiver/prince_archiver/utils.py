@@ -1,14 +1,15 @@
 from dataclasses import dataclass
 from datetime import datetime
-from functools import partial
+from functools import lru_cache, partial
 from pathlib import Path
 from typing import Generator
-from functools import lru_cache
 from uuid import uuid4
 
 import httpx
 
 from .dto import ExperimentDTO, TimestepDTO
+
+DOWNLOAD_URL = "https://vu.data.surfsara.nl/index.php/s/ndI1UoMRwliVYGR/download"
 
 
 @dataclass(kw_only=True)
@@ -48,12 +49,16 @@ def parse_timestep_dir(
         experiment=experiment,
         prince_position=position,
         timestamp=timestamp,
-        raw_img_path=path / config.img_dir_name,
+        base_path=path.parent.resolve(),
+        timestep_dir_name=path.name,
+        img_dir_name=config.img_dir_name,
     )
 
 
 def get_plate_timesteps(
-    data_dir: Path, *, config: TimestepConfig | None = None
+    data_dir: Path,
+    *,
+    config: TimestepConfig | None = None,
 ) -> Generator[TimestepDTO, None, None]:
     """Iterate over plate timesteps."""
     func = partial(
@@ -66,7 +71,7 @@ def get_plate_timesteps(
 
 
 @lru_cache
-def _get_image(url: str):
+def _get_image(url: str = DOWNLOAD_URL):
     response = httpx.get(url)
     return response.content
 

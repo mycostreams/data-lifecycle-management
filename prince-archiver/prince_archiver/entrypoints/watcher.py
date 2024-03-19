@@ -28,9 +28,10 @@ def main(*, _settings: Settings | None = None):
 
     logging.info("Watching %s", settings.DATA_DIR)
 
-    for changes in watch(settings.DATA_DIR, watch_filter=filter_on_final_image):
+    watcher = watch(settings.DATA_DIR, watch_filter=filter_on_final_image)
+    for changes in watcher:
         for _, filepath in changes:
-            handler(Path(filepath).relative_to(settings.DATA_DIR))
+            handler(Path(filepath).parent.parent)
 
 
 if __name__ == "__main__":
