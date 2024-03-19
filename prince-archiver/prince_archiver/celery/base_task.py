@@ -1,11 +1,9 @@
-from abc import ABC
-
 from celery import Task
 
 from prince_archiver.config import Settings, get_settings
 
 
-class AbstractTask(ABC):
+class AbstractTask:
 
     def __init__(self, *, _settings: Settings | None = None):
         self.settings = _settings or get_settings()
