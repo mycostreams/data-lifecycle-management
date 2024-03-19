@@ -16,6 +16,7 @@ class Settings(BaseSettings):
 
     DATA_DIR: Path
     ARCHIVE_DIR: Path
+    TEMP_FILE_DIR: Path
 
     CELERY_BROKER_URL: str
 

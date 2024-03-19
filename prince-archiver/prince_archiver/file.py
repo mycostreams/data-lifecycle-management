@@ -37,6 +37,6 @@ class File(AbstractFile):
 class FileSystem(AbstractFileSystem):
 
     def make_archive(self, source: Path, target: Path) -> File:
-        with tarfile.open(target, "w:gz") as tar:
+        with tarfile.open(target, "w") as tar:
             tar.add(source, arcname=".")
         return File(path=target)

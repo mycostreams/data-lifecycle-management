@@ -15,4 +15,4 @@ app.config_from_object(get_settings(), namespace="CELERY")
 
 @signals.worker_ready.connect
 def on_worker_ready(**_):
-    LOGGER.info("@@@@@@ %s", __name__)
+    LOGGER.info("Ready for action: %s", __name__)

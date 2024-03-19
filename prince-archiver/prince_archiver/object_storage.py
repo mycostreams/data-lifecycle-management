@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import s3fs
+
 if TYPE_CHECKING:
     from mypy_boto3_s3 import S3Client
 
@@ -32,3 +34,17 @@ class ObjectStorageClient(AbstractObjectStorageClient):
             Key=key,
             Bucket=self.bucket,
         )
+
+
+async def upload_to_s3(source: Path):
+
+    s3 = s3fs.S3FileSystem(asynchronous=True)
+    session = await s3.set_session()
+
+    await s3._put_file(
+        source,
+        f"mycostreams-dev/{source.name}",
+        max_concurrency=8,
+    )
+
+    await session.close()

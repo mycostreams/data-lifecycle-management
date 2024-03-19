@@ -20,26 +20,20 @@ class ExperimentDTO(BaseModel):
         return self
 
 
-class BaseTimestepDTO(BaseModel):
+class TimestepDTO(BaseModel):
 
-    experiment: ExperimentDTO
+    experiment: ExperimentDTO = Field(..., exclude=True)
 
     prince_position: int
-    img_count: int
+    img_count: int = 150
     timestamp: datetime
 
-    raw_img_path: Path
-
-
-class TimestepDTO(BaseTimestepDTO):
-
-    experiment_archive_path: Path
-    archive_name: str = Field(default_factory=str)
+    raw_img_path: Path = Field(..., exclude=True)
 
     @model_validator(mode="after")
     def set_archive_name(self) -> "TimestepDTO":
         if not self.archive_name:
-            self.archive_name = self.timestamp.strftime("%Y%m%d_%H%M.tar.gz")
+            self.archive_name = self.timestamp.strftime("%Y%m%d_%H%M.tar")
         return self
 
     @property

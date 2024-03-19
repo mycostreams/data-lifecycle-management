@@ -3,8 +3,12 @@ from datetime import datetime
 from functools import partial
 from pathlib import Path
 from typing import Generator
+from functools import lru_cache
+from uuid import uuid4
 
-from .dto import BaseTimestepDTO, ExperimentDTO
+import httpx
+
+from .dto import ExperimentDTO, TimestepDTO
 
 
 @dataclass(kw_only=True)
@@ -13,6 +17,10 @@ class TimestepConfig:
     param_filename = "param.json"
     img_dir_name: str = "Img"
     final_img_name: str = "Img_r10_c15.tif"
+
+
+def get_random_id() -> str:
+    return uuid4().hex[:6]
 
 
 def parse_folder_name(filename: str) -> tuple[int, datetime]:
@@ -26,30 +34,27 @@ def parse_timestep_dir(
     path: Path,
     *,
     config: TimestepConfig | None = None,
-) -> BaseTimestepDTO:
+) -> TimestepDTO:
 
     config = config or TimestepConfig()
 
     position, timestamp = parse_folder_name(path.name)
 
     param_path = path / config.param_filename
-    img_dir = path / config.img_dir_name
 
     experiment = ExperimentDTO.model_validate_json(param_path.read_bytes())
-    image_count = len(list(img_dir.iterdir()))
 
-    return BaseTimestepDTO(
+    return TimestepDTO(
         experiment=experiment,
         prince_position=position,
         timestamp=timestamp,
         raw_img_path=path / config.img_dir_name,
-        img_count=image_count,
     )
 
 
 def get_plate_timesteps(
     data_dir: Path, *, config: TimestepConfig | None = None
-) -> Generator[BaseTimestepDTO, None, None]:
+) -> Generator[TimestepDTO, None, None]:
     """Iterate over plate timesteps."""
     func = partial(
         parse_timestep_dir,
@@ -58,6 +63,12 @@ def get_plate_timesteps(
 
     for item in map(func, data_dir.iterdir()):
         yield item
+
+
+@lru_cache
+def _get_image(url: str):
+    response = httpx.get(url)
+    return response.content
 
 
 def make_timestep_directory(
@@ -83,6 +94,6 @@ def make_timestep_directory(
     param_file.write_text(experiment.model_dump_json(indent=4, by_alias=True))
 
     img = img_dir / config.final_img_name
-    img.touch()
+    img.write_bytes(_get_image())
 
     return dir_path

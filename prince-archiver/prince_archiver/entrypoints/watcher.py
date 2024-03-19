@@ -8,7 +8,7 @@ from prince_archiver.db import UnitOfWork, get_session_maker
 from prince_archiver.logging import configure_logging
 from prince_archiver.watcher import (
     DEFAULT_HANDLERS,
-    NewTimestepHandler,
+    TimestepHandler,
     filter_on_final_image,
 )
 
@@ -19,8 +19,7 @@ def main(*, _settings: Settings | None = None):
 
     settings = _settings or get_settings()
 
-    handler = NewTimestepHandler(
-        archive_dir=settings.ARCHIVE_DIR,
+    handler = TimestepHandler(
         handlers=DEFAULT_HANDLERS,
         unit_of_work=UnitOfWork(
             get_session_maker(str(settings.POSTGRES_DSN)),
@@ -31,7 +30,7 @@ def main(*, _settings: Settings | None = None):
 
     for changes in watch(settings.DATA_DIR, watch_filter=filter_on_final_image):
         for _, filepath in changes:
-            handler(Path(filepath))
+            handler(Path(filepath).relative_to(settings.DATA_DIR))
 
 
 if __name__ == "__main__":
