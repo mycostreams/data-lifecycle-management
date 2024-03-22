@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+
+  watcher:
+    environment:
+      - SENTRY_DSN
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "watcher", "service": "watcher"}]'
+  
+  worker:
+    environment:
+      - SENTRY_DSN
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "worker", "service": "worker"}]'
+
+  datadog:
+    image: datadog/agent:latest
+    pid: host
+    environment:
+     - DD_API_KEY=${DD_API_KEY}
+     - DD_SITE=datadoghq.eu
+     - DD_LOGS_ENABLED=true
+    volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
+     - /proc/:/host/proc/:ro
+     - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
+     - /var/lib/docker/containers:/var/lib/docker/containers:ro
+
+
+# volumes:
+#   input_data: 
+#     driver_opts:
+#       type: cifs
+#       device: //prince.amolf.nl/Data/Prince2/Images/Data/Prince2/Images/
+#       o: username=${PRINCE_USERNAME},password=${PRINCE_PASSWORD}
+#   output_data: 
+#     driver_opts:
+#       type: cifs
+#       device: //sun.amolf.nl/shimizu/home-folder/iwilliams/test
+#       o: username=${SUN_USERNAME},password=${SUN_PASSWORD}
