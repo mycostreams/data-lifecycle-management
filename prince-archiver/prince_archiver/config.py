@@ -1,8 +1,16 @@
 from functools import lru_cache
 from pathlib import Path
+import os
 
 from pydantic import PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
+import sentry_sdk
+
+
+sentry_sdk.init(
+    dsn=os.getenv("SENTRY_DSN"),
+    enable_tracing=True,
+)
 
 
 class Settings(BaseSettings):
@@ -23,6 +31,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
+        extra="ignore",
     )
 
 

@@ -1,0 +1,13 @@
+version: "3.8"
+
+volumes:
+  input_data: 
+    driver_opts:
+      type: cifs
+      device: //prince.amolf.nl/shimizu/Data/Prince2/Images/
+      o: username=${PRINCE_USERNAME},password=${PRINCE_PASSWORD}
+  output_data: 
+    driver_opts:
+      type: cifs
+      device: //sun.amolf.nl/shimizu/home-folder/iwilliams/test
+      o: username=${SUN_USERNAME},password=${SUN_PASSWORD}
