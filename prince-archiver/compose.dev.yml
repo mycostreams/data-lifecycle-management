@@ -1,18 +1,42 @@
 version: "3.8"
 
-services:
+x-dev-env-variables: &dev-env-variables
+  AWS_BUCKET_NAME: mycostreams
+  AWS_ACCESS_KEY_ID: aws-access-key-id
+  AWS_SECRET_ACCESS_KEY: aws-access-key-id
+  AWS_ENDPOINT_URL: http://s3:9090
 
+
+services:
   prince:
+    image: prince-archiver
+    build:
+      context: .
+    command: ["python", "-m", "prince_archiver.entrypoints.timestep_generator"]
+    environment:
+      - DATA_DIR=/data/input
     volumes:
+      - input_data:/data/input
       - ./prince_archiver:/app/prince_archiver
-      - ./alembic:/app/alembic
+      - ./alembic/:/app/alembic
 
   watcher:
+    environment: *dev-env-variables
     volumes:
     - ./prince_archiver:/app/prince_archiver
     - ./alembic:/app/alembic
 
   worker:
+    environment: *dev-env-variables
     volumes:
     - ./prince_archiver:/app/prince_archiver
     - ./alembic/:/app/alembic
+
+  s3:
+    image: adobe/s3mock:3.1.0
+    ports:
+      - 9090:9090
+      - 9191:9191
+    environment:
+      - initialBuckets=mycostreams
+      - validKmsKeys=arn:aws:kms:eu-central-1:1234567890:key/aws-access-key-id

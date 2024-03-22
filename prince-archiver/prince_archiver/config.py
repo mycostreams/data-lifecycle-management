@@ -1,11 +1,10 @@
+import os
 from functools import lru_cache
 from pathlib import Path
-import os
 
+import sentry_sdk
 from pydantic import PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
-import sentry_sdk
-
 
 sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),

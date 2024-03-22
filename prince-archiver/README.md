@@ -20,7 +20,7 @@ The input directory structure is assumed to have the form:
 First run the migraitons. To do this run:
 
 ```bash
-docker compose run watcher bash
+docker compose -f compose.yml -f compose.dev.yml run -ti watcher bash
 ```
 
 This enters the watcher service. Then run:
@@ -32,7 +32,7 @@ alembic migrate head
 This executes the migrations. Now you can get all services started with:
 
 ```bash
-docker compose up
+docker compose -f compose.yml -f compose.dev.yml up
 ```
 
 The `prince` container will generate a new mock timestep folder every minute. 
@@ -45,7 +45,7 @@ Both the `watcher` and `prince` containers have shared volumes. This allows the
 Get rabbitmq and postgres running
 
 ```bash
-docker compose up db rabbitmq s3
+docker compose -f compose.yml -f compose.dev.yml up db rabbitmq s3
 ```
 
 In a seperate terminal, run the worker:
