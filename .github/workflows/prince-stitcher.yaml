@@ -1,7 +1,7 @@
 name: prince-stitcher
 on: 
   push:
-    # branches: main
+    branches: main
     paths: 
      - 'prince-stitcher/**'
      - '.github/workflows/prince-stitcher.yaml'
