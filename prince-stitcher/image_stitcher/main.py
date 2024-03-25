@@ -8,10 +8,11 @@ from .utils import resize_image
 
 def stitch_timestep(
     dir: Path,
-    target: Path = Path("./stitched.tif"),
     *,
+    target: Path | None = None,
     stitcher: AbstractStitcher | None = None,
 ):
+    target = target or Path("./stitched.tif")
     stitcher = stitcher or Stitcher()
 
     with TemporaryDirectory() as _temp_dir:
