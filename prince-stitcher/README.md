@@ -10,9 +10,3 @@ To install a local fiji application run:
 ```bash
 ./scripts/install-fiji.sh
 ```
-
-Create a conda env:
-```bash
-conda env create -f enironment.yml
-conda activate image-stitcher
-```
