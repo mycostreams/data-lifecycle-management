@@ -7,9 +7,13 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+aiofiles = "^23.2.1"
 pyimagej = "^1.4.1"
 pydantic = "^2.6.4"
+pyyaml = "^6.0.1"
 opencv-python-headless = "^4.9.0.80"
+s3fs = "^2024.3.1"
+watchfiles = "^0.21.0"
 
 
 [tool.poetry.group.dev.dependencies]
