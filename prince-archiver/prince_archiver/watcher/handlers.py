@@ -41,9 +41,16 @@ async def add_to_db(data: TimestepDTO, unit_of_work: AbstractUnitOfWork) -> None
     async with unit_of_work:
         timestep = Timestep(
             experiment_id=data.experiment.id,
-            **data.model_dump(by_alias=True),
+            **data.model_dump(
+                by_alias=True,
+                exclude = {
+                    "experiment",
+                    "base_path",
+                    "timestep_dir_name",
+                    "img_dir_name"
+                }
+            ),
         )
-
         unit_of_work.timestamps.add(timestep)
         await unit_of_work.commit()
 
