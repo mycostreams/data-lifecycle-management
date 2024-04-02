@@ -10,8 +10,6 @@ x-dev-env-variables: &dev-env-variables
 services:
   prince:
     image: prince-archiver
-    build:
-      context: .
     command: ["python", "-m", "prince_archiver.entrypoints.timestep_generator"]
     environment:
       - DATA_DIR=/data/input

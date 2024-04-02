@@ -3,7 +3,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import sentry_sdk
-from pydantic import PostgresDsn
+from pydantic import PostgresDsn, RedisDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 sentry_sdk.init(
@@ -15,6 +15,7 @@ sentry_sdk.init(
 class Settings(BaseSettings):
 
     POSTGRES_DSN: PostgresDsn
+    REDIS_DSN: RedisDsn
 
     AWS_ACCESS_KEY_ID: str
     AWS_SECRET_ACCESS_KEY: str
@@ -23,9 +24,6 @@ class Settings(BaseSettings):
 
     DATA_DIR: Path
     ARCHIVE_DIR: Path
-    TEMP_FILE_DIR: Path
-
-    CELERY_BROKER_URL: str
 
     model_config = SettingsConfigDict(
         env_file=".env",
