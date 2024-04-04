@@ -4,6 +4,9 @@ x-env-variables: &env-variables
   DATA_DIR: /data/input/
   ARCHIVE_DIR: /data/archive/
   REDIS_DSN: redis://redis:6379
+  AWS_BUCKET_NAME: mycostreams
+  AWS_ACCESS_KEY_ID: aws-access-key-id
+  AWS_SECRET_ACCESS_KEY: aws-access-key-id
   POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
 
 services:
@@ -36,7 +39,7 @@ services:
       - .env
 
   redis:
-    image: reddis:7.2.4
+    image: redis:7.2.4
     ports:
       - 6379:6379
     healthcheck:

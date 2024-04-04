@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Awaitable, Callable
 
 from arq import ArqRedis
+from watchfiles import Change
 
 from prince_archiver.db import AbstractUnitOfWork
 from prince_archiver.dto import TimestepDTO
@@ -13,6 +14,10 @@ LOGGER = logging.getLogger(__name__)
 
 
 HandlerT = Callable[[TimestepDTO, AbstractUnitOfWork], Awaitable[None]]
+
+
+def filter_on_final_image(change: Change, path: str) -> bool:
+    return change == Change.added and Path(path).name == "Img_r10_c15.tif"
 
 
 class TimestepHandler:
@@ -43,12 +48,12 @@ async def add_to_db(data: TimestepDTO, unit_of_work: AbstractUnitOfWork) -> None
             experiment_id=data.experiment.id,
             **data.model_dump(
                 by_alias=True,
-                exclude = {
+                exclude={
                     "experiment",
                     "base_path",
                     "timestep_dir_name",
-                    "img_dir_name"
-                }
+                    "img_dir_name",
+                },
             ),
         )
         unit_of_work.timestamps.add(timestep)
@@ -61,4 +66,7 @@ class ArqHandler:
         self.client = client
 
     async def __call__(self, data: TimestepDTO, _: AbstractUnitOfWork):
-        await self.client.enqueue_job("workflow", data.model_dump(mode="json"))
+        await self.client.enqueue_job(
+            "workflow",
+            data.model_dump(mode="json", by_alias=True),
+        )
