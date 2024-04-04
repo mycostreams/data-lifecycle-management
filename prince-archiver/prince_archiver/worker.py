@@ -1,28 +1,28 @@
 import asyncio
+import logging
+import os
 import tarfile
 from concurrent.futures import Executor, ProcessPoolExecutor
 from contextlib import AsyncExitStack, asynccontextmanager
 from pathlib import Path
 from typing import AsyncGenerator
-import os
-import logging
 
-from arq.connections import RedisSettings
 import aiofiles
 import aiofiles.os
 import cv2
 import s3fs
+from arq.connections import RedisSettings
 
 from .config import Settings, get_settings
 from .dto import TimestepDTO
 from .logging import configure_logging
 
-
 LOGGER = logging.getLogger(__name__)
+
 
 def compress(src: Path, target: Path):
     LOGGER.info("Compressing %s", src)
-    
+
     img = cv2.imread(str(src))
     cv2.imwrite(
         str(target),
@@ -44,7 +44,7 @@ def tar(src: Path, target: Path):
     target.parent.mkdir(exist_ok=True)
     with tarfile.open(target, "w") as tar:
         tar.add(src, arcname=".")
-    
+
     LOGGER.info("Tarred %s", src)
 
 
@@ -52,7 +52,7 @@ async def atar(src: Path, target: Path, executor: Executor):
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(executor, tar, src, target)
 
- 
+
 async def workflow(ctx: dict, input_data: dict):
 
     data = TimestepDTO.model_validate(input_data)
