@@ -43,3 +43,8 @@ class TimestepDTO(BaseModel):
     @property
     def key(self) -> str:
         return f"{self.experiment.id}/{self.archive_name}"
+
+    @property
+    def parent_archive(self) -> str:
+        date_str = self.timestamp.strftime("%Y-%m-%d")
+        return f"{self.experiment.id}/{date_str}.tar"

@@ -11,6 +11,7 @@ import aiofiles
 import aiofiles.os
 import cv2
 import s3fs
+from aiofiles.tempfile import TemporaryDirectory
 from arq.connections import RedisSettings
 
 from .config import Settings, get_settings
@@ -41,8 +42,8 @@ async def acompress(src: Path, target: Path, executor: Executor):
 def tar(src: Path, target: Path):
     LOGGER.info("Tarring %s", src)
 
-    target.parent.mkdir(exist_ok=True)
-    with tarfile.open(target, "w") as tar:
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with tarfile.open(target, "a") as tar:
         tar.add(src, arcname=".")
 
     LOGGER.info("Tarred %s", src)
@@ -61,20 +62,28 @@ async def workflow(ctx: dict, input_data: dict):
     s3: s3fs.S3FileSystem = ctx["s3"]
     pool: ProcessPoolExecutor = ctx["pool"]
 
-    archive_path = settings.ARCHIVE_DIR / data.key
+    parent_archive_path = settings.ARCHIVE_DIR / data.parent_archive
 
     img_dir = settings.DATA_DIR / data.timestep_dir_name / data.img_dir_name
     files = map(lambda path: img_dir / path, await aiofiles.os.listdir(img_dir))
 
-    async with aiofiles.tempfile.TemporaryDirectory() as _temp_dir:
-        temp_dir = Path(_temp_dir)
+    async with AsyncExitStack() as stack:
+        temp_dirs = await asyncio.gather(
+            *map(lambda: stack.enter_async_context(TemporaryDirectory()), range(2)),
+        )
+        temp_img_dir, temp_archive_dir = map(Path, temp_dirs)
+        temp_archive_path = temp_archive_dir / data.archive_name
 
         await asyncio.gather(
-            *(acompress(file, temp_dir / file.name, pool) for file in files),
+            *(acompress(file, temp_img_dir / file.name, pool) for file in files),
         )
-        await atar(temp_dir, archive_path, pool)
 
-    await s3._put_file(archive_path, f"{settings.AWS_BUCKET_NAME}/{data.key}")
+        await atar(temp_img_dir, temp_archive_path, pool)
+
+        await asyncio.gather(
+            atar(temp_archive_path, parent_archive_path, pool),
+            s3._put_file(temp_archive_path, f"{settings.AWS_BUCKET_NAME}/{data.key}"),
+        )
 
 
 @asynccontextmanager
