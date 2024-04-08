@@ -4,7 +4,7 @@ from typing import Annotated, Optional
 
 import typer
 
-from prince_archiver.dto import ExperimentDTO
+from prince_archiver.dto import TimestepMeta
 from prince_archiver.utils import make_timestep_directory as _make_timestep_directory
 
 app = typer.Typer()
@@ -15,13 +15,14 @@ def make_timestep_directory(
     data_dir: Path,
     timestamp: Annotated[Optional[datetime], typer.Argument()] = None,
 ):
-    experiment = ExperimentDTO(plate=1, CrossDate=date(2000, 1, 1))
-
-    _make_timestep_directory(
-        experiment=experiment,
+    meta = TimestepMeta(
+        plate=1,
+        cross_date=date(2000, 1, 1),
+        position=1,
         timestamp=timestamp or datetime.now(),
-        target_dir=data_dir,
     )
+
+    _make_timestep_directory(data_dir, meta)
 
 
 if __name__ == "__main__":

@@ -69,7 +69,7 @@ async def workflow(ctx: dict, input_data: dict):
 
     async with AsyncExitStack() as stack:
         temp_dirs = await asyncio.gather(
-            *map(lambda: stack.enter_async_context(TemporaryDirectory()), range(2)),
+            *(stack.enter_async_context(TemporaryDirectory()) for _ in range(2)),
         )
         temp_img_dir, temp_archive_dir = map(Path, temp_dirs)
         temp_archive_path = temp_archive_dir / data.archive_name
