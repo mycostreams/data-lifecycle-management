@@ -26,7 +26,7 @@ docker compose -f compose.yml -f compose.dev.yml run -ti watcher bash
 This enters the watcher service. Then run:
 
 ```bash
-alembic migrate head
+alembic upgrade head
 ```
 
 This executes the migrations. Now you can get all services started with:

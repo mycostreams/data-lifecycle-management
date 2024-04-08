@@ -1,38 +1,45 @@
 """Definition of data transfer objects."""
 
+from dataclasses import dataclass
 from datetime import date, datetime
-from pathlib import Path
+from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, model_validator
 
 
-class ExperimentDTO(BaseModel):
+@dataclass(kw_only=True)
+class DirectoryConfig:
 
-    id: str = Field(default_factory=str)
+    param_filename = "param.json"
+    img_dir_name: str = "Img"
+    final_img_name: str = "Img_r10_c15.tif"
+
+
+class TimestepMeta(BaseModel):
+
+    timestep_id: UUID = Field(default_factory=uuid4)
     plate: int
-    cross_date: date = Field(..., alias="CrossDate")
-
-    @model_validator(mode="after")
-    def set_id(self) -> "ExperimentDTO":
-        if not self.id:
-            cross_date = self.cross_date.strftime("%Y")
-            self.id = f"{cross_date}_{self.plate:02d}"
-        return self
-
-
-class TimestepDTO(BaseModel):
-
-    experiment: ExperimentDTO
-
-    archive_name: str = Field(default_factory=str, serialization_alias="key")
-
-    prince_position: int
-    img_count: int = 150
+    cross_date: date
+    position: int
     timestamp: datetime
 
-    base_path: Path | None = None
+
+class TimestepDTO(TimestepMeta):
+
     timestep_dir_name: str
     img_dir_name: str
+
+    img_count: int = 150
+
+    experiment_id: str = Field(default_factory=str)
+    archive_name: str = Field(default_factory=str)
+
+    @model_validator(mode="after")
+    def set_experiment_id(self) -> "TimestepDTO":
+        if not self.experiment_id:
+            cross_date = self.cross_date.strftime("%Y")
+            self.experiment_id = f"{cross_date}_{self.plate:02d}"
+        return self
 
     @model_validator(mode="after")
     def set_archive_name(self) -> "TimestepDTO":
@@ -42,9 +49,9 @@ class TimestepDTO(BaseModel):
 
     @property
     def key(self) -> str:
-        return f"{self.experiment.id}/{self.archive_name}"
+        return f"{self.experiment_id}/{self.archive_name}"
 
     @property
     def parent_archive(self) -> str:
         date_str = self.timestamp.strftime("%Y-%m-%d")
-        return f"{self.experiment.id}/{date_str}.tar"
+        return f"{self.experiment_id}/{date_str}.tar"
