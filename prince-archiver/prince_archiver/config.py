@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: str
     AWS_BUCKET_NAME: str
     AWS_ENDPOINT_URL: str | None = None
+    AWS_REGION_NAME: str | None = None
 
     DATA_DIR: Path
     ARCHIVE_DIR: Path
