@@ -22,7 +22,7 @@ class ExperimentDTO(BaseModel):
 
 class TimestepDTO(BaseModel):
 
-    experiment: ExperimentDTO = Field(..., exclude=True)
+    experiment: ExperimentDTO
 
     archive_name: str = Field(default_factory=str, serialization_alias="key")
 
@@ -30,9 +30,9 @@ class TimestepDTO(BaseModel):
     img_count: int = 150
     timestamp: datetime
 
-    base_path: Path = Field(..., exclude=True)
-    timestep_dir_name: str = Field(..., exclude=True)
-    img_dir_name: str = Field(..., exclude=True)
+    base_path: Path | None = None
+    timestep_dir_name: str
+    img_dir_name: str
 
     @model_validator(mode="after")
     def set_archive_name(self) -> "TimestepDTO":
@@ -43,3 +43,8 @@ class TimestepDTO(BaseModel):
     @property
     def key(self) -> str:
         return f"{self.experiment.id}/{self.archive_name}"
+
+    @property
+    def parent_archive(self) -> str:
+        date_str = self.timestamp.strftime("%Y-%m-%d")
+        return f"{self.experiment.id}/{date_str}.tar"

@@ -7,16 +7,17 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+aiofiles = "^23.2.1"
 alembic = "^1.13.1"
+arq = "^0.25.0"
 boto3 = "^1.34.40"
-celery = {extras = ["librabbitmq"], version = "^5.3.6"}
 httpx = "^0.27.0"
 opencv-contrib-python-headless = "^4.9.0.80"
 pydantic = "^2.5.3"
 pydantic-settings = "^2.1.0"
 pyyaml = "^6.0.1"
 s3fs = "^2024.3.0"
-sqlalchemy = {extras = ["postgresql-psycopg2binary"], version = "^2.0.27"}
+sqlalchemy = {extras = ["postgresql-asyncpg"], version = "^2.0.29"}
 typer = "^0.9.0"
 watchfiles = "^0.21.0"
 sentry-sdk = {extras = ["celery"], version = "^1.43.0"}
@@ -30,6 +31,7 @@ isort = "^5.13.2"
 mypy = "^1.8.0"
 pytest = "^8.0.0"
 types-pyyaml = "^6.0.12.12"
+types-aiofiles = "^23.2.0.20240331"
 
 [tool.poetry.scripts]
 cli = "prince_archiver.entrypoints.cli:app"
@@ -43,8 +45,6 @@ plugins = "pydantic.mypy"
 
 [[tool.mypy.overrides]]
 module = [
-    "celery",
-    "celery.utils.log",
     "s3fs"
 ]
 ignore_missing_imports = true

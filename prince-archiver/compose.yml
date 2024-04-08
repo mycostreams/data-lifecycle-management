@@ -3,14 +3,18 @@ version: "3.8"
 x-env-variables: &env-variables
   DATA_DIR: /data/input/
   ARCHIVE_DIR: /data/archive/
-  TEMP_FILE_DIR: /data/tmp/
-  CELERY_BROKER_URL: amqp://guest:guest@rabbitmq:5672/
-  POSTGRES_DSN: postgresql://postgres:postgres@db:5432/postgres
+  REDIS_DSN: redis://redis:6379
+  AWS_BUCKET_NAME: mycostreams
+  AWS_ACCESS_KEY_ID: aws-access-key-id
+  AWS_SECRET_ACCESS_KEY: aws-access-key-id
+  POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
 
 services:
 
   watcher:
     image: prince-archiver
+    build:
+      context: .
     environment: *env-variables
     command: ["python", "-m", "prince_archiver.entrypoints.watcher"]
     volumes:
@@ -18,30 +22,28 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      rabbitmq:
+      redis:
         condition: service_healthy
 
   worker:
     image: prince-archiver
-    command: ["celery", "-A", "prince_archiver.celery", "worker", "-l", "INFO"]
+    command: ["arq", "prince_archiver.worker.WorkerSettings"]
     environment: *env-variables
     volumes:
     - input_data:/data/input
     - archive_data:/data/archive
-    - temp_data:/data/tmp
     depends_on:
-      rabbitmq:
+      redis:
         condition: service_healthy
     env_file:
       - .env
 
-  rabbitmq:
-    image: rabbitmq:3.12-management
+  redis:
+    image: redis:7.2.4
     ports:
-      - 5672:5672
-      - 15672:15672
+      - 6379:6379
     healthcheck:
-      test: rabbitmq-diagnostics -q ping
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -62,18 +64,8 @@ services:
       timeout: 5s
       retries: 5
 
-  flower:
-    image: mher/flower:0.9.7
-    command: ['flower', '--broker=amqp://guest:guest@rabbitmq:5672/', '--port=5555']
-    ports:
-      - 5557:5555
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-
 
 volumes:
   input_data:
   archive_data:
-  temp_data:
   postgres_data:

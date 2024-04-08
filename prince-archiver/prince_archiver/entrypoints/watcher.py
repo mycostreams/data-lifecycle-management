@@ -1,26 +1,34 @@
+import asyncio
 import logging
 from pathlib import Path
 
-from watchfiles import watch
+from arq import create_pool
+from arq.connections import RedisSettings
+from watchfiles import awatch
 
 from prince_archiver.config import Settings, get_settings
 from prince_archiver.db import UnitOfWork, get_session_maker
 from prince_archiver.logging import configure_logging
 from prince_archiver.watcher import (
-    DEFAULT_HANDLERS,
+    ArqHandler,
     TimestepHandler,
+    add_to_db,
     filter_on_final_image,
 )
 
 
-def main(*, _settings: Settings | None = None):
+async def main(*, _settings: Settings | None = None):
 
     configure_logging()
 
     settings = _settings or get_settings()
 
+    redis = await create_pool(
+        RedisSettings.from_dsn(str(settings.REDIS_DSN)),
+    )
+
     handler = TimestepHandler(
-        handlers=DEFAULT_HANDLERS,
+        handlers=[add_to_db, ArqHandler(redis)],
         unit_of_work=UnitOfWork(
             get_session_maker(str(settings.POSTGRES_DSN)),
         ),
@@ -28,11 +36,11 @@ def main(*, _settings: Settings | None = None):
 
     logging.info("Watching %s", settings.DATA_DIR)
 
-    watcher = watch(settings.DATA_DIR, watch_filter=filter_on_final_image)
-    for changes in watcher:
+    watcher = awatch(settings.DATA_DIR, watch_filter=filter_on_final_image)
+    async for changes in watcher:
         for _, filepath in changes:
-            handler(Path(filepath).parent.parent)
+            await handler(Path(filepath).parent.parent)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
