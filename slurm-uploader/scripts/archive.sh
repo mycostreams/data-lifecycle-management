@@ -40,4 +40,4 @@ else
     exit 1
 fi
 
-# trap "rm -rf $DOWNLOAD_DIR" EXIT
+trap "rm -rf $DOWNLOAD_DIR" EXIT
