@@ -21,7 +21,7 @@ ARCHIVE_DIR="/archive/$USER/"
 TARGET_FILE=$DATE_STR.tar
 
 # Download the data
-rclone copy swift:mycostreams "$DOWNLOAD_DIR" --include "*/$DATE_STR*.tar"
+rclone copy swift:prince-data-dev "$DOWNLOAD_DIR" --include "*/$DATE_STR*.tar"
 
 if [ "$(ls -A $DOWNLOAD_DIR)" ]; then
     for EXPERIMENT_DIR in ${DOWNLOAD_DIR}/*/; 
@@ -38,4 +38,4 @@ else
     exit 1
 fi
 
-trap "rm -rf $DOWNLOAD_DIR" EXIT
+# trap "rm -rf $DOWNLOAD_DIR" EXIT
