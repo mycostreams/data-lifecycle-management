@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --partion=staging
+#SBATCH --partition=staging
 #SBATCH --export=USER
 #
 # Archive all images for a given day. 
