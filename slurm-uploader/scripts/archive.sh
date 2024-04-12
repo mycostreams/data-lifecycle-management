@@ -29,8 +29,8 @@ if [ "$(ls -A $DOWNLOAD_DIR)" ]; then
         EXPERIMENT_ID=$(basename $EXPERIMENT_DIR)
         TARGET_DIR=$ARCHIVE_DIR/$EXPERIMENT_ID
 
-        mkdir -p "$TARGET_DIR"   
-        tar -cf "$TARGET_DIR/$TARGET_FILE" -C "$DOWNLOAD_DIR" "$EXPERIMENT_ID"
+        # mkdir -p "$TARGET_DIR"   
+        # tar -cf "$TARGET_DIR/$TARGET_FILE" -C "$DOWNLOAD_DIR" "$EXPERIMENT_ID"
     done    
     exit 0
 else
