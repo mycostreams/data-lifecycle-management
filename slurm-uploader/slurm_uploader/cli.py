@@ -24,7 +24,7 @@ def submit(
     Submit a day for processing.
     """
     settings = Settings(_env_file=env_file)
-    client = Client(**{k.lower(): v for k, v in settings.model_dump().items()})
+    client = Client(**settings.model_dump(by_alias=True))
     with client:
         print(client.submit_job(timestamp))
 

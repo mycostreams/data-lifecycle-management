@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from aio_pika import ExchangeType
+from pydantic import AliasGenerator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEFAULT_CONNECTION_URL = "amqp://guest:guest@localhost/"
@@ -36,6 +37,9 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
+        alias_generator=AliasGenerator(
+            serialization_alias=lambda field_name: field_name.lower(),
+        ),
     )
 
 

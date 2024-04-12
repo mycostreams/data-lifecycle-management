@@ -5,7 +5,7 @@ from paramiko import AutoAddPolicy, SSHClient
 
 class Client:
 
-    COMMAND = "$HOME/pycode/mycostreams/slurm-uploader/scripts/run-basic.sh"
+    COMMAND = "$HOME/mycostreams/slurm-uploader/scripts/run.sh"
 
     def __init__(
         self,
