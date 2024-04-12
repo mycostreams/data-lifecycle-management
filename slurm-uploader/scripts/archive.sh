@@ -19,7 +19,7 @@ DOWNLOAD_DIR=$(mktemp -d -p /scratch-shared)
 ARCHIVE_DIR="/archive/$USER/"
 TARGET_FILE=$DATE_STR.tar
 
-echo "Copying data to $DOWNLOAD_DIR"
+echo "Copying data to temp dir: $DOWNLOAD_DIR"
 
 # Download the data
 rclone copy swift:prince-data-dev "$DOWNLOAD_DIR" --include "*/$DATE_STR*.tar"
@@ -30,7 +30,9 @@ if [ "$(ls -A $DOWNLOAD_DIR)" ]; then
         EXPERIMENT_ID=$(basename $EXPERIMENT_DIR)
         TARGET_DIR=$ARCHIVE_DIR/$EXPERIMENT_ID
 
-        # mkdir -p "$TARGET_DIR"   
+        echo "Creating archive: $TARGET_DIR/$TARGET_FILE"
+
+        # mkdir -p "$TARGET_DIR"
         # tar -cf "$TARGET_DIR/$TARGET_FILE" -C "$DOWNLOAD_DIR" "$EXPERIMENT_ID"
     done    
     exit 0
