@@ -1,7 +1,6 @@
 #!/bin/bash
 #
 #SBATCH --partition=staging
-#SBATCH --export=USER
 #
 # Archive all images for a given day. 
 # Step 1: Download all images for a given day
@@ -20,7 +19,7 @@ DOWNLOAD_DIR=$(mktemp -d -p /scratch-shared)
 ARCHIVE_DIR="/archive/$USER/"
 TARGET_FILE=$DATE_STR.tar
 
-echo $DOWNLOAD_DIR
+echo "Copying data to $DOWNLOAD_DIR"
 
 # Download the data
 rclone copy swift:prince-data-dev "$DOWNLOAD_DIR" --include "*/$DATE_STR*.tar"
