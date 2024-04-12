@@ -16,7 +16,7 @@ done
 
 
 DOWNLOAD_DIR=$(mktemp -d -p /scratch-shared)
-ARCHIVE_DIR="/archive/$USER/"
+ARCHIVE_DIR="/archive/$USER"
 TARGET_FILE=$DATE_STR.tar
 
 echo "Copying data to temp dir: $DOWNLOAD_DIR"
@@ -32,7 +32,7 @@ if [ "$(ls -A $DOWNLOAD_DIR)" ]; then
 
         echo "Creating archive: $TARGET_DIR/$TARGET_FILE"
 
-        # mkdir -p "$TARGET_DIR"
+        mkdir -p "$TARGET_DIR"
         # tar -cf "$TARGET_DIR/$TARGET_FILE" -C "$DOWNLOAD_DIR" "$EXPERIMENT_ID"
     done    
     exit 0
