@@ -16,9 +16,11 @@ while getopts "d:" opt; do
 done
 
 
-DOWNLOAD_DIR=$(mktemp -d)
+DOWNLOAD_DIR=$(mktemp -d -p /scratch-shared)
 ARCHIVE_DIR="/archive/$USER/"
 TARGET_FILE=$DATE_STR.tar
+
+echo $DOWNLOAD_DIR
 
 # Download the data
 rclone copy swift:prince-data-dev "$DOWNLOAD_DIR" --include "*/$DATE_STR*.tar"
