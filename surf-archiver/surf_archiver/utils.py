@@ -1,6 +1,6 @@
 import asyncio
 from collections import defaultdict
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import Executor, ProcessPoolExecutor
 from contextlib import AsyncExitStack, asynccontextmanager
 from datetime import date
 from pathlib import Path
@@ -11,20 +11,19 @@ from typing import AsyncGenerator
 from s3fs import S3FileSystem
 
 
-def tar(source: Path, dest: Path):
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    with TarFile.open(dest, "w") as tar:
-        tar.add(source, arcname=".")
+def tar(src: Path, target: Path):
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with TarFile.open(target, "w") as tar:
+        tar.add(src, arcname=".")
 
 
-async def atar(source: Path, dest: Path, pool: ProcessPoolExecutor):
+async def atar(src: Path, target: Path, executor: Executor):
     loop = asyncio.get_event_loop()
-    await loop.run_in_executor(pool, tar, source, dest)
+    await loop.run_in_executor(executor, tar, src, target)
 
 
 @asynccontextmanager
 async def managed_file_system() -> AsyncGenerator[S3FileSystem, None]:
-
     s3 = S3FileSystem(asynchronous=True)
 
     session = await s3.set_session()
