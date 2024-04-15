@@ -14,7 +14,8 @@ import s3fs
 from aiofiles.tempfile import TemporaryDirectory
 from arq.connections import RedisSettings
 
-from .config import Settings, get_settings
+from .config import WorkerSettings as _WorkerSettings
+from .config import get_worker_settings
 from .dto import TimestepDTO
 from .logging import configure_logging
 
@@ -58,7 +59,7 @@ async def workflow(ctx: dict, input_data: dict):
 
     data = TimestepDTO.model_validate(input_data)
 
-    settings: Settings = ctx["settings"]
+    settings: _WorkerSettings = ctx["settings"]
     s3: s3fs.S3FileSystem = ctx["s3"]
     pool: ProcessPoolExecutor = ctx["pool"]
 
@@ -88,7 +89,7 @@ async def workflow(ctx: dict, input_data: dict):
 
 @asynccontextmanager
 async def managed_file_system(
-    settings: Settings,
+    settings: _WorkerSettings,
 ) -> AsyncGenerator[s3fs.S3FileSystem, None]:
     client_kwargs = {}
     if settings.AWS_REGION_NAME:
@@ -112,7 +113,7 @@ async def managed_file_system(
 async def startup(ctx):
     configure_logging()
 
-    settings = get_settings()
+    settings = get_worker_settings()
     ctx["settings"] = settings
 
     exit_stack = await AsyncExitStack().__aenter__()

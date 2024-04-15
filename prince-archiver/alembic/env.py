@@ -1,4 +1,5 @@
 import asyncio
+import os
 from logging.config import fileConfig
 
 from sqlalchemy import pool
@@ -6,7 +7,6 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-from prince_archiver.config import get_settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -30,8 +30,11 @@ target_metadata = Base.metadata
 
 
 def get_url() -> str:
-    settings = get_settings()
-    return str(settings.POSTGRES_DSN)
+    dsn = os.getenv(
+        "POSTGRES_DSN",
+        "asyncpg+postsgresql://postgres:postgres@localhost:5432/postgres",
+    )
+    return dsn
 
 
 def run_migrations_offline() -> None:
