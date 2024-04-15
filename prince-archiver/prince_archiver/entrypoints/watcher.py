@@ -6,7 +6,7 @@ from arq import create_pool
 from arq.connections import RedisSettings
 from watchfiles import awatch
 
-from prince_archiver.config import Settings, get_settings
+from prince_archiver.config import WatcherSettings
 from prince_archiver.db import UnitOfWork, get_session_maker
 from prince_archiver.logging import configure_logging
 from prince_archiver.watcher import (
@@ -17,11 +17,11 @@ from prince_archiver.watcher import (
 )
 
 
-async def main(*, _settings: Settings | None = None):
+async def main(*, _settings: WatcherSettings | None = None):
 
     configure_logging()
 
-    settings = _settings or get_settings()
+    settings = _settings or WatcherSettings()
 
     redis = await create_pool(
         RedisSettings.from_dsn(str(settings.REDIS_DSN)),

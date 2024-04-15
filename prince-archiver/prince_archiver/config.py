@@ -12,19 +12,11 @@ sentry_sdk.init(
 )
 
 
-class Settings(BaseSettings):
+class CommonSettings(BaseSettings):
 
-    POSTGRES_DSN: PostgresDsn
     REDIS_DSN: RedisDsn
 
-    AWS_ACCESS_KEY_ID: str
-    AWS_SECRET_ACCESS_KEY: str
-    AWS_BUCKET_NAME: str
-    AWS_ENDPOINT_URL: str | None = None
-    AWS_REGION_NAME: str | None = None
-
     DATA_DIR: Path
-    ARCHIVE_DIR: Path
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -33,6 +25,22 @@ class Settings(BaseSettings):
     )
 
 
+class WatcherSettings(CommonSettings):
+
+    POSTGRES_DSN: PostgresDsn
+
+
+class WorkerSettings(CommonSettings):
+
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    AWS_BUCKET_NAME: str
+    AWS_ENDPOINT_URL: str | None = None
+    AWS_REGION_NAME: str | None = None
+
+    ARCHIVE_DIR: Path
+
+
 @lru_cache
-def get_settings() -> Settings:
-    return Settings()
+def get_worker_settings() -> WorkerSettings:
+    return WorkerSettings()

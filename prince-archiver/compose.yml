@@ -2,12 +2,8 @@ version: "3.8"
 
 x-env-variables: &env-variables
   DATA_DIR: /data/input/
-  ARCHIVE_DIR: /data/archive/
   REDIS_DSN: redis://redis:6379
-  AWS_BUCKET_NAME: mycostreams
-  AWS_ACCESS_KEY_ID: aws-access-key-id
-  AWS_SECRET_ACCESS_KEY: aws-access-key-id
-  POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
+
 
 services:
 
@@ -15,7 +11,9 @@ services:
     image: prince-archiver
     build:
       context: .
-    environment: *env-variables
+    environment: 
+      <<: *env-variables
+      POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
     command: ["python", "-m", "prince_archiver.entrypoints.watcher"]
     volumes:
     - input_data:/data/input
@@ -28,7 +26,9 @@ services:
   worker:
     image: prince-archiver
     command: ["arq", "prince_archiver.worker.WorkerSettings"]
-    environment: *env-variables
+    environment: 
+      <<: *env-variables
+      ARCHIVE_DIR: /data/archive/
     volumes:
     - input_data:/data/input
     - archive_data:/data/archive

@@ -1,12 +1,5 @@
 version: "3.8"
 
-x-dev-env-variables: &dev-env-variables
-  AWS_BUCKET_NAME: mycostreams
-  AWS_ACCESS_KEY_ID: aws-access-key-id
-  AWS_SECRET_ACCESS_KEY: aws-access-key-id
-  AWS_ENDPOINT_URL: http://s3:9090
-
-
 services:
   prince:
     image: prince-archiver
@@ -19,13 +12,16 @@ services:
       - ./alembic/:/app/alembic
 
   watcher:
-    environment: *dev-env-variables
     volumes:
     - ./prince_archiver:/app/prince_archiver
     - ./alembic:/app/alembic
 
   worker:
-    environment: *dev-env-variables
+    environment:
+      - AWS_BUCKET_NAME=mycostreams
+      - AWS_ACCESS_KEY_ID=aws-access-key-id
+      - AWS_SECRET_ACCESS_KEY=aws-access-key-id
+      - AWS_ENDPOINT_URL=http://s3:9090
     volumes:
     - ./prince_archiver:/app/prince_archiver
     - ./alembic/:/app/alembic
