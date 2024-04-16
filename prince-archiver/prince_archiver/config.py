@@ -38,8 +38,6 @@ class WorkerSettings(CommonSettings):
     AWS_ENDPOINT_URL: str | None = None
     AWS_REGION_NAME: str | None = None
 
-    ARCHIVE_DIR: Path
-
 
 @lru_cache
 def get_worker_settings() -> WorkerSettings:

@@ -63,8 +63,6 @@ async def workflow(ctx: dict, input_data: dict):
     s3: s3fs.S3FileSystem = ctx["s3"]
     pool: ProcessPoolExecutor = ctx["pool"]
 
-    parent_archive_path = settings.ARCHIVE_DIR / data.parent_archive
-
     img_dir = settings.DATA_DIR / data.timestep_dir_name / data.img_dir_name
     files = map(lambda path: img_dir / path, await aiofiles.os.listdir(img_dir))
 
@@ -78,13 +76,9 @@ async def workflow(ctx: dict, input_data: dict):
         await asyncio.gather(
             *(acompress(file, temp_img_dir / file.name, pool) for file in files),
         )
-
         await atar(temp_img_dir, temp_archive_path, pool)
 
-        await asyncio.gather(
-            atar(temp_archive_path, parent_archive_path, pool),
-            s3._put_file(temp_archive_path, f"{settings.AWS_BUCKET_NAME}/{data.key}"),
-        )
+        await s3._put_file(temp_archive_path, f"{settings.AWS_BUCKET_NAME}/{data.key}")
 
 
 @asynccontextmanager

@@ -26,17 +26,12 @@ services:
   worker:
     image: prince-archiver
     command: ["arq", "prince_archiver.worker.WorkerSettings"]
-    environment: 
-      <<: *env-variables
-      ARCHIVE_DIR: /data/archive/
+    environment: *env-variables
     volumes:
     - input_data:/data/input
-    - archive_data:/data/archive
     depends_on:
       redis:
         condition: service_healthy
-    env_file:
-      - .env
 
   redis:
     image: redis:7.2.4
@@ -67,5 +62,4 @@ services:
 
 volumes:
   input_data:
-  archive_data:
   postgres_data:
