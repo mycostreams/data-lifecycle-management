@@ -16,8 +16,8 @@ LOGGER = logging.getLogger(__name__)
 HandlerT = Callable[[TimestepDTO, AbstractUnitOfWork], Awaitable[None]]
 
 
-def filter_on_final_image(change: Change, path: str) -> bool:
-    return change == Change.added and Path(path).name == "Img_r10_c15.tif"
+def filter_on_param_file(change: Change, path: str) -> bool:
+    return change == Change.added and Path(path).name == "param.json"
 
 
 class TimestepHandler:

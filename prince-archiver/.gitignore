@@ -173,7 +173,8 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 
-
+.env*
+!.env.example
 .vscode
 scratch/
 

@@ -5,14 +5,19 @@ services:
   watcher:
     environment:
       - SENTRY_DSN
+      - WATCHFILES_FORCE_POLLING=true
     labels:
       com.datadoghq.ad.logs: '[{"source": "watcher", "service": "watcher"}]'
+    env_file:
+      - .env.prod
   
   worker:
     environment:
       - SENTRY_DSN
     labels:
       com.datadoghq.ad.logs: '[{"source": "worker", "service": "worker"}]'
+    env_file:
+      - .env.prod
 
   datadog:
     image: datadog/agent:latest

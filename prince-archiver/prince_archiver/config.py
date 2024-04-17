@@ -29,6 +29,8 @@ class WatcherSettings(CommonSettings):
 
     POSTGRES_DSN: PostgresDsn
 
+    WATCHFILES_FORCE_POLLING: bool | None = None
+
 
 class WorkerSettings(CommonSettings):
 
