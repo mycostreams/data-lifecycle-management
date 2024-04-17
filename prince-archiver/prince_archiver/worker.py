@@ -4,6 +4,7 @@ import os
 from concurrent.futures import ProcessPoolExecutor
 from contextlib import AsyncExitStack
 from pathlib import Path
+from typing import Awaitable, Callable
 
 import aiofiles
 import aiofiles.os
@@ -20,9 +21,7 @@ from .logging import configure_logging
 LOGGER = logging.getLogger(__name__)
 
 
-async def workflow(ctx: dict, input_data: dict):
-
-    data = TimestepDTO.model_validate(input_data)
+async def upload_workflow(ctx: dict, data: TimestepDTO):
 
     settings: _WorkerSettings = ctx["settings"]
     s3: s3fs.S3FileSystem = ctx["s3"]
@@ -44,6 +43,17 @@ async def workflow(ctx: dict, input_data: dict):
         await atar(temp_img_dir, temp_archive_path, pool)
 
         await s3._put_file(temp_archive_path, f"{settings.AWS_BUCKET_NAME}/{data.key}")
+
+
+async def workflow(
+    ctx: dict,
+    input_data: dict,
+    *,
+    upload_workflow: Callable[[dict, TimestepDTO], Awaitable[None]] = upload_workflow,
+):
+    data = TimestepDTO.model_validate(input_data)
+
+    await upload_workflow(ctx, data)
 
 
 async def startup(ctx):
