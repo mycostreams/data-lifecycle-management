@@ -15,6 +15,7 @@ sentry_sdk.init(
 class CommonSettings(BaseSettings):
 
     REDIS_DSN: RedisDsn
+    POSTGRES_DSN: PostgresDsn
 
     DATA_DIR: Path
 
@@ -26,8 +27,6 @@ class CommonSettings(BaseSettings):
 
 
 class WatcherSettings(CommonSettings):
-
-    POSTGRES_DSN: PostgresDsn
 
     WATCHFILES_FORCE_POLLING: bool | None = None
 

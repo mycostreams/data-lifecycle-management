@@ -11,9 +11,11 @@ import aiofiles.os
 import s3fs
 from aiofiles.tempfile import TemporaryDirectory
 from arq.connections import RedisSettings
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from .config import WorkerSettings as _WorkerSettings
 from .config import get_worker_settings
+from .db import AbstractUnitOfWork, UnitOfWork, get_session_maker
 from .dto import TimestepDTO
 from .file import acompress, atar, managed_file_system
 from .logging import configure_logging
@@ -53,7 +55,10 @@ async def workflow(
 ):
     data = TimestepDTO.model_validate(input_data)
 
-    await upload_workflow(ctx, data)
+    uow: AbstractUnitOfWork = ctx["uow"]
+    async with uow:
+        await upload_workflow(ctx, data)
+        await uow.commit()
 
 
 async def startup(ctx):
@@ -68,6 +73,13 @@ async def startup(ctx):
     ctx["pool"] = exit_stack.enter_context(ProcessPoolExecutor())
     ctx["s3"] = await exit_stack.enter_async_context(managed_file_system(settings))
 
+    ctx["sessionmaker"] = get_session_maker(str(settings.POSTGRES_DSN))
+
+
+async def on_job_start(ctx):
+    session_maker: async_sessionmaker[AsyncSession] = ctx["sessionmaker"]
+    ctx["uow"] = UnitOfWork(session_maker)
+
 
 async def shutdown(ctx: dict):
     exit_stack: AsyncExitStack = ctx["exit_stack"]
@@ -79,6 +91,7 @@ class WorkerSettings:
     functions = [workflow]
     on_startup = startup
     on_shutdown = shutdown
+    on_job_start = on_job_start
 
     redis_settings = RedisSettings.from_dsn(
         os.getenv("REDIS_DSN", "redis://localhost:6379"),

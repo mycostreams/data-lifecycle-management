@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
+from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from .models import Timestep
@@ -19,6 +21,9 @@ class AbstractTimestepRepo(ABC):
     @abstractmethod
     def add(self, timestep: Timestep) -> None: ...
 
+    @abstractmethod
+    async def get(self, id: UUID) -> Timestep | None: ...
+
 
 class TimestempRepo(AbstractTimestepRepo):
 
@@ -27,6 +32,11 @@ class TimestempRepo(AbstractTimestepRepo):
 
     def add(self, timestamp: Timestep) -> None:
         self.session.add(timestamp)
+
+    async def get(self, id: UUID) -> Timestep | None:
+        return await self.session.scalar(
+            select(Timestep).where(Timestep.timestep_id == id),
+        )
 
 
 class AbstractUnitOfWork(ABC):
