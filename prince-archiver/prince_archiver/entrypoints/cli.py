@@ -5,7 +5,9 @@ from typing import Annotated, Optional
 import typer
 
 from prince_archiver.dto import TimestepMeta
-from prince_archiver.utils import make_timestep_directory as _make_timestep_directory
+from prince_archiver.test_utils import (
+    make_timestep_directory as _make_timestep_directory,
+)
 
 app = typer.Typer()
 
