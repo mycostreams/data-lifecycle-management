@@ -1,8 +1,8 @@
 """Init
 
-Revision ID: 35ea6f897530
-Revises:
-Create Date: 2024-04-08 14:17:13.889684
+Revision ID: 92facd817ef9
+Revises: 
+Create Date: 2024-04-18 11:42:54.053106
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "35ea6f897530"
+revision: str = "92facd817ef9"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -28,8 +28,11 @@ def upgrade() -> None:
         sa.Column("archive_name", sa.String(), nullable=False),
         sa.Column("position", sa.Integer(), nullable=False),
         sa.Column("img_count", sa.Integer(), nullable=False),
-        sa.Column("timestamp", sa.DateTime(), nullable=False),
-        sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.Column("timestamp", sa.TIMESTAMP(timezone=True), nullable=False),
+        sa.Column("src_dir", sa.String(), nullable=False),
+        sa.Column("is_active", sa.Boolean(), nullable=True),
+        sa.Column("created_at", sa.TIMESTAMP(timezone=True), nullable=False),
+        sa.Column("updated_at", sa.TIMESTAMP(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint("timestep_id"),
     )
     # ### end Alembic commands ###

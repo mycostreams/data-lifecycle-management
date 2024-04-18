@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from functools import lru_cache, partial
 from pathlib import Path
 from typing import Generator
@@ -7,6 +8,10 @@ import httpx
 from .dto import DirectoryConfig, TimestepDTO, TimestepMeta
 
 DOWNLOAD_URL = "https://vu.data.surfsara.nl/index.php/s/ndI1UoMRwliVYGR/download"
+
+
+def now() -> datetime:
+    return datetime.now(UTC)
 
 
 def parse_timestep_dir(

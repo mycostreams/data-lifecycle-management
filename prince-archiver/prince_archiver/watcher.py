@@ -45,6 +45,7 @@ async def add_to_db(data: TimestepDTO, unit_of_work: AbstractUnitOfWork) -> None
 
     async with unit_of_work:
         timestep = Timestep(
+            src_dir=data.timestep_dir_name,
             **data.model_dump(
                 exclude={
                     "timestep_dir_name",

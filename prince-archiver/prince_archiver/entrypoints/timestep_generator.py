@@ -1,13 +1,22 @@
 import logging
 import os
 import time
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
 from uuid import uuid4
 
 from prince_archiver.dto import TimestepMeta
 from prince_archiver.logging import configure_logging
-from prince_archiver.utils import make_timestep_directory
+from prince_archiver.utils import make_timestep_directory, now
+
+
+def _create_meta() -> TimestepMeta:
+    return TimestepMeta(
+        plate=1,
+        cross_date=date(2000, 1, 1),
+        position=1,
+        timestamp=now(),
+    )
 
 
 def main():
@@ -16,18 +25,9 @@ def main():
 
     data_dir = Path(os.environ.get("DATA_DIR", "/app/data"))
 
-    meta = TimestepMeta(
-        plate=1,
-        cross_date=date(2000, 1, 1),
-        position=1,
-        timestamp=datetime.now(),
-    )
-
     while True:
-
         target_dir = data_dir / uuid4().hex[:6]
-
-        make_timestep_directory(target_dir, meta)
+        make_timestep_directory(target_dir, _create_meta())
 
         logging.info("Directory added: %s", target_dir)
 

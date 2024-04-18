@@ -21,14 +21,13 @@ class TimestepMeta(BaseModel):
     cross_date: date
     position: int
     timestamp: datetime
+    img_count: int = 150
 
 
 class TimestepDTO(TimestepMeta):
 
     timestep_dir_name: str
     img_dir_name: str
-
-    img_count: int = 150
 
     experiment_id: str = Field(default_factory=str)
     archive_name: str = Field(default_factory=str)

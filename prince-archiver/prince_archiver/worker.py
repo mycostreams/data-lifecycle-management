@@ -58,6 +58,10 @@ async def workflow(
     uow: AbstractUnitOfWork = ctx["uow"]
     async with uow:
         await upload_workflow(ctx, data)
+
+        if timestep := await uow.timestamps.get(id=data.timestep_id):
+            timestep.is_active = True
+
         await uow.commit()
 
 
@@ -76,7 +80,7 @@ async def startup(ctx):
     ctx["sessionmaker"] = get_session_maker(str(settings.POSTGRES_DSN))
 
 
-async def on_job_start(ctx):
+async def on_job_start(ctx: dict):
     session_maker: async_sessionmaker[AsyncSession] = ctx["sessionmaker"]
     ctx["uow"] = UnitOfWork(session_maker)
 
