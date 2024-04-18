@@ -3,6 +3,7 @@ version: "3.8"
 x-env-variables: &env-variables
   DATA_DIR: /data/input/
   REDIS_DSN: redis://redis:6379
+  POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
 
 
 services:
@@ -13,7 +14,6 @@ services:
       context: .
     environment: 
       <<: *env-variables
-      POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
     command: ["python", "-m", "prince_archiver.entrypoints.watcher"]
     volumes:
     - input_data:/data/input
@@ -26,17 +26,14 @@ services:
   worker:
     image: prince-archiver
     command: ["arq", "prince_archiver.worker.WorkerSettings"]
-    environment: 
-      <<: *env-variables
-      ARCHIVE_DIR: /data/archive/
+    environment: *env-variables
     volumes:
     - input_data:/data/input
-    - archive_data:/data/archive
     depends_on:
+      db:
+        condition: service_healthy
       redis:
         condition: service_healthy
-    env_file:
-      - .env
 
   redis:
     image: redis:7.2.4
@@ -67,5 +64,4 @@ services:
 
 volumes:
   input_data:
-  archive_data:
   postgres_data:

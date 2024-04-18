@@ -1,69 +1,33 @@
 import asyncio
 import logging
 import os
-import tarfile
-from concurrent.futures import Executor, ProcessPoolExecutor
-from contextlib import AsyncExitStack, asynccontextmanager
+from concurrent.futures import ProcessPoolExecutor
+from contextlib import AsyncExitStack
 from pathlib import Path
-from typing import AsyncGenerator
+from typing import Awaitable, Callable
 
 import aiofiles
 import aiofiles.os
-import cv2
 import s3fs
 from aiofiles.tempfile import TemporaryDirectory
 from arq.connections import RedisSettings
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from .config import WorkerSettings as _WorkerSettings
 from .config import get_worker_settings
+from .db import AbstractUnitOfWork, UnitOfWork, get_session_maker
 from .dto import TimestepDTO
+from .file import acompress, atar, managed_file_system
 from .logging import configure_logging
 
 LOGGER = logging.getLogger(__name__)
 
 
-def compress(src: Path, target: Path):
-    LOGGER.info("Compressing %s", src)
-
-    img = cv2.imread(str(src))
-    cv2.imwrite(
-        str(target),
-        img,
-        params=(cv2.IMWRITE_TIFF_COMPRESSION, 5),
-    )
-
-    LOGGER.info("Compressed %s", src)
-
-
-async def acompress(src: Path, target: Path, executor: Executor):
-    loop = asyncio.get_event_loop()
-    await loop.run_in_executor(executor, compress, src, target)
-
-
-def tar(src: Path, target: Path):
-    LOGGER.info("Tarring %s", src)
-
-    target.parent.mkdir(parents=True, exist_ok=True)
-    with tarfile.open(target, "a") as tar:
-        tar.add(src, arcname=".")
-
-    LOGGER.info("Tarred %s", src)
-
-
-async def atar(src: Path, target: Path, executor: Executor):
-    loop = asyncio.get_event_loop()
-    await loop.run_in_executor(executor, tar, src, target)
-
-
-async def workflow(ctx: dict, input_data: dict):
-
-    data = TimestepDTO.model_validate(input_data)
+async def upload_workflow(ctx: dict, data: TimestepDTO):
 
     settings: _WorkerSettings = ctx["settings"]
     s3: s3fs.S3FileSystem = ctx["s3"]
     pool: ProcessPoolExecutor = ctx["pool"]
-
-    parent_archive_path = settings.ARCHIVE_DIR / data.parent_archive
 
     img_dir = settings.DATA_DIR / data.timestep_dir_name / data.img_dir_name
     files = map(lambda path: img_dir / path, await aiofiles.os.listdir(img_dir))
@@ -78,36 +42,27 @@ async def workflow(ctx: dict, input_data: dict):
         await asyncio.gather(
             *(acompress(file, temp_img_dir / file.name, pool) for file in files),
         )
-
         await atar(temp_img_dir, temp_archive_path, pool)
 
-        await asyncio.gather(
-            atar(temp_archive_path, parent_archive_path, pool),
-            s3._put_file(temp_archive_path, f"{settings.AWS_BUCKET_NAME}/{data.key}"),
-        )
+        await s3._put_file(temp_archive_path, f"{settings.AWS_BUCKET_NAME}/{data.key}")
 
 
-@asynccontextmanager
-async def managed_file_system(
-    settings: _WorkerSettings,
-) -> AsyncGenerator[s3fs.S3FileSystem, None]:
-    client_kwargs = {}
-    if settings.AWS_REGION_NAME:
-        client_kwargs["region_name"] = settings.AWS_REGION_NAME
+async def workflow(
+    ctx: dict,
+    input_data: dict,
+    *,
+    upload_workflow: Callable[[dict, TimestepDTO], Awaitable[None]] = upload_workflow,
+):
+    data = TimestepDTO.model_validate(input_data)
 
-    s3 = s3fs.S3FileSystem(
-        key=settings.AWS_ACCESS_KEY_ID,
-        secret=settings.AWS_SECRET_ACCESS_KEY,
-        endpoint_url=settings.AWS_ENDPOINT_URL,
-        client_kwargs=client_kwargs,
-        asynchronous=True,
-    )
+    uow: AbstractUnitOfWork = ctx["uow"]
+    async with uow:
+        await upload_workflow(ctx, data)
 
-    session = await s3.set_session()
+        if timestep := await uow.timestamps.get(id=data.timestep_id):
+            timestep.is_active = True
 
-    yield s3
-
-    await session.close()
+        await uow.commit()
 
 
 async def startup(ctx):
@@ -122,6 +77,13 @@ async def startup(ctx):
     ctx["pool"] = exit_stack.enter_context(ProcessPoolExecutor())
     ctx["s3"] = await exit_stack.enter_async_context(managed_file_system(settings))
 
+    ctx["sessionmaker"] = get_session_maker(str(settings.POSTGRES_DSN))
+
+
+async def on_job_start(ctx: dict):
+    session_maker: async_sessionmaker[AsyncSession] = ctx["sessionmaker"]
+    ctx["uow"] = UnitOfWork(session_maker)
+
 
 async def shutdown(ctx: dict):
     exit_stack: AsyncExitStack = ctx["exit_stack"]
@@ -133,6 +95,7 @@ class WorkerSettings:
     functions = [workflow]
     on_startup = startup
     on_shutdown = shutdown
+    on_job_start = on_job_start
 
     redis_settings = RedisSettings.from_dsn(
         os.getenv("REDIS_DSN", "redis://localhost:6379"),

@@ -13,7 +13,7 @@ from prince_archiver.watcher import (
     ArqHandler,
     TimestepHandler,
     add_to_db,
-    filter_on_final_image,
+    filter_on_param_file,
 )
 
 
@@ -36,10 +36,14 @@ async def main(*, _settings: WatcherSettings | None = None):
 
     logging.info("Watching %s", settings.DATA_DIR)
 
-    watcher = awatch(settings.DATA_DIR, watch_filter=filter_on_final_image)
+    watcher = awatch(
+        settings.DATA_DIR,
+        watch_filter=filter_on_param_file,
+        force_polling=settings.WATCHFILES_FORCE_POLLING,
+    )
     async for changes in watcher:
         for _, filepath in changes:
-            await handler(Path(filepath).parent.parent)
+            await handler(Path(filepath).parent)
 
 
 if __name__ == "__main__":

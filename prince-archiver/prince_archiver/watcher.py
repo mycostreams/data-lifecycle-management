@@ -16,8 +16,8 @@ LOGGER = logging.getLogger(__name__)
 HandlerT = Callable[[TimestepDTO, AbstractUnitOfWork], Awaitable[None]]
 
 
-def filter_on_final_image(change: Change, path: str) -> bool:
-    return change == Change.added and Path(path).name == "Img_r10_c15.tif"
+def filter_on_param_file(change: Change, path: str) -> bool:
+    return change == Change.added and Path(path).name == "param.json"
 
 
 class TimestepHandler:
@@ -45,6 +45,7 @@ async def add_to_db(data: TimestepDTO, unit_of_work: AbstractUnitOfWork) -> None
 
     async with unit_of_work:
         timestep = Timestep(
+            src_dir=data.timestep_dir_name,
             **data.model_dump(
                 exclude={
                     "timestep_dir_name",

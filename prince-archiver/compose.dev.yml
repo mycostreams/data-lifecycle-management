@@ -25,6 +25,9 @@ services:
     volumes:
     - ./prince_archiver:/app/prince_archiver
     - ./alembic/:/app/alembic
+    depends_on:
+      s3:
+        condition: service_healthy
 
   s3:
     image: adobe/s3mock:3.1.0
@@ -34,3 +37,8 @@ services:
     environment:
       - initialBuckets=mycostreams
       - validKmsKeys=arn:aws:kms:eu-central-1:1234567890:key/aws-access-key-id
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090"]
+      interval: 5s
+      timeout: 5s
+      retries: 5

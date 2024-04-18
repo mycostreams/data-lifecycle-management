@@ -2,11 +2,16 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy.types import Uuid
+from sqlalchemy.types import TIMESTAMP, Uuid
+
+from .utils import now
 
 
 class Base(DeclarativeBase):
-    pass
+
+    type_annotation_map = {
+        datetime: TIMESTAMP(timezone=True),
+    }
 
 
 class Timestep(Base):
@@ -19,5 +24,8 @@ class Timestep(Base):
     position: Mapped[int]
     img_count: Mapped[int]
     timestamp: Mapped[datetime]
+    src_dir: Mapped[str]
+    is_active: Mapped[bool | None] = mapped_column(default=None)
 
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
+    created_at: Mapped[datetime] = mapped_column(default=now)
+    updated_at: Mapped[datetime] = mapped_column(default=now, onupdate=now)

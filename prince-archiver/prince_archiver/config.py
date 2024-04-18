@@ -15,6 +15,7 @@ sentry_sdk.init(
 class CommonSettings(BaseSettings):
 
     REDIS_DSN: RedisDsn
+    POSTGRES_DSN: PostgresDsn
 
     DATA_DIR: Path
 
@@ -27,7 +28,7 @@ class CommonSettings(BaseSettings):
 
 class WatcherSettings(CommonSettings):
 
-    POSTGRES_DSN: PostgresDsn
+    WATCHFILES_FORCE_POLLING: bool | None = None
 
 
 class WorkerSettings(CommonSettings):
@@ -37,8 +38,6 @@ class WorkerSettings(CommonSettings):
     AWS_BUCKET_NAME: str
     AWS_ENDPOINT_URL: str | None = None
     AWS_REGION_NAME: str | None = None
-
-    ARCHIVE_DIR: Path
 
 
 @lru_cache
