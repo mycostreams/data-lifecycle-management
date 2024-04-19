@@ -18,7 +18,13 @@ HandlerT = Callable[[TimestepDTO, AbstractUnitOfWork], Awaitable[None]]
 
 
 def filter_on_param_file(change: Change, path: str) -> bool:
-    return change == Change.added and Path(path).name == "param.json"
+    path_obj = Path(path)
+
+    is_added = change == Change.added
+    is_param_file = path_obj.name == "param.json"
+    is_multiple = lambda: (int(path_obj.parent.name[-2:]) % 5) == 0
+
+    return is_added and is_param_file and is_multiple()
 
 
 class TimestepHandler:
