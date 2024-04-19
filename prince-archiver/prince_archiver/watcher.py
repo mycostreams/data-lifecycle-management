@@ -1,4 +1,5 @@
 import logging
+from datetime import UTC
 from pathlib import Path
 from typing import Awaitable, Callable
 
@@ -46,12 +47,14 @@ async def add_to_db(data: TimestepDTO, unit_of_work: AbstractUnitOfWork) -> None
     async with unit_of_work:
         timestep = Timestep(
             src_dir=data.timestep_dir_name,
+            timestamp=data.timestamp.astimezone(UTC),
             **data.model_dump(
                 exclude={
-                    "timestep_dir_name",
+                    "cross_date",
                     "img_dir_name",
                     "plate",
-                    "cross_date",
+                    "timestamp",
+                    "timestep_dir_name",
                 },
             ),
         )

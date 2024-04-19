@@ -8,7 +8,10 @@ services:
       - WATCHFILES_FORCE_POLLING=true
     labels:
       com.datadoghq.ad.logs: '[{"source": "watcher", "service": "watcher"}]'
+    volumes:
+      - cifs_mount:/data/input/
     env_file:
+      - .env
       - .env.prod
   
   worker:
@@ -16,7 +19,10 @@ services:
       - SENTRY_DSN
     labels:
       com.datadoghq.ad.logs: '[{"source": "worker", "service": "worker"}]'
+    volumes:
+      - cifs_mount:/data/input/
     env_file:
+      - .env
       - .env.prod
 
   datadog:
@@ -34,9 +40,8 @@ services:
 
 
 volumes:
-  input_data: 
+  cifs_mount: 
     driver_opts:
       type: cifs
       device: //prince.amolf.nl/Data/Prince2/Images/
       o: username=${AMOLF_USERNAME},password=${AMOLF_PASSWORD}
-
