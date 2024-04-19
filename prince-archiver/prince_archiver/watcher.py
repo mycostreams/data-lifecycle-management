@@ -22,7 +22,7 @@ def filter_on_param_file(change: Change, path: str) -> bool:
 
     is_added = change == Change.added
     is_param_file = path_obj.name == "param.json"
-    is_multiple = lambda: (int(path_obj.parent.name[-2:]) % 5) == 0
+    is_multiple = lambda: (int(path_obj.parent.name[-2:]) % 5) == 0  # noqa: E731
 
     return is_added and is_param_file and is_multiple()
 

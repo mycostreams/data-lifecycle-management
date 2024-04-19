@@ -43,7 +43,7 @@ async def upload_workflow(ctx: dict, data: TimestepDTO):
         await asyncio.gather(
             *(acompress(file, temp_img_dir / file.name, pool) for file in files),
         )
-        
+
         LOGGER.info("Tarring")
         await atar(temp_img_dir, temp_archive_path, pool)
 
