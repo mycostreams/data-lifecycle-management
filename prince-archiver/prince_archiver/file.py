@@ -15,7 +15,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def compress(src: Path, target: Path):
-    LOGGER.info("Compressing %s", src)
+    LOGGER.debug("Compressing %s", src)
 
     img = cv2.imread(str(src))
     cv2.imwrite(
@@ -24,7 +24,7 @@ def compress(src: Path, target: Path):
         params=(cv2.IMWRITE_TIFF_COMPRESSION, 5),
     )
 
-    LOGGER.info("Compressed %s", src)
+    LOGGER.debug("Compressed %s", src)
 
 
 async def acompress(src: Path, target: Path, executor: Executor):
@@ -33,13 +33,13 @@ async def acompress(src: Path, target: Path, executor: Executor):
 
 
 def tar(src: Path, target: Path):
-    LOGGER.info("Tarring %s", src)
+    LOGGER.debug("Tarring %s", src)
 
     target.parent.mkdir(parents=True, exist_ok=True)
     with tarfile.open(target, "a") as tar:
         tar.add(src, arcname=".")
 
-    LOGGER.info("Tarred %s", src)
+    LOGGER.debug("Tarred %s", src)
 
 
 async def atar(src: Path, target: Path, executor: Executor):
@@ -61,6 +61,7 @@ async def managed_file_system(
         endpoint_url=settings.AWS_ENDPOINT_URL,
         client_kwargs=client_kwargs,
         asynchronous=True,
+        max_concurrency=settings.UPLOAD_MAX_CONCURRENCY,
     )
 
     session = await s3.set_session()

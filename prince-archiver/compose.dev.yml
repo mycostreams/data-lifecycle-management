@@ -7,14 +7,15 @@ services:
     environment:
       - DATA_DIR=/data/input
     volumes:
-      - input_data:/data/input
       - ./prince_archiver:/app/prince_archiver
       - ./alembic/:/app/alembic
+      - input_data:/data/input
 
   watcher:
     volumes:
-    - ./prince_archiver:/app/prince_archiver
-    - ./alembic:/app/alembic
+      - ./prince_archiver:/app/prince_archiver
+      - ./alembic:/app/alembic
+      - input_data:/data/input
 
   worker:
     environment:
@@ -23,8 +24,9 @@ services:
       - AWS_SECRET_ACCESS_KEY=aws-access-key-id
       - AWS_ENDPOINT_URL=http://s3:9090
     volumes:
-    - ./prince_archiver:/app/prince_archiver
-    - ./alembic/:/app/alembic
+      - ./prince_archiver:/app/prince_archiver
+      - ./alembic/:/app/alembic
+      - input_data:/data/input
     depends_on:
       s3:
         condition: service_healthy
@@ -42,3 +44,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+
+volumes:
+  input_data:

@@ -1,4 +1,5 @@
 import logging
+from datetime import UTC
 from pathlib import Path
 from typing import Awaitable, Callable
 
@@ -17,7 +18,13 @@ HandlerT = Callable[[TimestepDTO, AbstractUnitOfWork], Awaitable[None]]
 
 
 def filter_on_param_file(change: Change, path: str) -> bool:
-    return change == Change.added and Path(path).name == "param.json"
+    path_obj = Path(path)
+
+    is_added = change == Change.added
+    is_param_file = path_obj.name == "param.json"
+    is_multiple = lambda: (int(path_obj.parent.name[-2:]) % 5) == 0  # noqa: E731
+
+    return is_added and is_param_file and is_multiple()
 
 
 class TimestepHandler:
@@ -46,12 +53,14 @@ async def add_to_db(data: TimestepDTO, unit_of_work: AbstractUnitOfWork) -> None
     async with unit_of_work:
         timestep = Timestep(
             src_dir=data.timestep_dir_name,
+            timestamp=data.timestamp.astimezone(UTC),
             **data.model_dump(
                 exclude={
-                    "timestep_dir_name",
+                    "cross_date",
                     "img_dir_name",
                     "plate",
-                    "cross_date",
+                    "timestamp",
+                    "timestep_dir_name",
                 },
             ),
         )

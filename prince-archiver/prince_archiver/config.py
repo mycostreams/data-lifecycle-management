@@ -39,6 +39,8 @@ class WorkerSettings(CommonSettings):
     AWS_ENDPOINT_URL: str | None = None
     AWS_REGION_NAME: str | None = None
 
+    UPLOAD_MAX_CONCURRENCY: int = 5
+
 
 @lru_cache
 def get_worker_settings() -> WorkerSettings:

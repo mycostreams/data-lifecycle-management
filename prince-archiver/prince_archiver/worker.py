@@ -39,11 +39,15 @@ async def upload_workflow(ctx: dict, data: TimestepDTO):
         temp_img_dir, temp_archive_dir = map(Path, temp_dirs)
         temp_archive_path = temp_archive_dir / data.archive_name
 
+        LOGGER.info("Compressing")
         await asyncio.gather(
             *(acompress(file, temp_img_dir / file.name, pool) for file in files),
         )
+
+        LOGGER.info("Tarring")
         await atar(temp_img_dir, temp_archive_path, pool)
 
+        LOGGER.info("Uploading")
         await s3._put_file(temp_archive_path, f"{settings.AWS_BUCKET_NAME}/{data.key}")
 
 
