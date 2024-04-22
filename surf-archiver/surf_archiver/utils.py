@@ -2,11 +2,11 @@ import asyncio
 from collections import defaultdict
 from concurrent.futures import Executor, ProcessPoolExecutor
 from contextlib import AsyncExitStack, asynccontextmanager
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from tarfile import TarFile
 from tempfile import TemporaryDirectory
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Union
 
 from s3fs import S3FileSystem
 
@@ -34,11 +34,11 @@ async def managed_file_system() -> AsyncGenerator[S3FileSystem, None]:
 
 
 async def run_archiving(
-    date: date,
+    date_: Union[date, datetime],
     bucket_name: str,
     target_dir: Path,
 ):
-    date_str = date.strftime("%Y%m%d")
+    date_str = date_.strftime("%Y%m%d")
 
     async with AsyncExitStack() as stack:
         temp_dir = Path(stack.enter_context(TemporaryDirectory()))
