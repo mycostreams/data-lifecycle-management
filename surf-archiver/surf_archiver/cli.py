@@ -13,6 +13,11 @@ DEFAULT_DIR = Path.home() / "prince"
 
 
 @app.command()
+def now():
+    typer.echo(datetime.now().isoformat())
+
+
+@app.command()
 def archive(
     date: datetime,
     bucket_name: str = DEFAULT_BUCKET_NAME,
