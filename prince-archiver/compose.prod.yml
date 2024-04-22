@@ -7,7 +7,7 @@ services:
       - SENTRY_DSN=${SENTRY_DSN}
       - WATCHFILES_FORCE_POLLING=true
     labels:
-      com.datadoghq.ad.logs: '[{"source": "watcher", "service": "watcher"}]'
+      logging: "promtail"
     volumes:
       - cifs_mount:/data/input/
     env_file:
@@ -19,7 +19,7 @@ services:
     environment:
       - SENTRY_DSN=${SENTRY_DSN}
     labels:
-      com.datadoghq.ad.logs: '[{"source": "worker", "service": "worker"}]'
+      logging: "promtail"
     volumes:
       - cifs_mount:/data/input/
     env_file:
@@ -27,18 +27,17 @@ services:
       - .env.prod
     restart: always
 
-  datadog:
-    image: datadog/agent:latest
-    pid: host
+  promtail:
+    image:  grafana/promtail:latest
+    container_name: promtail
     environment:
-     - DD_API_KEY=${DD_API_KEY}
-     - DD_SITE=datadoghq.eu
-     - DD_LOGS_ENABLED=true
+      - LOKI_USERNAME=${LOKI_USERNAME}
+      - LOKI_API_TOKEN=${LOKI_API_TOKEN}
     volumes:
-     - /var/run/docker.sock:/var/run/docker.sock
-     - /proc/:/host/proc/:ro
-     - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
-     - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./config/promtail.yaml:/etc/promtail/docker-config.yaml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/docker-config.yaml -config.expand-env=true
 
 
 volumes:
