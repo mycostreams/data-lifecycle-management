@@ -14,11 +14,6 @@ sentry_sdk.init(
 
 class CommonSettings(BaseSettings):
 
-    REDIS_DSN: RedisDsn
-    POSTGRES_DSN: PostgresDsn
-
-    DATA_DIR: Path
-
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -28,10 +23,20 @@ class CommonSettings(BaseSettings):
 
 class WatcherSettings(CommonSettings):
 
+    REDIS_DSN: RedisDsn
+    POSTGRES_DSN: PostgresDsn
+
+    DATA_DIR: Path
+
     WATCHFILES_FORCE_POLLING: bool | None = None
 
 
 class WorkerSettings(CommonSettings):
+
+    REDIS_DSN: RedisDsn
+    POSTGRES_DSN: PostgresDsn
+
+    DATA_DIR: Path
 
     AWS_ACCESS_KEY_ID: str
     AWS_SECRET_ACCESS_KEY: str
@@ -40,6 +45,15 @@ class WorkerSettings(CommonSettings):
     AWS_REGION_NAME: str | None = None
 
     UPLOAD_MAX_CONCURRENCY: int = 5
+
+
+class ArchiveWorkerSettings(CommonSettings):
+
+    REDIS_DSN: RedisDsn
+    AWS_BUCKET_NAME: str
+
+    SURF_USERNAME: str
+    SURF_PASSWORD: str
 
 
 @lru_cache
