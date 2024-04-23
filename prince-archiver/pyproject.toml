@@ -21,6 +21,7 @@ sqlalchemy = {extras = ["postgresql-asyncpg"], version = "^2.0.29"}
 typer = "^0.9.0"
 watchfiles = "^0.21.0"
 sentry-sdk = {extras = ["celery"], version = "^1.43.0"}
+asyncssh = "^2.14.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.1.1"

@@ -27,6 +27,20 @@ services:
       - .env.prod
     restart: always
 
+  cron-worker:
+    image: prince-archiver
+    command: ["arq", "prince_archiver.data_archive.WorkerSettings"]
+    environment:
+      - REDIS_DSN=redis://redis:6379
+    labels:
+      logging: "promtail"
+    env_file:
+      - .env
+      - .env.prod
+    depends_on:
+      redis:
+        condition: service_healthy
+
   promtail:
     image:  grafana/promtail:latest
     container_name: promtail
