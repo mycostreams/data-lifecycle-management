@@ -1,7 +1,4 @@
-version: "3.8"
-
 services:
-
   watcher:
     environment:
       - SENTRY_DSN=${SENTRY_DSN}
@@ -13,7 +10,9 @@ services:
     env_file:
       - .env
       - .env.prod
-    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
   
   worker:
     environment:
@@ -25,7 +24,10 @@ services:
     env_file:
       - .env
       - .env.prod
-    restart: always
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
 
   cron-worker:
     image: prince-archiver
@@ -40,6 +42,9 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+    deploy:
+      restart_policy:
+        condition: on-failure
 
   promtail:
     image:  grafana/promtail:latest
