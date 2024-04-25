@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   prince:
     image: prince-archiver

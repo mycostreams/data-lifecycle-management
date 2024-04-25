@@ -97,6 +97,7 @@ async def shutdown(ctx: dict):
 class WorkerSettings:
 
     functions = [workflow]
+    max_jobs = 2
     on_startup = startup
     on_shutdown = shutdown
     on_job_start = on_job_start
