@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
+from datetime import date
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import joinedload
+from sqlalchemy.sql import Select
 
 from .models import Timestep
 
@@ -25,8 +27,11 @@ class AbstractTimestepRepo(ABC):
     @abstractmethod
     async def get(self, id: UUID) -> Timestep | None: ...
 
+    @abstractmethod
+    async def get_by_date(self, date_: date) -> list[Timestep]: ...
 
-class TimestempRepo(AbstractTimestepRepo):
+
+class TimestepRepo(AbstractTimestepRepo):
 
     def __init__(self, session: AsyncSession):
         self.session = session
@@ -36,12 +41,20 @@ class TimestempRepo(AbstractTimestepRepo):
 
     async def get(self, id: UUID) -> Timestep | None:
         return await self.session.scalar(
-            select(Timestep)
-            .options(
-                joinedload(Timestep.data_archive_entry),
-                joinedload(Timestep.object_store_entry),
-            )
-            .where(Timestep.timestep_id == id),
+            self._base_query().where(Timestep.timestep_id == id),
+        )
+
+    async def get_by_date(self, date_: date) -> list[Timestep]:
+        result = await self.session.scalars(
+            self._base_query().where(func.date(Timestep.timestamp) == date_),
+        )
+        return list(result.all())
+
+    @staticmethod
+    def _base_query() -> Select[tuple[Timestep]]:
+        return select(Timestep).options(
+            joinedload(Timestep.data_archive_entry),
+            joinedload(Timestep.object_store_entry),
         )
 
 
@@ -67,14 +80,14 @@ class UnitOfWork(AbstractUnitOfWork):
 
     session: AsyncSession
 
-    timestamps: TimestempRepo
+    timestamps: TimestepRepo
 
     def __init__(self, session_maker: async_sessionmaker[AsyncSession]):
         self.session_maker = session_maker
 
     async def __aenter__(self) -> "UnitOfWork":
         self.session = await self.session_maker().__aenter__()
-        self.timestamps = TimestempRepo(self.session)
+        self.timestamps = TimestepRepo(self.session)
         return self
 
     async def __aexit__(self, exc_type, exc_value, exc_traceback):
