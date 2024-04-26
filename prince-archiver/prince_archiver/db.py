@@ -3,6 +3,7 @@ from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import joinedload
 
 from .models import Timestep
 
@@ -35,7 +36,12 @@ class TimestempRepo(AbstractTimestepRepo):
 
     async def get(self, id: UUID) -> Timestep | None:
         return await self.session.scalar(
-            select(Timestep).where(Timestep.timestep_id == id),
+            select(Timestep)
+            .options(
+                joinedload(Timestep.data_archive_entry),
+                joinedload(Timestep.object_store_entry),
+            )
+            .where(Timestep.timestep_id == id),
         )
 
 

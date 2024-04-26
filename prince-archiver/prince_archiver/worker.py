@@ -3,6 +3,8 @@ import logging
 import os
 from concurrent.futures import ProcessPoolExecutor
 from contextlib import AsyncExitStack
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Awaitable, Callable
 
@@ -19,12 +21,20 @@ from .db import AbstractUnitOfWork, UnitOfWork, get_session_maker
 from .dto import TimestepDTO
 from .file import acompress, atar, managed_file_system
 from .logging import configure_logging
+from .models import ObjectStoreEntry
+from .utils import now
 
 LOGGER = logging.getLogger(__name__)
 
 
-async def upload_workflow(ctx: dict, data: TimestepDTO):
+@dataclass
+class Upload:
+    bucket: str
+    key: str
+    expires_at: datetime = field(default_factory=lambda: now() + timedelta(days=30))
 
+
+async def upload_workflow(ctx: dict, data: TimestepDTO) -> Upload:
     settings: _WorkerSettings = ctx["settings"]
     s3: s3fs.S3FileSystem = ctx["s3"]
     pool: ProcessPoolExecutor = ctx["pool"]
@@ -50,22 +60,21 @@ async def upload_workflow(ctx: dict, data: TimestepDTO):
         LOGGER.info("Uploading")
         await s3._put_file(temp_archive_path, f"{settings.AWS_BUCKET_NAME}/{data.key}")
 
+    return Upload(bucket=settings.AWS_BUCKET_NAME, key=data.key)
+
 
 async def workflow(
     ctx: dict,
     input_data: dict,
     *,
-    upload_workflow: Callable[[dict, TimestepDTO], Awaitable[None]] = upload_workflow,
+    upload_workflow: Callable[[dict, TimestepDTO], Awaitable[Upload]] = upload_workflow,
 ):
     data = TimestepDTO.model_validate(input_data)
-
     uow: AbstractUnitOfWork = ctx["uow"]
     async with uow:
-        await upload_workflow(ctx, data)
-
+        upload = await upload_workflow(ctx, data)
         if timestep := await uow.timestamps.get(id=data.timestep_id):
-            timestep.is_active = True
-
+            timestep.object_store_entry = ObjectStoreEntry(**upload.__dict__)
         await uow.commit()
 
 
