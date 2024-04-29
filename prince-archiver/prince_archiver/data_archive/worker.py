@@ -49,8 +49,9 @@ async def startup(ctx: dict):
 
     ctx["archiver"] = SurfArchiver(
         settings=Settings(
-            settings.SURF_USERNAME,
-            settings.SURF_PASSWORD,
+            username=settings.SURF_USERNAME,
+            password=settings.SURF_PASSWORD,
+            host=settings.DATA_ARCHIVE_HOST,
         ),
     )
 

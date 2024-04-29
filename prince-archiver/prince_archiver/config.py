@@ -51,6 +51,8 @@ class ArchiveWorkerSettings(CommonSettings):
     SURF_USERNAME: str
     SURF_PASSWORD: str
 
+    DATA_ARCHIVE_HOST: str = "archive.surfsara.nl"
+
 
 @lru_cache
 def get_worker_settings() -> WorkerSettings:

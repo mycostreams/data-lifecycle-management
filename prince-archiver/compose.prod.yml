@@ -33,6 +33,7 @@ services:
     image: prince-archiver
     command: ["arq", "prince_archiver.data_archive.WorkerSettings"]
     environment:
+      - DATA_ARCHIVE_HOST=archive.surfsara.nl
       - POSTGRES_DSN=postgresql+asyncpg://postgres:postgres@db:5432/postgres
       - REDIS_DSN=redis://redis:6379
     labels:
