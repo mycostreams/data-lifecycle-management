@@ -49,7 +49,7 @@ class AbstractArchiver(ABC):
 class SurfArchiver(AbstractArchiver):
 
     # COMMAND = "surf-archiver archive {date}"
-    COMMAND = "surf-archiver now"
+    COMMAND = "PATH=$PATH:$HOME/.local/bin; surf-archiver archive {date}"
 
     def __init__(self, settings: Settings):
         self.settings = settings
@@ -62,7 +62,7 @@ class SurfArchiver(AbstractArchiver):
         archives: list[Archive] = []
 
         type_adapter = TypeAdapter(list[SurfArchiverSchema])
-        parsed_data = type_adapter.validate_json(raw_data)
+        parsed_data = type_adapter.validate_json(raw_data.stdout)
         for item in parsed_data:
             entries = []
             for path in map(Path, item.src_keys):
