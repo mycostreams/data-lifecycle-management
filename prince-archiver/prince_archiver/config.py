@@ -14,6 +14,9 @@ sentry_sdk.init(
 
 class CommonSettings(BaseSettings):
 
+    REDIS_DSN: RedisDsn
+    POSTGRES_DSN: PostgresDsn
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -23,18 +26,12 @@ class CommonSettings(BaseSettings):
 
 class WatcherSettings(CommonSettings):
 
-    REDIS_DSN: RedisDsn
-    POSTGRES_DSN: PostgresDsn
-
     DATA_DIR: Path
 
     WATCHFILES_FORCE_POLLING: bool | None = None
 
 
 class WorkerSettings(CommonSettings):
-
-    REDIS_DSN: RedisDsn
-    POSTGRES_DSN: PostgresDsn
 
     DATA_DIR: Path
 
@@ -49,11 +46,12 @@ class WorkerSettings(CommonSettings):
 
 class ArchiveWorkerSettings(CommonSettings):
 
-    REDIS_DSN: RedisDsn
     AWS_BUCKET_NAME: str
 
     SURF_USERNAME: str
     SURF_PASSWORD: str
+
+    DATA_ARCHIVE_HOST: str = "archive.surfsara.nl"
 
 
 @lru_cache

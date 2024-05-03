@@ -22,9 +22,8 @@ def filter_on_param_file(change: Change, path: str) -> bool:
 
     is_added = change == Change.added
     is_param_file = path_obj.name == "param.json"
-    is_multiple = lambda: (int(path_obj.parent.name[-2:]) % 5) == 0  # noqa: E731
 
-    return is_added and is_param_file and is_multiple()
+    return is_added and is_param_file
 
 
 class TimestepHandler:
@@ -49,20 +48,14 @@ class TimestepHandler:
 
 async def add_to_db(data: TimestepDTO, unit_of_work: AbstractUnitOfWork) -> None:
     LOGGER.info("Saving %s to db", data.key)
-
     async with unit_of_work:
         timestep = Timestep(
-            src_dir=data.timestep_dir_name,
+            local_dir=data.timestep_dir_name,
+            img_count=data.img_count,
             timestamp=data.timestamp.astimezone(UTC),
-            **data.model_dump(
-                exclude={
-                    "cross_date",
-                    "img_dir_name",
-                    "plate",
-                    "timestamp",
-                    "timestep_dir_name",
-                },
-            ),
+            position=data.position,
+            timestep_id=data.timestep_id,
+            experiment_id=data.experiment_id,
         )
         unit_of_work.timestamps.add(timestep)
         await unit_of_work.commit()
