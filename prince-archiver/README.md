@@ -1,6 +1,6 @@
 # Introduction
 
-Demo code for getting 
+Demo code for identifiying 
 
 
 # Input directory structure
@@ -14,6 +14,19 @@ The input directory structure is assumed to have the form:
 |   |-- param.json
 ```
 
+The `param.json` file is assumed to be the the last file created within a directory
+and that it has the following contents:
+```
+{
+
+    timestep_id: UUID
+    plate: int
+    cross_date: date
+    position: int
+    timestamp: datetime
+    img_count: int
+}
+```
 
 # Running via docker compose
 
@@ -45,13 +58,13 @@ Both the `watcher` and `prince` containers have shared volumes. This allows the
 Get rabbitmq and postgres running
 
 ```bash
-docker compose -f compose.yml -f compose.dev.yml up db rabbitmq s3
+docker compose -f compose.yml -f compose.dev.yml up db redis s3
 ```
 
 In a seperate terminal, run the worker:
 
 ```bash
-poetry run celery -A prince_archiver.celery worker -l INFO
+poetry run arq prince_archiver.worker.WorkerSettings
 ```
 
 Start the file watcher:
