@@ -36,7 +36,7 @@ types-pyyaml = "^6.0.12.12"
 
 [tool.poetry.scripts]
 cli = "prince_archiver.entrypoints.cli:app"
-watch = "prince_archiver.entrypoints.watcher:main"
+watch = "prince_archiver.watcher.main:main"
 
 [tool.isort]
 profile = "black"

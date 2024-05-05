@@ -12,7 +12,7 @@ services:
       context: .
     environment: 
       <<: *env-variables
-    command: ["python", "-m", "prince_archiver.entrypoints.watcher"]
+    command: ["python", "-m", "prince_archiver.watcher.main"]
     depends_on:
       db:
         condition: service_healthy
@@ -21,7 +21,7 @@ services:
 
   worker:
     image: prince-archiver
-    command: ["arq", "prince_archiver.worker.WorkerSettings"]
+    command: ["arq", "prince_archiver.upload_worker.WorkerSettings"]
     environment: *env-variables
     depends_on:
       db:

@@ -8,13 +8,13 @@ from watchfiles import awatch
 
 from prince_archiver.config import WatcherSettings
 from prince_archiver.db import UnitOfWork, get_session_maker
+from prince_archiver.dto import TimestepDTO
 from prince_archiver.logging import configure_logging
-from prince_archiver.watcher import (
-    ArqHandler,
-    TimestepHandler,
-    add_to_db,
-    filter_on_param_file,
-)
+from prince_archiver.messagebus import MessageBus
+from prince_archiver.utils import parse_timestep_dir
+
+from .handlers import ArqHandler, add_to_db
+from .utils import filter_on_param_file
 
 
 async def main(*, _settings: WatcherSettings | None = None):
@@ -27,9 +27,9 @@ async def main(*, _settings: WatcherSettings | None = None):
         RedisSettings.from_dsn(str(settings.REDIS_DSN)),
     )
 
-    handler = TimestepHandler(
-        handlers=[add_to_db, ArqHandler(redis)],
-        unit_of_work=UnitOfWork(
+    messagebus = MessageBus(
+        handlers={TimestepDTO: [add_to_db, ArqHandler(redis)]},
+        uow=UnitOfWork(
             get_session_maker(str(settings.POSTGRES_DSN)),
         ),
     )
@@ -43,7 +43,8 @@ async def main(*, _settings: WatcherSettings | None = None):
     )
     async for changes in watcher:
         for _, filepath in changes:
-            await handler(Path(filepath).parent)
+            data = parse_timestep_dir(Path(filepath).parent)
+            await messagebus.handle(data)
 
 
 if __name__ == "__main__":
