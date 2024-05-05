@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from prince_archiver.utils import now
 
 
-class Upload(BaseModel):
+class UploadDTO(BaseModel):
 
     timestep_id: UUID
     bucket: str

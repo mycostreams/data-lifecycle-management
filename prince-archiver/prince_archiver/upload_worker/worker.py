@@ -13,7 +13,7 @@ from prince_archiver.file import managed_file_system
 from prince_archiver.logging import configure_logging
 from prince_archiver.messagebus import MessageBus
 
-from .dto import Upload
+from .dto import UploadDTO
 from .handlers import UploadHandler, add_upload_to_db
 
 LOGGER = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ async def startup(ctx):
     def _message_bus_factory():
         return MessageBus(
             handlers={
-                Upload: [add_upload_to_db],
+                UploadDTO: [add_upload_to_db],
                 TimestepDTO: [
                     UploadHandler(
                         s3=s3,

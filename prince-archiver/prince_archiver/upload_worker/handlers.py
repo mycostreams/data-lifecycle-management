@@ -15,7 +15,7 @@ from prince_archiver.file import acompress, atar
 from prince_archiver.messagebus import AbstractHandler
 from prince_archiver.models import ObjectStoreEntry
 
-from .dto import Upload
+from .dto import UploadDTO
 
 LOGGER = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class UploadHandler(AbstractHandler[TimestepDTO]):
             )
 
             uow.add_message(
-                Upload(
+                UploadDTO(
                     timestep_id=message.timestep_id,
                     bucket=self.bucket_name,
                     key=message.key,
@@ -82,7 +82,7 @@ class UploadHandler(AbstractHandler[TimestepDTO]):
 
 
 async def add_upload_to_db(
-    message: Upload,
+    message: UploadDTO,
     uow: AbstractUnitOfWork,
 ):
     async with uow:
