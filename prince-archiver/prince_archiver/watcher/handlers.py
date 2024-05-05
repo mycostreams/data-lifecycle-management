@@ -11,9 +11,9 @@ from prince_archiver.models import Timestep
 LOGGER = logging.getLogger(__name__)
 
 
-async def add_to_db(message: TimestepDTO, unit_of_work: AbstractUnitOfWork) -> None:
+async def add_to_db(message: TimestepDTO, uow: AbstractUnitOfWork) -> None:
     LOGGER.info("Saving %s to db", message.key)
-    async with unit_of_work:
+    async with uow:
         timestep = Timestep(
             local_dir=message.timestep_dir_name,
             img_count=message.img_count,
@@ -22,8 +22,8 @@ async def add_to_db(message: TimestepDTO, unit_of_work: AbstractUnitOfWork) -> N
             timestep_id=message.timestep_id,
             experiment_id=message.experiment_id,
         )
-        unit_of_work.timestamps.add(timestep)
-        await unit_of_work.commit()
+        uow.timestamps.add(timestep)
+        await uow.commit()
 
 
 class ArqHandler(AbstractHandler[TimestepDTO]):

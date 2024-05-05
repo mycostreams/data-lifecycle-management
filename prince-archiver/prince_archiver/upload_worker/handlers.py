@@ -2,6 +2,7 @@ import asyncio
 import logging
 from contextlib import AsyncExitStack, asynccontextmanager
 from pathlib import Path
+from typing import AsyncGenerator
 
 import aiofiles
 import aiofiles.os
@@ -33,46 +34,51 @@ class UploadHandler(AbstractHandler[TimestepDTO]):
         self.pool = pool
         self.base_dir = base_dir
 
-    async def __call__(self, message: TimestepDTO, unit_of_work: AbstractUnitOfWork):
-        src_img_dir = self.base_dir / message.timestep_dir_name / message.img_dir_name
+    async def __call__(self, message: TimestepDTO, uow: AbstractUnitOfWork):
         async with (
-            unit_of_work,
-            self.get_temp_archive(src_img_dir, message.archive_name) as path
+            uow,
+            self.get_temp_archive(message) as temp_archive_path,
         ):
-            await self.s3._put_file(path, f"{self.bucket_name}/{message.key}")
-            unit_of_work.add_message(
+            await self.s3._put_file(
+                temp_archive_path,
+                f"{self.bucket_name}/{message.key}",
+            )
+
+            uow.add_message(
                 Upload(
                     timestep_id=message.timestep_id,
                     bucket=self.bucket_name,
                     key=message.key,
                 )
             )
-            await unit_of_work.commit()
+            await uow.commit()
 
     @asynccontextmanager
-    async def get_temp_archive(self, src_dir: Path, target_archive: str):
-
-        files = map(lambda path: src_dir / path, await aiofiles.os.listdir(src_dir))
+    async def get_temp_archive(
+        self, message: TimestepDTO
+    ) -> AsyncGenerator[Path, None]:
+        src_dir = self.base_dir / message.timestep_dir_name / message.img_dir_name
 
         async with AsyncExitStack() as stack:
             temp_dirs = await asyncio.gather(
                 *(stack.enter_async_context(TemporaryDirectory()) for _ in range(2)),
             )
             temp_img_dir, temp_archive_dir = map(Path, temp_dirs)
-            temp_archive_path = temp_archive_dir / target_archive
+            temp_archive_path = temp_archive_dir / message.archive_name
 
-            LOGGER.info("Compressing")
-            await asyncio.gather(
-                *(
-                    acompress(file, temp_img_dir / file.name, self.pool)
-                    for file in files
-                ),
-            )
-
-            LOGGER.info("Tarring")
-            await atar(temp_img_dir, temp_archive_path, self.pool)
+            await self._compress_img_folder(src_dir, temp_img_dir)
+            await self._tar_img_folder(temp_img_dir, temp_archive_path)
 
             yield temp_archive_path
+
+    async def _compress_img_folder(self, src_dir: Path, target_dir: Path):
+        src_files = map(lambda path: src_dir / path, await aiofiles.os.listdir(src_dir))
+        await asyncio.gather(
+            *(acompress(file, target_dir / file.name, self.pool) for file in src_files),
+        )
+
+    async def _tar_img_folder(self, src_dir: Path, target_path: Path):
+        await atar(src_dir, target_path, self.pool)
 
 
 async def add_upload_to_db(
