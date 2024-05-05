@@ -35,8 +35,10 @@ class UploadHandler(AbstractHandler[TimestepDTO]):
 
     async def __call__(self, message: TimestepDTO, unit_of_work: AbstractUnitOfWork):
         src_img_dir = self.base_dir / message.timestep_dir_name / message.img_dir_name
-
-        async with self.get_temp_archive(src_img_dir, message.archive_name) as path:
+        async with (
+            unit_of_work,
+            self.get_temp_archive(src_img_dir, message.archive_name) as path
+        ):
             await self.s3._put_file(path, f"{self.bucket_name}/{message.key}")
             unit_of_work.add_message(
                 Upload(

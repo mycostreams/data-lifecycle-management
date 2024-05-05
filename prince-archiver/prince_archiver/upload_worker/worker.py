@@ -44,8 +44,8 @@ async def startup(ctx):
     def _message_bus_factory():
         return MessageBus(
             handlers={
-                TimestepDTO: [add_upload_to_db],
-                Upload: [
+                Upload: [add_upload_to_db],
+                TimestepDTO: [
                     UploadHandler(
                         s3=s3,
                         bucket_name=settings.AWS_BUCKET_NAME,
@@ -54,7 +54,7 @@ async def startup(ctx):
                     ),
                 ],
             },
-            unit_of_work=UnitOfWork(sessionmaker),
+            uow=UnitOfWork(sessionmaker),
         )
 
     ctx["messagebus_factory"] = _message_bus_factory
