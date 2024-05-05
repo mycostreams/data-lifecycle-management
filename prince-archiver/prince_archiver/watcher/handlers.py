@@ -32,6 +32,8 @@ class ArqHandler(AbstractHandler[TimestepDTO]):
         self.client = client
 
     async def __call__(self, message: TimestepDTO, _: AbstractUnitOfWork):
+        LOGGER.info("Enqueing jobs %s", message.key)
+
         await self.client.enqueue_job(
             "workflow",
             message.model_dump(mode="json", by_alias=True),
