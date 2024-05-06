@@ -35,8 +35,8 @@ types-aiofiles = "^23.2.0.20240331"
 types-pyyaml = "^6.0.12.12"
 
 [tool.poetry.scripts]
-cli = "prince_archiver.entrypoints.cli:app"
-watch = "prince_archiver.entrypoints.watcher:main"
+cli = "prince_archiver.test_utils.cli:app"
+watch = "prince_archiver.watcher.main"
 
 [tool.isort]
 profile = "black"

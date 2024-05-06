@@ -3,7 +3,7 @@ from pathlib import Path
 
 import httpx
 
-from .dto import DirectoryConfig, TimestepMeta
+from prince_archiver.dto import DirectoryConfig, TimestepMeta
 
 DOWNLOAD_URL = "https://vu.data.surfsara.nl/index.php/s/ndI1UoMRwliVYGR/download"
 

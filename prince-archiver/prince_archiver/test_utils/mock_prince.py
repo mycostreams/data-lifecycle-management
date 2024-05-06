@@ -7,8 +7,9 @@ from uuid import uuid4
 
 from prince_archiver.dto import TimestepMeta
 from prince_archiver.logging import configure_logging
-from prince_archiver.test_utils import make_timestep_directory
 from prince_archiver.utils import now
+
+from .utils import make_timestep_directory
 
 
 def _create_meta() -> TimestepMeta:
