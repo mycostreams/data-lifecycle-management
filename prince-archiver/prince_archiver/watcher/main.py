@@ -17,7 +17,7 @@ from .handlers import ArqHandler, add_to_db
 from .utils import filter_on_param_file
 
 
-async def main(*, _settings: WatcherSettings | None = None):
+async def amain(*, _settings: WatcherSettings | None = None):
 
     configure_logging()
 
@@ -47,5 +47,9 @@ async def main(*, _settings: WatcherSettings | None = None):
             await messagebus.handle(data)
 
 
+def main():
+    asyncio.run(amain())
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
