@@ -1,7 +1,7 @@
 services:
   prince:
     image: prince-archiver
-    command: ["python", "-m", "prince_archiver.entrypoints.timestep_generator"]
+    command: ["python", "-m", "prince_archiver.test_utils.mock_prince"]
     environment:
       - DATA_DIR=/data/input
     volumes:

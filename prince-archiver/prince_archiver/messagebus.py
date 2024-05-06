@@ -9,7 +9,7 @@ ModelT = TypeVar("ModelT", bound=BaseModel)
 
 HandlerMappingT = Mapping[
     type[BaseModel],
-    list[Callable, Awaitable[None]],
+    list[Callable[..., Awaitable[None]]],
 ]
 
 
@@ -29,8 +29,11 @@ class MessageBus:
         self.uow = uow
 
     async def handle(self, message: BaseModel):
-        messages = [message]
+        messages: list[BaseModel] = [message]
         while messages:
             message = messages.pop()
             for handler in self.handlers[message.__class__]:
                 await handler(message, self.uow)
+
+                for message in self.uow.collect_messages():
+                    messages.append(message)
