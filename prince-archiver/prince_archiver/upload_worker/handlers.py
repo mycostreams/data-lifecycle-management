@@ -39,6 +39,7 @@ class UploadHandler(AbstractHandler[TimestepDTO]):
             uow,
             self.get_temp_archive(message) as temp_archive_path,
         ):
+            LOGGER.info("Uploading %s", message.key)
             await self.s3._put_file(
                 temp_archive_path,
                 f"{self.bucket_name}/{message.key}",
@@ -57,6 +58,8 @@ class UploadHandler(AbstractHandler[TimestepDTO]):
     async def get_temp_archive(
         self, message: TimestepDTO
     ) -> AsyncGenerator[Path, None]:
+        LOGGER.info("Creating temp archive %s", message.key)
+
         src_dir = self.base_dir / message.timestep_dir_name / message.img_dir_name
 
         async with AsyncExitStack() as stack:
@@ -85,6 +88,7 @@ async def add_upload_to_db(
     message: UploadDTO,
     uow: AbstractUnitOfWork,
 ):
+    LOGGER.info("Adding object store db entry %s", message.key)
     async with uow:
         if timestep := await uow.timestamps.get(id=message.timestep_id):
             timestep.object_store_entry = ObjectStoreEntry(
