@@ -1,5 +1,5 @@
 import asyncio
-import functools
+import logging
 from contextlib import AsyncExitStack
 from dataclasses import dataclass
 from typing import Awaitable, Callable
@@ -9,10 +9,13 @@ from aio_pika.abc import AbstractIncomingMessage
 
 from prince_archiver.config import SubscriberSettings
 from prince_archiver.db import UnitOfWork, get_session_maker
+from prince_archiver.logging import configure_logging
 from prince_archiver.messagebus import MessageBus
 
 from .dto import Message
 from .handlers import MessageHandler, update_data_archive_entries
+
+LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -62,6 +65,7 @@ class ManagedSubscriber:
 
 
 async def main(*, _settings: SubscriberSettings | None = None):
+    configure_logging()
 
     settings = _settings or SubscriberSettings()
 
@@ -78,6 +82,7 @@ async def main(*, _settings: SubscriberSettings | None = None):
         message_handler=MessageHandler(_messagebus_factory),
     )
     async with subscriber:
+        logging.info("starting up")
         await asyncio.Future()
 
 

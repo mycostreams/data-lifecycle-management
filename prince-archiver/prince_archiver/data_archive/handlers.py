@@ -1,5 +1,5 @@
-from typing import Callable
 import logging
+from typing import Callable
 
 from aio_pika.abc import AbstractIncomingMessage
 
@@ -8,7 +8,6 @@ from prince_archiver.messagebus import MessageBus
 from prince_archiver.models import DataArchiveEntry, Timestep
 
 from .dto import Message
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -25,11 +24,15 @@ class MessageHandler:
         messagebus = self.messagebus_factory()
         async with message.process():
             data = Message.model_validate_json(message.body)
-            LOGGER.info("Message received: %s", data.job_id)
+            LOGGER.info("Archiving job result received: %s", data.job_id)
+
             await messagebus.handle(data)
+
+            LOGGER.info("Archiving job result processed: %s", data.job_id)
 
 
 async def update_data_archive_entries(message: Message, uow: AbstractUnitOfWork):
+
     async with uow:
         timesteps = await uow.timestamps.get_by_date(message.date)
 

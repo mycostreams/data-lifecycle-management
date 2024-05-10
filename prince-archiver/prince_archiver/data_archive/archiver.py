@@ -22,7 +22,7 @@ class Settings:
 class AbstractArchiver(ABC):
 
     @abstractmethod
-    async def archive(self, date_: date, job_id: UUID| None = None): ...
+    async def archive(self, date_: date, job_id: UUID | None = None): ...
 
 
 class SurfArchiver(AbstractArchiver):
