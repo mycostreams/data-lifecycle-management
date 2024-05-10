@@ -3,11 +3,10 @@ from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import date
-from pathlib import Path
-from typing import Any
+from typing import Any, AsyncGenerator
+from uuid import UUID, uuid4
 
 import asyncssh
-from pydantic import BaseModel, TypeAdapter
 
 LOGGER = logging.getLogger(__name__)
 
@@ -20,63 +19,32 @@ class Settings:
     timeout: int = 3600
 
 
-@dataclass
-class ArchiveEntry:
-
-    source_key: str
-    file: str
-
-
-@dataclass
-class Archive:
-
-    path: str
-    entries: list[ArchiveEntry]
-
-
-class SurfArchiverSchema(BaseModel):
-
-    path: str
-    src_keys: list[str]
-
-
 class AbstractArchiver(ABC):
 
     @abstractmethod
-    async def archive(self, date_: date) -> list[Archive]: ...
+    async def archive(self, date_: date, job_id: UUID| None = None): ...
 
 
 class SurfArchiver(AbstractArchiver):
 
-    # COMMAND = "surf-archiver archive {date}"
-    COMMAND = "PATH=$PATH:$HOME/.local/bin; surf-archiver archive {date}"
+    COMMAND = "nohup surf-archiver {date} {job_id} > /dev/null 2>&1 &"
 
     def __init__(self, settings: Settings):
         self.settings = settings
 
-    async def archive(self, date_: date) -> list[Archive]:
-        cmd = self._build_command(date=date_.isoformat())
+    async def archive(self, date_: date, job_id: UUID | None = None):
+        job_id = job_id or uuid4()
+
+        LOGGER.info("[%s] Archiving %s", job_id, date_)
+
+        cmd = self._build_command(date=date_.isoformat(), job_id=job_id)
         async with self._managed_conn() as conn:
-            raw_data = await conn.run(cmd, check=True, timeout=self.settings.timeout)
+            await conn.run(cmd, check=True, timeout=self.settings.timeout)
 
-        archives: list[Archive] = []
-
-        type_adapter = TypeAdapter(list[SurfArchiverSchema])
-        parsed_data = type_adapter.validate_json(raw_data.stdout)
-        for item in parsed_data:
-            entries = []
-            for path in map(Path, item.src_keys):
-                entries.append(
-                    ArchiveEntry(
-                        file=path.name,
-                        source_key=str(Path(*path.parts[1:])),
-                    ),
-                )
-            archives.append(Archive(path=item.path, entries=entries))
-        return archives
+        LOGGER.info("[%s] Archiving request sent", job_id)
 
     @asynccontextmanager
-    async def _managed_conn(self):
+    async def _managed_conn(self) -> AsyncGenerator[asyncssh.SSHClientConnection, None]:
         managed_conn = asyncssh.connect(
             username=self.settings.username,
             password=self.settings.password,
