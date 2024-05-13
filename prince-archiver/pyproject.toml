@@ -8,6 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 aiofiles = "^23.2.1"
+aio-pika = "^9.4.1"
 alembic = "^1.13.1"
 arq = "^0.25.0"
 asyncssh = "^2.14.2"

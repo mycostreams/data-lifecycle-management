@@ -43,6 +43,7 @@ class DataArchiveEntry(Base):
     )
     timestep_id: Mapped[int] = mapped_column(ForeignKey("prince_timestep.timestep_id"))
 
+    job_id: Mapped[str]
     file: Mapped[str]
     archive_path: Mapped[str]
 

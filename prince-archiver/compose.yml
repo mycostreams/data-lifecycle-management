@@ -10,9 +10,9 @@ services:
     image: prince-archiver
     build:
       context: .
+    command: ["python", "-m", "prince_archiver.watcher.main"]
     environment: 
       <<: *env-variables
-    command: ["python", "-m", "prince_archiver.watcher.main"]
     depends_on:
       db:
         condition: service_healthy
@@ -27,6 +27,15 @@ services:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+
+  data-archive-subscriber:
+    image: prince-archiver
+    command: ["python", "-m", "prince_archiver.data_archive.subscriber"]
+    environment:
+    - POSTGRES_DSN=postgresql+asyncpg://postgres:postgres@db:5432/postgres=mycostreams
+    depends_on:
+      db:
         condition: service_healthy
 
   redis:

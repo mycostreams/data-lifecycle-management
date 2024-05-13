@@ -54,6 +54,18 @@ class ArchiveWorkerSettings(CommonSettings):
     DATA_ARCHIVE_HOST: str = "archive.surfsara.nl"
 
 
+class SubscriberSettings(BaseSettings):
+
+    POSTGRES_DSN: PostgresDsn
+    RABBITMQ_DSN: str
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+
 @lru_cache
 def get_worker_settings() -> WorkerSettings:
     return WorkerSettings()

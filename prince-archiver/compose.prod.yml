@@ -48,6 +48,18 @@ services:
       restart_policy:
         condition: on-failure
 
+  data-archive-subscriber:
+    environment:
+      - SENTRY_DSN=${SENTRY_DSN}
+    labels:
+      logging: "promtail"
+    env_file:
+      - .env
+      - .env.prod
+    deploy:
+      restart_policy:
+        condition: on-failure
+
   promtail:
     image:  grafana/promtail:latest
     container_name: promtail
@@ -59,7 +71,6 @@ services:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock
     command: -config.file=/etc/promtail/docker-config.yaml -config.expand-env=true
-
 
 volumes:
   cifs_mount: 
