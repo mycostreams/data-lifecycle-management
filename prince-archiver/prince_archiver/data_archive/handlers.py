@@ -24,11 +24,11 @@ class MessageHandler:
         messagebus = self.messagebus_factory()
         async with message.process():
             data = Message.model_validate_json(message.body)
-            LOGGER.info("Archiving job result received: %s", data.job_id)
+            LOGGER.info("Archiving job received: %s", data.job_id)
 
             await messagebus.handle(data)
 
-            LOGGER.info("Archiving job result processed: %s", data.job_id)
+            LOGGER.info("Archiving job processed: %s", data.job_id)
 
 
 async def update_data_archive_entries(message: Message, uow: AbstractUnitOfWork):
@@ -44,9 +44,15 @@ async def update_data_archive_entries(message: Message, uow: AbstractUnitOfWork)
 
         for archive in message.archives:
             for key in filter(lambda key: key in persisted_keys, archive.src_keys):
-                mapped_timesteps[key].data_archive_entry = DataArchiveEntry(
+                timestep = mapped_timesteps[key]
+                if not timestep.data_archive_entry:
+                    LOGGER.info("Timestep already associated to archive %s", key)
+                    continue
+
+                LOGGER.info("Adding archive entry for %s", key)
+                timestep.data_archive_entry = DataArchiveEntry(
                     job_id=message.job_id,
-                    path=archive.path,
+                    archive_path=archive.path,
                     file=key,
                 )
 

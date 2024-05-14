@@ -82,7 +82,7 @@ async def main(*, _settings: SubscriberSettings | None = None):
         message_handler=MessageHandler(_messagebus_factory),
     )
     async with subscriber:
-        logging.info("starting up")
+        logging.info("Starting up")
         await asyncio.Future()
 
 

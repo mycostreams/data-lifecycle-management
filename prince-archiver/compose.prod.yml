@@ -36,6 +36,8 @@ services:
       - DATA_ARCHIVE_HOST=archive.surfsara.nl
       - POSTGRES_DSN=postgresql+asyncpg://postgres:postgres@db:5432/postgres
       - REDIS_DSN=redis://redis:6379
+    volumes:
+      - ~/.ssh/known_hosts/:/root/.ssh/known_hosts:ro
     labels:
       logging: "promtail"
     env_file:

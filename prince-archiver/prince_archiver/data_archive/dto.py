@@ -1,4 +1,5 @@
 from datetime import date
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -11,6 +12,6 @@ class Archive(BaseModel):
 
 class Message(BaseModel):
 
-    job_id: str
+    job_id: UUID
     date: date
     archives: list[Archive]

@@ -1,8 +1,8 @@
 """Init
 
-Revision ID: 807734258e7b
+Revision ID: f465ef38ecbf
 Revises:
-Create Date: 2024-05-10 12:40:23.475844
+Create Date: 2024-05-13 10:24:37.239398
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "807734258e7b"
+revision: str = "f465ef38ecbf"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -37,7 +37,7 @@ def upgrade() -> None:
         "data_archive_entry",
         sa.Column("id", sa.Uuid(native_uuid=False), nullable=False),
         sa.Column("timestep_id", sa.Uuid(native_uuid=False), nullable=False),
-        sa.Column("job_id", sa.String(), nullable=False),
+        sa.Column("job_id", sa.Uuid(native_uuid=False), nullable=False),
         sa.Column("file", sa.String(), nullable=False),
         sa.Column("archive_path", sa.String(), nullable=False),
         sa.Column("created_at", sa.TIMESTAMP(timezone=True), nullable=False),
