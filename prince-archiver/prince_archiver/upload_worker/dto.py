@@ -1,9 +1,6 @@
-from datetime import datetime, timedelta
 from uuid import UUID
 
-from pydantic import BaseModel, Field
-
-from prince_archiver.utils import now
+from pydantic import BaseModel
 
 
 class UploadDTO(BaseModel):

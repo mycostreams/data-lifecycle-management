@@ -15,11 +15,7 @@ from prince_archiver.messagebus import MessageBus, MessagebusFactoryT
 
 from .archiver import AbstractArchiver, Settings, SurfArchiver
 from .dto import DeleteExpiredUploads, UpdateArchiveEntries
-from .handlers import (
-    DeletedExpiredUploadsHandler,
-    DeleteExpiredUploads,
-    update_data_archive_entries,
-)
+from .handlers import DeletedExpiredUploadsHandler, update_data_archive_entries
 
 LOGGER = logging.getLogger(__name__)
 
