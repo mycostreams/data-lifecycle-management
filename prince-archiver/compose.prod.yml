@@ -30,22 +30,13 @@ services:
         condition: on-failure
 
   cron-worker:
-    image: prince-archiver
-    command: ["arq", "prince_archiver.data_archive.WorkerSettings"]
     environment:
-      - DATA_ARCHIVE_HOST=archive.surfsara.nl
-      - POSTGRES_DSN=postgresql+asyncpg://postgres:postgres@db:5432/postgres
-      - REDIS_DSN=redis://redis:6379
-    volumes:
-      - ~/.ssh/known_hosts/:/root/.ssh/known_hosts:ro
+      - SENTRY_DSN=${SENTRY_DSN}
     labels:
       logging: "promtail"
     env_file:
       - .env
       - .env.prod
-    depends_on:
-      redis:
-        condition: service_healthy
     deploy:
       restart_policy:
         condition: on-failure

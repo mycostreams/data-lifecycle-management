@@ -12,8 +12,8 @@ from prince_archiver.db import UnitOfWork, get_session_maker
 from prince_archiver.logging import configure_logging
 from prince_archiver.messagebus import MessageBus
 
-from .dto import Message
-from .handlers import MessageHandler, update_data_archive_entries
+from .dto import UpdateArchiveEntries
+from .handlers import SubscriberMessageHandler, update_data_archive_entries
 
 LOGGER = logging.getLogger(__name__)
 
@@ -73,13 +73,13 @@ async def main(*, _settings: SubscriberSettings | None = None):
 
     def _messagebus_factory() -> MessageBus:
         return MessageBus(
-            handlers={Message: [update_data_archive_entries]},
+            handlers={UpdateArchiveEntries: [update_data_archive_entries]},
             uow=UnitOfWork(sessionmaker),
         )
 
     subscriber = ManagedSubscriber(
         connection_url=settings.RABBITMQ_DSN,
-        message_handler=MessageHandler(_messagebus_factory),
+        message_handler=SubscriberMessageHandler(_messagebus_factory),
     )
     async with subscriber:
         logging.info("Starting up")

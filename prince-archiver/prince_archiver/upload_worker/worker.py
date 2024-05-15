@@ -2,7 +2,6 @@ import logging
 import os
 from concurrent.futures import ProcessPoolExecutor
 from contextlib import AsyncExitStack
-from typing import Callable
 
 from arq.connections import RedisSettings
 
@@ -11,15 +10,12 @@ from prince_archiver.db import UnitOfWork, get_session_maker
 from prince_archiver.dto import TimestepDTO
 from prince_archiver.file import managed_file_system
 from prince_archiver.logging import configure_logging
-from prince_archiver.messagebus import MessageBus
+from prince_archiver.messagebus import MessageBus, MessagebusFactoryT
 
 from .dto import UploadDTO
 from .handlers import UploadHandler, add_upload_to_db
 
 LOGGER = logging.getLogger(__name__)
-
-
-MessagebusFactoryT = Callable[[], MessageBus]
 
 
 async def workflow(

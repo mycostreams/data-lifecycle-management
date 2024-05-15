@@ -11,4 +11,3 @@ class UploadDTO(BaseModel):
     timestep_id: UUID
     bucket: str
     key: str
-    expires_at: datetime = Field(default_factory=lambda: now() + timedelta(days=30))

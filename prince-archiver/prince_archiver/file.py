@@ -9,7 +9,7 @@ from typing import AsyncGenerator
 import cv2
 import s3fs
 
-from .config import WorkerSettings
+from .config import AWSSettings
 
 LOGGER = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ async def atar(src: Path, target: Path, executor: Executor):
 
 @asynccontextmanager
 async def managed_file_system(
-    settings: WorkerSettings,
+    settings: AWSSettings,
 ) -> AsyncGenerator[s3fs.S3FileSystem, None]:
     client_kwargs = {}
     if settings.AWS_REGION_NAME:

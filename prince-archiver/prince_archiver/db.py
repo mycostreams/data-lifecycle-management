@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql import Select
 
-from .models import Timestep
+from .models import ObjectStoreEntry, Timestep
 
 
 def get_session_maker(url: str) -> async_sessionmaker[AsyncSession]:
@@ -32,6 +32,9 @@ class AbstractTimestepRepo(ABC):
     @abstractmethod
     async def get_by_date(self, date_: date) -> list[Timestep]: ...
 
+    @abstractmethod
+    async def get_by_upload_date(self, date_: date) -> list[Timestep]: ...
+
 
 class TimestepRepo(AbstractTimestepRepo):
 
@@ -50,6 +53,15 @@ class TimestepRepo(AbstractTimestepRepo):
     async def get_by_date(self, date_: date) -> list[Timestep]:
         result = await self.session.scalars(
             self._base_query().where(func.date(Timestep.timestamp) == date_),
+        )
+        return list(result.all())
+
+    async def get_by_upload_date(self, date_: date) -> list[Timestep]:
+        subquery = select(ObjectStoreEntry.timestep_id).where(
+            func.date(ObjectStoreEntry.created_at) == date_
+        )
+        result = await self.session.scalars(
+            self._base_query().where(Timestep.timestep_id.in_(subquery))
         )
         return list(result.all())
 

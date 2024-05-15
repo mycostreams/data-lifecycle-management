@@ -29,6 +29,21 @@ services:
       redis:
         condition: service_healthy
 
+  cron-worker:
+    image: prince-archiver
+    command: ["arq", "prince_archiver.data_archive.WorkerSettings"]
+    environment:
+      - DATA_ARCHIVE_HOST=archive.surfsara.nl
+      - POSTGRES_DSN=postgresql+asyncpg://postgres:postgres@db:5432/postgres
+      - REDIS_DSN=redis://redis:6379
+    volumes:
+      - ~/.ssh/known_hosts/:/root/.ssh/known_hosts:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   data-archive-subscriber:
     image: prince-archiver
     command: ["python", "-m", "prince_archiver.data_archive.subscriber"]

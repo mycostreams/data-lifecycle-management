@@ -28,6 +28,21 @@ services:
     depends_on:
       s3:
         condition: service_healthy
+
+  cron-worker:
+    environment:
+      - SURF_USERNAME=""
+      - SURF_PASSWORD=""
+      - AWS_ACCESS_KEY_ID=aws-access-key-id
+      - AWS_SECRET_ACCESS_KEY=aws-access-key-id
+      - AWS_ENDPOINT_URL=http://s3:9090
+    volumes:
+      - ./prince_archiver:/app/prince_archiver
+      - ./alembic/:/app/alembic
+    depends_on:
+      s3:
+        condition: service_healthy
+
   
   data-archive-subscriber:
     environment:

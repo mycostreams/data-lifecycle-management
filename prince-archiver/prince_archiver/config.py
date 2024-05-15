@@ -24,6 +24,16 @@ class CommonSettings(BaseSettings):
     )
 
 
+class AWSSettings(BaseSettings):
+
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    AWS_ENDPOINT_URL: str | None = None
+    AWS_REGION_NAME: str | None = None
+
+    UPLOAD_MAX_CONCURRENCY: int = 5
+
+
 class WatcherSettings(CommonSettings):
 
     DATA_DIR: Path
@@ -31,27 +41,21 @@ class WatcherSettings(CommonSettings):
     WATCHFILES_FORCE_POLLING: bool | None = None
 
 
-class WorkerSettings(CommonSettings):
+class WorkerSettings(AWSSettings, CommonSettings):
 
     DATA_DIR: Path
 
-    AWS_ACCESS_KEY_ID: str
-    AWS_SECRET_ACCESS_KEY: str
     AWS_BUCKET_NAME: str
-    AWS_ENDPOINT_URL: str | None = None
-    AWS_REGION_NAME: str | None = None
-
-    UPLOAD_MAX_CONCURRENCY: int = 5
 
 
-class ArchiveWorkerSettings(CommonSettings):
-
-    AWS_BUCKET_NAME: str
+class ArchiveWorkerSettings(AWSSettings, CommonSettings):
 
     SURF_USERNAME: str
     SURF_PASSWORD: str
 
     DATA_ARCHIVE_HOST: str = "archive.surfsara.nl"
+
+    UPLOAD_EXPIRY_DAYS: int = 5
 
 
 class SubscriberSettings(BaseSettings):
