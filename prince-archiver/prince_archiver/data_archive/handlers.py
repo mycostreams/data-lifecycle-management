@@ -1,5 +1,7 @@
 import logging
+from functools import partial
 from typing import Callable
+from uuid import UUID
 
 from aio_pika.abc import AbstractIncomingMessage
 from s3fs import S3FileSystem
@@ -20,6 +22,8 @@ LOGGER = logging.getLogger(__name__)
 
 class SubscriberMessageHandler:
 
+    DTO_CLASS = UpdateArchiveEntries
+
     def __init__(
         self,
         messagebus_factory: Callable[[], MessageBus],
@@ -27,14 +31,18 @@ class SubscriberMessageHandler:
         self.messagebus_factory = messagebus_factory
 
     async def __call__(self, message: AbstractIncomingMessage):
-        messagebus = self.messagebus_factory()
         async with message.process():
-            data = UpdateArchiveEntries.model_validate_json(message.body)
-            LOGGER.info("Archiving job received: %s", data.job_id)
+            try:
+                await self._process(message.body)
+            except Exception as err:
+                LOGGER.exception(err)
+                raise err
 
-            await messagebus.handle(data)
+    async def _process(self, raw_message: bytes):
+        messagebus = self.messagebus_factory()
+        message = self.DTO_CLASS.model_validate_json(raw_message)
 
-            LOGGER.info("Archiving job processed: %s", data.job_id)
+        await messagebus.handle(message)
 
 
 async def update_data_archive_entries(
@@ -42,6 +50,8 @@ async def update_data_archive_entries(
     uow: AbstractUnitOfWork,
 ):
     async with uow:
+        LOGGER.info("[%s] Updating archive entries", message.job_id)
+
         timesteps = await uow.timestamps.get_by_date(message.date)
 
         mapped_timesteps: dict[str, Timestep] = {}
@@ -53,11 +63,11 @@ async def update_data_archive_entries(
         for archive in message.archives:
             for key in filter(lambda key: key in persisted_keys, archive.src_keys):
                 timestep = mapped_timesteps[key]
-                if not timestep.data_archive_entry:
-                    LOGGER.info("Timestep already associated to archive %s", key)
+                if timestep.data_archive_entry:
+                    msg = "[%s] Timestep already associated to archive %s"
+                    LOGGER.info(msg, message.job_id, key)
                     continue
 
-                LOGGER.info("Adding archive entry for %s", key)
                 timestep.data_archive_entry = DataArchiveEntry(
                     job_id=message.job_id,
                     archive_path=archive.path,
@@ -77,8 +87,10 @@ class DeletedExpiredUploadsHandler(AbstractHandler[DeleteExpiredUploads]):
 
     async def __call__(self, message: DeleteExpiredUploads, uow: AbstractUnitOfWork):
         async with uow:
+            LOGGER.info("[%s] Deleting expired uploads", message.job_id)
+
             expiring_timestamps = filter(
-                self._is_deletable,
+                partial(self._is_deletable, job_id=message.job_id),
                 await uow.timestamps.get_by_upload_date(message.uploaded_on),
             )
 
@@ -93,8 +105,10 @@ class DeletedExpiredUploadsHandler(AbstractHandler[DeleteExpiredUploads]):
             await self.s3._bulk_delete(remote_paths)
             await uow.commit()
 
+            LOGGER.info("[%s] Deleted %i entires", message.job_id, len(remote_paths))
+
     @staticmethod
-    def _is_deletable(timestamp: Timestep) -> bool:
+    def _is_deletable(timestamp: Timestep, *, job_id: UUID | None = None) -> bool:
         object_store_entry = timestamp.object_store_entry
 
         check = bool(
@@ -104,7 +118,7 @@ class DeletedExpiredUploadsHandler(AbstractHandler[DeleteExpiredUploads]):
         )
 
         if not check:
-            LOGGER.info("Cannot delete object store entry %s", timestamp.timestep_id)
+            LOGGER.info("[%s] Cannot delete object store entry %s", job_id)
 
         return check
 
