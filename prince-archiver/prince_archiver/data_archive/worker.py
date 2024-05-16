@@ -20,9 +20,9 @@ from .handlers import DeletedExpiredUploadsHandler, update_data_archive_entries
 LOGGER = logging.getLogger(__name__)
 
 
-async def run_archiving(ctx: dict, *, archive_date: date | None = None):
+async def run_archiving(ctx: dict, *, _date: date | None = None):
 
-    archive_date = archive_date or date.today() - timedelta(days=3)
+    archive_date = _date or date.today() - timedelta(days=3)
     archiver: AbstractArchiver | None = ctx["archiver"]
 
     if archiver:
@@ -32,14 +32,14 @@ async def run_archiving(ctx: dict, *, archive_date: date | None = None):
         LOGGER.info("No archiver configured")
 
 
-async def delete_expired_uploads(ctx: dict, *, date_: date | None = None):
+async def delete_expired_uploads(ctx: dict, *, _date: date | None = None):
     settings: ArchiveWorkerSettings = ctx["settings"]
     messagebus: MessageBus = ctx["messagebus"]
 
     job_id: UUID = ctx["job_id"]
-    uploaded_on = (date_ or date.today()) - timedelta(days=settings.UPLOAD_EXPIRY_DAYS)
+    uploaded_on = (_date or date.today()) - timedelta(days=settings.UPLOAD_EXPIRY_DAYS)
 
-    LOGGER.info("Deleting uploads for %s", date_)
+    LOGGER.info("Deleting uploads for %s", _date)
 
     await messagebus.handle(
         message=DeleteExpiredUploads(job_id=job_id, uploaded_on=uploaded_on),
@@ -49,13 +49,15 @@ async def delete_expired_uploads(ctx: dict, *, date_: date | None = None):
 async def startup(ctx: dict):
     configure_logging()
 
+    LOGGER.info("Starting up")
+
     exit_stack = await AsyncExitStack().__aenter__()
     settings = ArchiveWorkerSettings()
 
     s3 = await exit_stack.enter_async_context(managed_file_system(settings))
     sessionmaker = get_session_maker(str(settings.POSTGRES_DSN))
 
-    def _messagebus_factory():
+    def _messagebus_factory() -> MessageBus:
         MessageBus(
             handlers={
                 UpdateArchiveEntries: [update_data_archive_entries],
@@ -76,6 +78,8 @@ async def startup(ctx: dict):
                 host=settings.DATA_ARCHIVE_HOST,
             ),
         )
+
+    LOGGER.info("Start up complete")
 
 
 async def on_job_start(ctx: dict):

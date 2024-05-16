@@ -19,7 +19,7 @@ services:
       redis:
         condition: service_healthy
 
-  worker:
+  upload-worker:
     image: prince-archiver
     command: ["arq", "prince_archiver.upload_worker.WorkerSettings"]
     environment: *env-variables
@@ -48,7 +48,7 @@ services:
     image: prince-archiver
     command: ["python", "-m", "prince_archiver.data_archive.subscriber"]
     environment:
-    - POSTGRES_DSN=postgresql+asyncpg://postgres:postgres@db:5432/postgres=mycostreams
+      - POSTGRES_DSN=postgresql+asyncpg://postgres:postgres@db:5432/postgres=mycostreams
     depends_on:
       db:
         condition: service_healthy

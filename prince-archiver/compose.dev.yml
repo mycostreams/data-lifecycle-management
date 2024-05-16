@@ -15,7 +15,7 @@ services:
       - ./alembic:/app/alembic
       - input_data:/data/input
 
-  worker:
+  upload-worker:
     environment:
       - AWS_BUCKET_NAME=mycostreams
       - AWS_ACCESS_KEY_ID=aws-access-key-id
@@ -43,7 +43,6 @@ services:
       s3:
         condition: service_healthy
 
-  
   data-archive-subscriber:
     environment:
       - RABBITMQ_DSN=amqp://guest:guest@rabbitmq:5672

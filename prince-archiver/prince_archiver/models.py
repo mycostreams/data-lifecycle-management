@@ -29,7 +29,7 @@ class DeletionEvent(Base):
         ForeignKey("object_store_entry.id"),
     )
 
-    job_id: Mapped[UUID] = mapped_column(Uuid(native_uuid=False))
+    job_id: Mapped[UUID | None] = mapped_column(Uuid(native_uuid=False))
 
 
 class ObjectStoreEntry(Base):

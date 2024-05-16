@@ -30,6 +30,8 @@ async def workflow(
 async def startup(ctx):
     configure_logging()
 
+    LOGGER.info("Starting up worker")
+
     exit_stack = await AsyncExitStack().__aenter__()
 
     settings = get_worker_settings()
@@ -55,6 +57,8 @@ async def startup(ctx):
 
     ctx["messagebus_factory"] = _message_bus_factory
     ctx["exit_stack"] = exit_stack
+
+    LOGGER.info("Start up complete")
 
 
 async def on_job_start(ctx: dict):

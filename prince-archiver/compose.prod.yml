@@ -14,7 +14,7 @@ services:
       restart_policy:
         condition: on-failure
   
-  worker:
+  upload-worker:
     environment:
       - SENTRY_DSN=${SENTRY_DSN}
     labels:
