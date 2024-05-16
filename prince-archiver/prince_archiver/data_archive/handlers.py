@@ -97,11 +97,16 @@ class DeletedExpiredUploadsHandler(AbstractHandler[DeleteExpiredUploads]):
     def _is_deletable(timestamp: Timestep) -> bool:
         object_store_entry = timestamp.object_store_entry
 
-        return bool(
+        check = bool(
             object_store_entry
-            and object_store_entry.deletion_event
+            and not object_store_entry.deletion_event
             and timestamp.data_archive_entry
         )
+
+        if not check:
+            LOGGER.info("Cannot for object store entry %s", timestamp.timestep_id)
+
+        return check
 
     @staticmethod
     def _get_remote_path(object_store_entry: ObjectStoreEntry) -> str:

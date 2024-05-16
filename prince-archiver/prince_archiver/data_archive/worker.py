@@ -41,7 +41,10 @@ async def delete_expired_uploads(ctx: dict, *, _date: date | None = None):
     LOGGER.info("[%s] Deleting uploads for %s", job_id, uploaded_on)
 
     await messagebus.handle(
-        message=DeleteExpiredUploads(uploaded_on=uploaded_on),
+        message=DeleteExpiredUploads(
+            job_id=job_id,
+            uploaded_on=uploaded_on,
+        ),
     )
 
 
@@ -98,7 +101,7 @@ class WorkerSettings:
 
     cron_jobs = [
         cron(run_archiving, hour={2}, timeout=timedelta(hours=2)),
-        cron(delete_expired_uploads, hour={3}, timeout=timedelta(hours=1)),
+        cron(delete_expired_uploads, second={0, 30}, timeout=timedelta(hours=1)),
     ]
 
     on_startup = startup

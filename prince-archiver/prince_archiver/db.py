@@ -69,7 +69,9 @@ class TimestepRepo(AbstractTimestepRepo):
     def _base_query() -> Select[tuple[Timestep]]:
         return select(Timestep).options(
             joinedload(Timestep.data_archive_entry),
-            joinedload(Timestep.object_store_entry),
+            joinedload(Timestep.object_store_entry).joinedload(
+                ObjectStoreEntry.deletion_event
+            ),
         )
 
 
