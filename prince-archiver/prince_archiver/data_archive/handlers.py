@@ -104,7 +104,7 @@ class DeletedExpiredUploadsHandler(AbstractHandler[DeleteExpiredUploads]):
         )
 
         if not check:
-            LOGGER.info("Cannot for object store entry %s", timestamp.timestep_id)
+            LOGGER.info("Cannot delete object store entry %s", timestamp.timestep_id)
 
         return check
 
