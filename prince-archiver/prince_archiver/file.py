@@ -3,6 +3,7 @@ import logging
 import tarfile
 from concurrent.futures import Executor
 from contextlib import asynccontextmanager
+from enum import IntEnum
 from pathlib import Path
 from typing import AsyncGenerator
 
@@ -14,14 +15,20 @@ from .config import AWSSettings
 LOGGER = logging.getLogger(__name__)
 
 
-def compress(src: Path, target: Path):
+class Compression(IntEnum):
+
+    DEFLATE = 5
+    LZW = 8
+
+
+def compress(src: Path, target: Path, mode: Compression = Compression.DEFLATE):
     LOGGER.debug("Compressing %s", src)
 
     img = cv2.imread(str(src))
     cv2.imwrite(
         str(target),
         img,
-        params=(cv2.IMWRITE_TIFF_COMPRESSION, 5),
+        params=(cv2.IMWRITE_TIFF_COMPRESSION, mode),
     )
 
     LOGGER.debug("Compressed %s", src)
