@@ -38,7 +38,8 @@ class SubscriberMessageHandler:
 
 
 async def update_data_archive_entries(
-    message: UpdateArchiveEntries, uow: AbstractUnitOfWork
+    message: UpdateArchiveEntries,
+    uow: AbstractUnitOfWork,
 ):
     async with uow:
         timesteps = await uow.timestamps.get_by_date(message.date)

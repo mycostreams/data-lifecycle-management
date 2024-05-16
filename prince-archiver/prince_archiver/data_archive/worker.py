@@ -2,7 +2,7 @@ import logging
 import os
 from contextlib import AsyncExitStack
 from datetime import date, timedelta
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from arq import cron
 from arq.connections import RedisSettings
@@ -21,28 +21,27 @@ LOGGER = logging.getLogger(__name__)
 
 
 async def run_archiving(ctx: dict, *, _date: date | None = None):
-
-    archive_date = _date or date.today() - timedelta(days=3)
+    job_id = ctx["internal_job_id"]
     archiver: AbstractArchiver | None = ctx["archiver"]
 
+    archive_date = _date or date.today() - timedelta(days=3)
+
     if archiver:
-        LOGGER.info("Initiating archiving %s", archive_date)
+        LOGGER.info("[%s] Initiating archiving for %s", job_id, archive_date)
         await archiver.archive(archive_date)
-    else:
-        LOGGER.info("No archiver configured")
 
 
 async def delete_expired_uploads(ctx: dict, *, _date: date | None = None):
+    job_id: UUID = ctx["internal_job_id"]
     settings: ArchiveWorkerSettings = ctx["settings"]
     messagebus: MessageBus = ctx["messagebus"]
 
-    job_id: UUID = ctx["job_id"]
     uploaded_on = (_date or date.today()) - timedelta(days=settings.UPLOAD_EXPIRY_DAYS)
 
-    LOGGER.info("Deleting uploads for %s", _date)
+    LOGGER.info("[%s] Deleting uploads for %s", job_id, uploaded_on)
 
     await messagebus.handle(
-        message=DeleteExpiredUploads(job_id=job_id, uploaded_on=uploaded_on),
+        message=DeleteExpiredUploads(uploaded_on=uploaded_on),
     )
 
 
@@ -58,7 +57,7 @@ async def startup(ctx: dict):
     sessionmaker = get_session_maker(str(settings.POSTGRES_DSN))
 
     def _messagebus_factory() -> MessageBus:
-        MessageBus(
+        return MessageBus(
             handlers={
                 UpdateArchiveEntries: [update_data_archive_entries],
                 DeleteExpiredUploads: [DeletedExpiredUploadsHandler(s3=s3)],
@@ -71,6 +70,7 @@ async def startup(ctx: dict):
     ctx["settings"] = settings
 
     if settings.SURF_USERNAME and settings.SURF_PASSWORD:
+        LOGGER.info("Adding archiver")
         ctx["archiver"] = SurfArchiver(
             settings=Settings(
                 username=settings.SURF_USERNAME,
@@ -82,9 +82,11 @@ async def startup(ctx: dict):
     LOGGER.info("Start up complete")
 
 
-async def on_job_start(ctx: dict):
+async def job_start(ctx: dict):
     messagebus_factory: MessagebusFactoryT = ctx["messagebus_factory"]
+
     ctx["messagebus"] = messagebus_factory()
+    ctx["internal_job_id"] = uuid4()
 
 
 async def shutdown(ctx: dict):
@@ -101,7 +103,7 @@ class WorkerSettings:
 
     on_startup = startup
     on_shutdown = shutdown
-    on_job_start = on_job_start
+    on_job_start = job_start
 
     redis_settings = RedisSettings.from_dsn(
         os.getenv("REDIS_DSN", "redis://localhost:6379"),
