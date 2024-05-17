@@ -1,35 +1,35 @@
-import asyncio
 import logging
 import tarfile
-from concurrent.futures import Executor
 from contextlib import asynccontextmanager
+from enum import IntEnum
 from pathlib import Path
 from typing import AsyncGenerator
 
 import cv2
 import s3fs
 
-from .config import WorkerSettings
+from .config import AWSSettings
 
 LOGGER = logging.getLogger(__name__)
 
 
-def compress(src: Path, target: Path):
+class Compression(IntEnum):
+
+    DEFLATE = 8
+    LZW = 5
+
+
+def compress(src: Path, target: Path, mode: Compression = Compression.DEFLATE):
     LOGGER.debug("Compressing %s", src)
 
     img = cv2.imread(str(src))
     cv2.imwrite(
         str(target),
         img,
-        params=(cv2.IMWRITE_TIFF_COMPRESSION, 5),
+        params=(cv2.IMWRITE_TIFF_COMPRESSION, mode),
     )
 
     LOGGER.debug("Compressed %s", src)
-
-
-async def acompress(src: Path, target: Path, executor: Executor):
-    loop = asyncio.get_event_loop()
-    await loop.run_in_executor(executor, compress, src, target)
 
 
 def tar(src: Path, target: Path):
@@ -42,14 +42,9 @@ def tar(src: Path, target: Path):
     LOGGER.debug("Tarred %s", src)
 
 
-async def atar(src: Path, target: Path, executor: Executor):
-    loop = asyncio.get_event_loop()
-    await loop.run_in_executor(executor, tar, src, target)
-
-
 @asynccontextmanager
 async def managed_file_system(
-    settings: WorkerSettings,
+    settings: AWSSettings,
 ) -> AsyncGenerator[s3fs.S3FileSystem, None]:
     client_kwargs = {}
     if settings.AWS_REGION_NAME:

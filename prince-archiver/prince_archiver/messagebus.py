@@ -12,6 +12,8 @@ HandlerMappingT = Mapping[
     list[Callable[..., Awaitable[None]]],
 ]
 
+MessagebusFactoryT = Callable[[], "MessageBus"]
+
 
 class AbstractHandler(Generic[ModelT], ABC):
 

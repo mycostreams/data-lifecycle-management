@@ -2,7 +2,6 @@ import logging
 import os
 from concurrent.futures import ProcessPoolExecutor
 from contextlib import AsyncExitStack
-from typing import Callable
 
 from arq.connections import RedisSettings
 
@@ -11,15 +10,12 @@ from prince_archiver.db import UnitOfWork, get_session_maker
 from prince_archiver.dto import TimestepDTO
 from prince_archiver.file import managed_file_system
 from prince_archiver.logging import configure_logging
-from prince_archiver.messagebus import MessageBus
+from prince_archiver.messagebus import MessageBus, MessagebusFactoryT
 
 from .dto import UploadDTO
 from .handlers import UploadHandler, add_upload_to_db
 
 LOGGER = logging.getLogger(__name__)
-
-
-MessagebusFactoryT = Callable[[], MessageBus]
 
 
 async def workflow(
@@ -33,6 +29,8 @@ async def workflow(
 
 async def startup(ctx):
     configure_logging()
+
+    LOGGER.info("Starting up worker")
 
     exit_stack = await AsyncExitStack().__aenter__()
 
@@ -59,6 +57,8 @@ async def startup(ctx):
 
     ctx["messagebus_factory"] = _message_bus_factory
     ctx["exit_stack"] = exit_stack
+
+    LOGGER.info("Start up complete")
 
 
 async def on_job_start(ctx: dict):

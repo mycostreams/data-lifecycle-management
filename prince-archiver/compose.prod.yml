@@ -3,8 +3,6 @@ services:
     environment:
       - SENTRY_DSN=${SENTRY_DSN}
       - WATCHFILES_FORCE_POLLING=true
-    labels:
-      logging: "promtail"
     volumes:
       - cifs_mount:/data/input/
     env_file:
@@ -14,11 +12,9 @@ services:
       restart_policy:
         condition: on-failure
   
-  worker:
+  upload-worker:
     environment:
       - SENTRY_DSN=${SENTRY_DSN}
-    labels:
-      logging: "promtail"
     volumes:
       - cifs_mount:/data/input/
     env_file:
@@ -30,20 +26,11 @@ services:
         condition: on-failure
 
   cron-worker:
-    image: prince-archiver
-    command: ["arq", "prince_archiver.data_archive.WorkerSettings"]
     environment:
-      - DATA_ARCHIVE_HOST=archive.surfsara.nl
-      - POSTGRES_DSN=postgresql+asyncpg://postgres:postgres@db:5432/postgres
-      - REDIS_DSN=redis://redis:6379
-    labels:
-      logging: "promtail"
+      - SENTRY_DSN=${SENTRY_DSN}
     env_file:
       - .env
       - .env.prod
-    depends_on:
-      redis:
-        condition: service_healthy
     deploy:
       restart_policy:
         condition: on-failure
@@ -51,8 +38,6 @@ services:
   data-archive-subscriber:
     environment:
       - SENTRY_DSN=${SENTRY_DSN}
-    labels:
-      logging: "promtail"
     env_file:
       - .env
       - .env.prod
