@@ -18,7 +18,6 @@ from prince_archiver.models import ObjectStoreEntry
 
 from .dto import UploadDTO
 
-
 LOGGER = logging.getLogger(__name__)
 
 _T = TypeVar("_T")
