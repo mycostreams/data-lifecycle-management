@@ -1,8 +1,9 @@
 import asyncio
 import logging
+from concurrent.futures import Executor
 from contextlib import AsyncExitStack, asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator, Callable, TypeVar
 
 import aiofiles
 import aiofiles.os
@@ -11,13 +12,16 @@ from aiofiles.tempfile import TemporaryDirectory
 
 from prince_archiver.db import AbstractUnitOfWork
 from prince_archiver.dto import TimestepDTO
-from prince_archiver.file import acompress, atar
+from prince_archiver.file import compress, tar
 from prince_archiver.messagebus import AbstractHandler
 from prince_archiver.models import ObjectStoreEntry
 
 from .dto import UploadDTO
 
+
 LOGGER = logging.getLogger(__name__)
+
+_T = TypeVar("_T")
 
 
 class UploadHandler(AbstractHandler[TimestepDTO]):
@@ -26,7 +30,7 @@ class UploadHandler(AbstractHandler[TimestepDTO]):
         self,
         s3: s3fs.S3FileSystem,
         bucket_name: str,
-        pool,
+        pool: Executor,
         base_dir: Path,
     ):
         self.s3 = s3
@@ -56,7 +60,8 @@ class UploadHandler(AbstractHandler[TimestepDTO]):
 
     @asynccontextmanager
     async def get_temp_archive(
-        self, message: TimestepDTO
+        self,
+        message: TimestepDTO,
     ) -> AsyncGenerator[Path, None]:
         LOGGER.info("Creating temp archive %s", message.key)
 
@@ -77,11 +82,18 @@ class UploadHandler(AbstractHandler[TimestepDTO]):
     async def _compress_img_folder(self, src_dir: Path, target_dir: Path):
         src_files = map(lambda path: src_dir / path, await aiofiles.os.listdir(src_dir))
         await asyncio.gather(
-            *(acompress(file, target_dir / file.name, self.pool) for file in src_files),
+            *(self._acompress(file, target_dir / file.name) for file in src_files),
         )
 
+    async def _acompress(self, src_path: Path, target_path: Path):
+        await self._run_in_pool(compress, src_path, target_path)
+
     async def _tar_img_folder(self, src_dir: Path, target_path: Path):
-        await atar(src_dir, target_path, self.pool)
+        await self._run_in_pool(tar, src_dir, target_path)
+
+    async def _run_in_pool(self, func: Callable[..., _T], *args: Any) -> _T:
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(self.pool, func, *args)
 
 
 async def add_upload_to_db(

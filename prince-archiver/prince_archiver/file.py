@@ -1,7 +1,5 @@
-import asyncio
 import logging
 import tarfile
-from concurrent.futures import Executor
 from contextlib import asynccontextmanager
 from enum import IntEnum
 from pathlib import Path
@@ -17,8 +15,8 @@ LOGGER = logging.getLogger(__name__)
 
 class Compression(IntEnum):
 
-    DEFLATE = 5
-    LZW = 8
+    DEFLATE = 8
+    LZW = 5
 
 
 def compress(src: Path, target: Path, mode: Compression = Compression.DEFLATE):
@@ -34,11 +32,6 @@ def compress(src: Path, target: Path, mode: Compression = Compression.DEFLATE):
     LOGGER.debug("Compressed %s", src)
 
 
-async def acompress(src: Path, target: Path, executor: Executor):
-    loop = asyncio.get_event_loop()
-    await loop.run_in_executor(executor, compress, src, target)
-
-
 def tar(src: Path, target: Path):
     LOGGER.debug("Tarring %s", src)
 
@@ -47,11 +40,6 @@ def tar(src: Path, target: Path):
         tar.add(src, arcname=".")
 
     LOGGER.debug("Tarred %s", src)
-
-
-async def atar(src: Path, target: Path, executor: Executor):
-    loop = asyncio.get_event_loop()
-    await loop.run_in_executor(executor, tar, src, target)
 
 
 @asynccontextmanager
