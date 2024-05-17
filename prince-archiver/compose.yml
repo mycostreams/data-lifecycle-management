@@ -1,8 +1,13 @@
-
+---
 x-env-variables: &env-variables
   DATA_DIR: /data/input/
   REDIS_DSN: redis://redis:6379
   POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
+
+
+x-log-labels: &log-labels
+  logging: promtail
+  logging_jobname: ${DEPLOYMENT_NAME-:morricone}
 
 
 services:
@@ -11,8 +16,8 @@ services:
     build:
       context: .
     command: ["python", "-m", "prince_archiver.watcher.main"]
-    environment: 
-      <<: *env-variables
+    environment: *env-variables
+    labels: *log-labels
     depends_on:
       db:
         condition: service_healthy
@@ -23,6 +28,7 @@ services:
     image: prince-archiver
     command: ["arq", "prince_archiver.upload_worker.WorkerSettings"]
     environment: *env-variables
+    labels: *log-labels
     depends_on:
       db:
         condition: service_healthy
@@ -36,6 +42,7 @@ services:
       - DATA_ARCHIVE_HOST=archive.surfsara.nl
       - POSTGRES_DSN=postgresql+asyncpg://postgres:postgres@db:5432/postgres
       - REDIS_DSN=redis://redis:6379
+    labels: *log-labels
     volumes:
       - ~/.ssh/known_hosts/:/root/.ssh/known_hosts:ro
     depends_on:
@@ -49,6 +56,7 @@ services:
     command: ["python", "-m", "prince_archiver.data_archive.subscriber"]
     environment:
       - POSTGRES_DSN=postgresql+asyncpg://postgres:postgres@db:5432/postgres=mycostreams
+    labels: *log-labels
     depends_on:
       db:
         condition: service_healthy

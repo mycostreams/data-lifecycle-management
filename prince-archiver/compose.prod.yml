@@ -3,8 +3,6 @@ services:
     environment:
       - SENTRY_DSN=${SENTRY_DSN}
       - WATCHFILES_FORCE_POLLING=true
-    labels:
-      logging: "promtail"
     volumes:
       - cifs_mount:/data/input/
     env_file:
@@ -17,8 +15,6 @@ services:
   upload-worker:
     environment:
       - SENTRY_DSN=${SENTRY_DSN}
-    labels:
-      logging: "promtail"
     volumes:
       - cifs_mount:/data/input/
     env_file:
@@ -32,8 +28,6 @@ services:
   cron-worker:
     environment:
       - SENTRY_DSN=${SENTRY_DSN}
-    labels:
-      logging: "promtail"
     env_file:
       - .env
       - .env.prod
@@ -44,8 +38,6 @@ services:
   data-archive-subscriber:
     environment:
       - SENTRY_DSN=${SENTRY_DSN}
-    labels:
-      logging: "promtail"
     env_file:
       - .env
       - .env.prod
