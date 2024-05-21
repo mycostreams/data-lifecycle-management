@@ -3,7 +3,6 @@ name = "prince-archiver"
 version = "0.1.0"
 description = ""
 authors = ["Isaac Williams <isaac.andrew.williams@gmail.com>"]
-readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"

@@ -1,9 +1,8 @@
 # The builder image, used to build the virtual environment
 FROM python:3.12-bullseye as builder
 
-ENV POETRY_VERSION=1.4.2 \
+ENV POETRY_VERSION=1.8.3 \
     POETRY_HOME=/opt/poetry \
-    POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=1 \
     POETRY_VIRTUALENVS_CREATE=1 \
     POETRY_CACHE_DIR=/opt/.cache 
@@ -15,8 +14,11 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
+RUN poetry install --only main && rm -rf $POETRY_CACHE_DIR
 
-RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
+COPY ./prince_archiver /app/prince_archiver
+RUN poetry install --only-root
+
 
 # The runtime image, used to just run the code provided its virtual environment
 FROM python:3.12-slim-bullseye as runtime
