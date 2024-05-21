@@ -1,7 +1,7 @@
 name: prince-archiver
 on: 
   push:
-    branches: main
+    # branches: main
     paths: 
      - 'prince-archiver/**'
      - '.github/workflows/prince-archiver.yaml'
@@ -15,21 +15,18 @@ jobs:
     name: Static analysis
     strategy:
       fail-fast: false
-      matrix:
-        python-version: ["3.12"]
-        platform: [ubuntu-latest]
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install poetry
         run: pipx install poetry
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.12"
+          cache: poetry
       - name: Install dependencies
         run: |
-          poetry env use ${{ matrix.python-version }} 
-          poetry install
+          poetry install 
       - name: Run black
         run: poetry run black . --check
       - name: Run isort
@@ -38,3 +35,25 @@ jobs:
         run: poetry run flake8 .
       - name: Run mypy
         run: poetry run mypy .
+  
+  tests:
+    name: Tests
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.12"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: poetry
+      - name: Install dependencies
+        run: |
+          poetry env use ${{ matrix.python-version }} 
+          poetry install
+      - name: Unit tests
+        run: poetry run pytest tests/unit

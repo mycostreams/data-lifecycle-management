@@ -29,6 +29,7 @@ flake8-bugbear = "^24.2.6"
 isort = "^5.13.2"
 mypy = "^1.8.0"
 pytest = "^8.0.0"
+pytest-asyncio = "^0.23.7"
 types-aiofiles = "^23.2.0.20240331"
 types-pyyaml = "^6.0.12.12"
 
@@ -42,11 +43,16 @@ profile = "black"
 [tool.mypy]
 plugins = "pydantic.mypy"
 
+
 [[tool.mypy.overrides]]
 module = [
     "s3fs"
 ]
 ignore_missing_imports = true
+
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
 
 [build-system]
 requires = ["poetry-core"]
