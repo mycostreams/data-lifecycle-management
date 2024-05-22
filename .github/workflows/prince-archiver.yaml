@@ -79,7 +79,7 @@ jobs:
           docker compose -f compose.test.yml up --detach --wait
           poetry run alembic upgrade head
         env:
-          CONNECTION_URL: "postgresql+asyncpg://postgres:postgres@localhost:5431/postgres"
+          POSTGRES_DSN: "postgresql+asyncpg://postgres:postgres@localhost:5431/postgres"
       - name: Run tests
         run: poetry run pytest tests/integration
       - name: Cleanup services
