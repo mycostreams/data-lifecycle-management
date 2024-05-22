@@ -25,8 +25,7 @@ jobs:
           python-version: "3.12"
           cache: poetry
       - name: Install dependencies
-        run: |
-          poetry install 
+        run: poetry install 
       - name: Run black
         run: poetry run black . --check
       - name: Run isort
@@ -36,8 +35,9 @@ jobs:
       - name: Run mypy
         run: poetry run mypy .
   
-  tests:
-    name: Tests
+  unit-tests:
+    name: Unit tests
+    needs: static-analysis
     strategy:
       fail-fast: true
       matrix:
@@ -57,3 +57,30 @@ jobs:
           poetry install
       - name: Unit tests
         run: poetry run pytest tests/unit
+
+  integration-tests:
+    name: Integration tests
+    needs: unit-tests
+    strategy:
+      fail-fast: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: poetry
+      - name: Install dependencies
+        run: poetry install
+      - name: Start services
+        run: |
+          docker compose -f compose.test.yml --detach --wait
+          poetry run alembic upgrade head
+        env:
+          CONNECTION_URL: "postgresql+asyncpg://postgres:postgres@localhost:5431/postgres"
+      - name: Run tests
+        run: poetry run pytest tests/integration
+      - name: Cleanup services
+        run: docker compose -f compose.test.yml down --volumes

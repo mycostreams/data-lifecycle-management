@@ -1,0 +1,25 @@
+---
+services:
+  test-db:
+    image: postgres:15-alpine
+    ports:
+      - 5431:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data/
+    networks:
+      - prince-archiver-test
+
+networks:
+  prince-archiver-test:
+
+volumes:
+  postgres_test_data:

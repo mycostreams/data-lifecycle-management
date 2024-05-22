@@ -41,6 +41,7 @@ watch = "prince_archiver.watcher.main:main"
 profile = "black"
 
 [tool.mypy]
+exclude = ["tests"]
 plugins = "pydantic.mypy"
 
 
