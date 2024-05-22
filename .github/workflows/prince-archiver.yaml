@@ -1,7 +1,13 @@
 name: prince-archiver
-on: 
+on:
+  pull_request:
+    types:
+      - opened
+    paths: 
+      - 'prince-archiver/**'
+      - '.github/workflows/prince-archiver.yaml'
   push:
-    # branches: main
+    branches: main
     paths: 
      - 'prince-archiver/**'
      - '.github/workflows/prince-archiver.yaml'
@@ -62,7 +68,7 @@ jobs:
     name: Integration tests
     needs: unit-tests
     strategy:
-      fail-fast: true
+      fail-fast: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
