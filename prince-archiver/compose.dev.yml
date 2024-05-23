@@ -10,7 +10,7 @@ services:
     image: prince-archiver
     command: ["python", "-m", "prince_archiver.test_utils.mock_prince"]
     environment:
-      - DATA_DIR=/data/input
+      DATA_DIR: /data/input
     volumes:
       - ./prince_archiver:/app/prince_archiver
       - ./alembic/:/app/alembic
@@ -48,7 +48,7 @@ services:
 
   data-archive-subscriber:
     environment:
-      - RABBITMQ_DSN=amqp://guest:guest@rabbitmq:5672
+      RABBITMQ_DSN: amqp://guest:guest@rabbitmq:5672
     volumes:
       - ./prince_archiver:/app/prince_archiver
       - ./alembic/:/app/alembic
@@ -62,8 +62,8 @@ services:
       - 9090:9090
       - 9191:9191
     environment:
-      - initialBuckets=mycostreams
-      - validKmsKeys=arn:aws:kms:eu-central-1:1234567890:key/aws-access-key-id
+      initialBuckets: mycostreams
+      validKmsKeys: arn:aws:kms:eu-central-1:1234567890:key/aws-access-key-id
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090"]
       interval: 5s
