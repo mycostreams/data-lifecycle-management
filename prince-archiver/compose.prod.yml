@@ -35,7 +35,8 @@ services:
       SURF_USERNAME: ${SURF_USERNAME}
       SURF_PASSWORD: ${SURF_PASSWORD}
       SENTRY_DSN: ${SENTRY_DSN}
-      UPLOAD_EXPIRY_DAYS: ${UPLOAD_EXPIRY_DAYS:- 5}
+      UPLOAD_EXPIRY_DAYS: ${UPLOAD_EXPIRY_DAYS:-5}
+      ARCHIVE_TRANSITION_DAYS: ${ARCHIVE_TRANSITION_DAYS:-2}
     deploy:
       restart_policy:
         condition: on-failure

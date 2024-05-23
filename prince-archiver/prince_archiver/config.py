@@ -56,6 +56,7 @@ class ArchiveWorkerSettings(AWSSettings, CommonSettings):
     DATA_ARCHIVE_HOST: str = "archive.surfsara.nl"
 
     UPLOAD_EXPIRY_DAYS: int = 5
+    ARCHIVE_TRANSITION_DAYS: int = 2
 
 
 class SubscriberSettings(BaseSettings):
