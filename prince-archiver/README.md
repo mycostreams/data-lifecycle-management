@@ -40,7 +40,7 @@ and that it has the following contents:
 First run the migraitons. To do this run:
 
 ```bash
-docker compose -f compose.yml -f compose.dev.yml run -ti watcher bash
+docker compose run -ti watcher bash
 ```
 
 This enters the watcher service. Then run:
