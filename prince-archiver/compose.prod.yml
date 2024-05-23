@@ -1,25 +1,29 @@
+---
+x-aws-env-variables: &aws-env-variables
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+  AWS_ENDPOINT_URL: https://proxy.swift.surfsara.nl
+  AWS_REGION: NL
+
+
 services:
   watcher:
     environment:
       - SENTRY_DSN=${SENTRY_DSN}
       - WATCHFILES_FORCE_POLLING=true
     volumes:
-      - cifs_mount:/data/input/
-    env_file:
-      - .env
-      - .env.prod
+      - cifs_mount:/data/input/:ro
     deploy:
       restart_policy:
         condition: on-failure
   
   upload-worker:
     environment:
+      - <<: *aws-env-variables
       - SENTRY_DSN=${SENTRY_DSN}
+      - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
     volumes:
-      - cifs_mount:/data/input/
-    env_file:
-      - .env
-      - .env.prod
+      - cifs_mount:/data/input/:ro
     deploy:
       replicas: 2
       restart_policy:
@@ -27,10 +31,10 @@ services:
 
   cron-worker:
     environment:
+      - <<: *aws-env-variables
+      - SURF_USERNAME=${SURF_USERNAME}
+      - SURF_PASSWORD=${SURF_PASSWORD}
       - SENTRY_DSN=${SENTRY_DSN}
-    env_file:
-      - .env
-      - .env.prod
     deploy:
       restart_policy:
         condition: on-failure
@@ -38,9 +42,7 @@ services:
   data-archive-subscriber:
     environment:
       - SENTRY_DSN=${SENTRY_DSN}
-    env_file:
-      - .env
-      - .env.prod
+      - RABBITMQ_DSN=${RABBITMQ_DSN}
     deploy:
       restart_policy:
         condition: on-failure
