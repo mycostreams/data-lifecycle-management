@@ -3,7 +3,7 @@ x-aws-env-variables: &aws-env-variables
   AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
   AWS_ENDPOINT_URL: https://proxy.swift.surfsara.nl
-  AWS_REGION: NL
+  AWS_REGION_NAME: NL
 
 
 services:
@@ -35,6 +35,7 @@ services:
       SURF_USERNAME: ${SURF_USERNAME}
       SURF_PASSWORD: ${SURF_PASSWORD}
       SENTRY_DSN: ${SENTRY_DSN}
+      UPLOAD_EXPIRY_DAYS: ${UPLOAD_EXPIRY_DAYS:- 5}
     deploy:
       restart_policy:
         condition: on-failure
