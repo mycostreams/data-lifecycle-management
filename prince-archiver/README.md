@@ -1,6 +1,13 @@
 # Introduction
 
-Demo code for identifiying 
+This project provides a mechanism for moving local Prince image data to an s3 supported
+object storage backend as soon as a timestep is available. 
+
+Broadly speaking, it consists of the following components:
+- watcher
+- upload worker
+- data archive worker
+- data archive subscriber
 
 
 # Input directory structure
@@ -55,20 +62,38 @@ Both the `watcher` and `prince` containers have shared volumes. This allows the
 
 # Local development
 
-Get rabbitmq and postgres running
+The project uses [poetry](https://python-poetry.org/) for dependendancy managment.
+To install the project run:
+
+```bash
+poetry install
+```
+
+Before running the project
+
+
+Ensure that a `.env` is created appropriately.
+
+Get the dependent services running:
 
 ```bash
 docker compose -f compose.yml -f compose.dev.yml up db redis s3
 ```
 
-In a seperate terminal, run the worker:
-
-```bash
-poetry run arq prince_archiver.worker.WorkerSettings
-```
-
-Start the file watcher:
+Now Start the file watcher:
 
 ```bash
 poetry run watch
 ```
+
+In a seperate terminal, run the worker:
+
+```bash
+poetry run arq prince_archiver.upload_worker.WorkerSettings
+```
+
+
+Generate a timestep with:
+```bash
+poetry run cli --data-dir <...>
+``` 
