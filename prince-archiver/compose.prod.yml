@@ -9,8 +9,8 @@ x-aws-env-variables: &aws-env-variables
 services:
   watcher:
     environment:
-      - SENTRY_DSN=${SENTRY_DSN}
-      - WATCHFILES_FORCE_POLLING=true
+      SENTRY_DSN: ${SENTRY_DSN}
+      WATCHFILES_FORCE_POLLING: "true"
     volumes:
       - cifs_mount:/data/input/:ro
     deploy:
@@ -19,9 +19,9 @@ services:
   
   upload-worker:
     environment:
-      - <<: *aws-env-variables
-      - SENTRY_DSN=${SENTRY_DSN}
-      - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
+      <<: *aws-env-variables
+      SENTRY_DSN: ${SENTRY_DSN}
+      AWS_BUCKET_NAME: ${AWS_BUCKET_NAME}
     volumes:
       - cifs_mount:/data/input/:ro
     deploy:
@@ -31,18 +31,18 @@ services:
 
   cron-worker:
     environment:
-      - <<: *aws-env-variables
-      - SURF_USERNAME=${SURF_USERNAME}
-      - SURF_PASSWORD=${SURF_PASSWORD}
-      - SENTRY_DSN=${SENTRY_DSN}
+      <<: *aws-env-variables
+      SURF_USERNAME: ${SURF_USERNAME}
+      SURF_PASSWORD: ${SURF_PASSWORD}
+      SENTRY_DSN: ${SENTRY_DSN}
     deploy:
       restart_policy:
         condition: on-failure
 
   data-archive-subscriber:
     environment:
-      - SENTRY_DSN=${SENTRY_DSN}
-      - RABBITMQ_DSN=${RABBITMQ_DSN}
+      SENTRY_DSN: ${SENTRY_DSN}
+      RABBITMQ_DSN: ${RABBITMQ_DSN}
     deploy:
       restart_policy:
         condition: on-failure
@@ -51,8 +51,8 @@ services:
     image:  grafana/promtail:latest
     container_name: promtail
     environment:
-      - LOKI_USERNAME=${LOKI_USERNAME}
-      - LOKI_API_TOKEN=${LOKI_API_TOKEN}
+      LOKI_USERNAME: ${LOKI_USERNAME}
+      LOKI_API_TOKEN: ${LOKI_API_TOKEN}
     volumes:
       - ./config/promtail.yaml:/etc/promtail/docker-config.yaml
       - /var/lib/docker/containers:/var/lib/docker/containers:ro

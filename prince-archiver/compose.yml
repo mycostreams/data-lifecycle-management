@@ -39,9 +39,9 @@ services:
     image: prince-archiver
     command: ["arq", "prince_archiver.data_archive.WorkerSettings"]
     environment:
-      - DATA_ARCHIVE_HOST=archive.surfsara.nl
-      - POSTGRES_DSN=postgresql+asyncpg://postgres:postgres@db:5432/postgres
-      - REDIS_DSN=redis://redis:6379
+      DATA_ARCHIVE_HOST: archive.surfsara.nl
+      POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
+      REDIS_DSN: redis://redis:6379
     labels: *log-labels
     volumes:
       - ~/.ssh/known_hosts/:/root/.ssh/known_hosts:ro
@@ -55,7 +55,7 @@ services:
     image: prince-archiver
     command: ["python", "-m", "prince_archiver.data_archive.subscriber"]
     environment:
-      - POSTGRES_DSN=postgresql+asyncpg://postgres:postgres@db:5432/postgres=mycostreams
+      POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
     labels: *log-labels
     depends_on:
       db:

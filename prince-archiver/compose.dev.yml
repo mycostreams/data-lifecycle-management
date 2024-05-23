@@ -24,8 +24,8 @@ services:
 
   upload-worker:
     environment:
-      - <<: *aws-env-variables
-      - AWS_BUCKET_NAME=mycostreams
+      <<: *aws-env-variables
+      AWS_BUCKET_NAME: mycostreams
     volumes:
       - ./prince_archiver:/app/prince_archiver
       - ./alembic/:/app/alembic
@@ -36,9 +36,9 @@ services:
 
   cron-worker:
     environment:
-      - <<: *aws-env-variables
-      - SURF_USERNAME=""
-      - SURF_PASSWORD=""
+      <<: *aws-env-variables
+      SURF_USERNAME: ""
+      SURF_PASSWORD: ""
     volumes:
       - ./prince_archiver:/app/prince_archiver
       - ./alembic/:/app/alembic
