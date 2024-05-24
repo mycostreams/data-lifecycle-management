@@ -3,6 +3,7 @@ import os
 from contextlib import AsyncExitStack
 from datetime import date, timedelta
 from uuid import UUID, uuid4
+from zoneinfo import ZoneInfo
 
 from arq import cron
 from arq.connections import RedisSettings
@@ -104,13 +105,15 @@ class WorkerSettings:
     queue_name = "arq:queue-cron"
 
     cron_jobs = [
-        cron(run_archiving, hour={2}, timeout=timedelta(hours=2)),
+        cron(run_archiving, hour={14}, minute={35}, timeout=timedelta(hours=2)),
         cron(delete_expired_uploads, hour={3}, timeout=timedelta(hours=1)),
     ]
 
     on_startup = startup
     on_shutdown = shutdown
     on_job_start = job_start
+
+    timezone = ZoneInfo("Europe/Amsterdam")
 
     redis_settings = RedisSettings.from_dsn(
         os.getenv("REDIS_DSN", "redis://localhost:6379"),
