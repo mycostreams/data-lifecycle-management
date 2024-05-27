@@ -49,17 +49,30 @@ services:
       restart_policy:
         condition: on-failure
 
-  promtail:
-    image:  grafana/promtail:latest
-    container_name: promtail
+  alloy:
+    image: grafana/alloy:latest
+    command:
+      - "run"
+      - "/etc/alloy/config.alloy"
+      - "--server.http.listen-addr=0.0.0.0:12345"
+      - "--storage.path=/var/lib/alloy/data"
     environment:
+      PROM_USERNAME: ${PROM_USERNAME}
       LOKI_USERNAME: ${LOKI_USERNAME}
-      LOKI_API_TOKEN: ${LOKI_API_TOKEN}
+      GRAFANA_API_TOKEN: ${GRAFANA_API_TOKEN}
     volumes:
-      - ./config/promtail.yaml:/etc/promtail/docker-config.yaml
+      - .config/config.alloy:/etc/alloy/config.alloy
+      - /:/rootfs:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: -config.file=/etc/promtail/docker-config.yaml -config.expand-env=true
+      - /var/run:/var/run:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    privileged: true
+    ports:
+      - 12345:12345
+    networks:
+      - monitoring
 
 volumes:
   cifs_mount: 
@@ -67,3 +80,6 @@ volumes:
       type: cifs
       device: //prince.amolf.nl/Data/Prince2/Images/
       o: username=${AMOLF_USERNAME},password=${AMOLF_PASSWORD}
+
+networks:
+  monitoring: 

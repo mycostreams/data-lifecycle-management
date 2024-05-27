@@ -1,0 +1,97 @@
+
+// Promethus config
+
+prometheus.exporter.cadvisor "default" {
+  store_container_labels = false
+  enabled_metrics = ["cpu", "memory", "network"]
+  docker_only = true
+  storage_duration = "5m"
+}
+
+prometheus.scrape "scraper" {
+  // Collect metrics from the default listen address.
+  scrape_interval = "30s"
+  targets = prometheus.exporter.cadvisor.default.targets
+  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+}
+
+prometheus.remote_write "grafana_cloud" {
+  endpoint {
+    url = "https://prometheus-prod-24-prod-eu-west-2.grafana.net/api/prom/push"
+
+    basic_auth {
+      username = env("PROM_USERNAME")
+      password = env("GRAFANA_API_TOKEN")
+    }
+
+    queue_config {
+      max_samples_per_send = 1000
+    }
+
+  }
+}
+
+
+// loki config
+
+discovery.docker "containers" {
+    host = "unix:///var/run/docker.sock"
+}
+
+
+discovery.relabel "default" {
+	targets = discovery.docker.containers.targets
+
+  rule {
+        action = "keep"
+        source_labels = ["__meta_docker_container_label_logging"]
+        regex = "loki"
+    }
+
+	rule {
+		action = "replace"
+		source_labels = ["__meta_docker_container_name"]
+		target_label  = "container_name"
+	}
+
+	rule {
+		action = "replace"
+		source_labels = ["__meta_docker_container_label_logging_jobname"]
+		target_label = "job"
+	}
+}
+
+
+loki.source.docker "default" {
+  host = "unix:///var/run/docker.sock"
+  targets = discovery.relabel.default.output
+  forward_to = [loki.process.pipeline.receiver]
+  refresh_interval = "60s"
+}
+
+
+loki.process "pipeline" {
+
+  forward_to = [loki.write.remote.receiver]
+
+  stage.docker {}
+
+  stage.multiline {
+    firstline = "^\\d{4}-\\d{2}-\\d{2} \\d{1,2}:\\d{2}:\\d{2},\\d{3}"
+    max_wait_time = "3s"
+  }
+
+}
+
+
+loki.write "grafana_cloud" {
+  endpoint {
+    url = "http://logs-prod-012.grafana.net/loki/api/v1/push"
+
+    basic_auth {
+        username = env("LOKI_USERNAME")
+        password = env("GRAFANA_API_TOKEN")
+    }
+  }
+
+}
