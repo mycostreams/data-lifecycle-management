@@ -105,8 +105,8 @@ class WorkerSettings:
     queue_name = "arq:queue-cron"
 
     cron_jobs = [
-        cron(run_archiving, hour={2}, timeout=timedelta(hours=2)),
-        cron(delete_expired_uploads, hour={3}, timeout=timedelta(hours=1)),
+        cron(run_archiving, hour={2}, minute={0}, timeout=timedelta(minutes=2)),
+        cron(delete_expired_uploads, hour={2}, minute={0}, timeout=timedelta(hours=1)),
     ]
 
     on_startup = startup
