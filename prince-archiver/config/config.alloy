@@ -35,8 +35,8 @@ prometheus.remote_write "grafana_cloud" {
 // Loki config
 
 discovery.docker "containers" {
-    host = "unix:///var/run/docker.sock"
-    refresh_interval = "5s"
+  host = "unix:///var/run/docker.sock"
+  refresh_interval = "5s"
 
 	filter {
 		name = "label"
@@ -87,8 +87,8 @@ loki.process "pipeline" {
   forward_to = [loki.write.grafana_cloud.receiver]
 
   stage.multiline {
-      firstline = "^\\d{4}-\\d{2}-\\d{2} \\d{1,2}:\\d{2}:\\d{2},\\d{3}"
-      max_wait_time = "3s"
+    firstline = "^\\d{4}-\\d{2}-\\d{2} \\d{1,2}:\\d{2}:\\d{2},\\d{3}"
+    max_wait_time = "3s"
   }
 
 }
