@@ -38,16 +38,16 @@ discovery.docker "containers" {
   host = "unix:///var/run/docker.sock"
   refresh_interval = "5s"
 
-	filter {
-		name = "label"
-		values = ["logging=loki"]
-	}
+  filter {
+    name = "label"
+    values = ["logging=loki"]
+  }
 
 }
 
 
 discovery.relabel "default" {
-	targets = []
+  targets = []
 
   rule {
     source_labels = ["__meta_docker_container_name"]
