@@ -106,7 +106,7 @@ class WorkerSettings:
 
     cron_jobs = [
         cron(run_archiving, hour={2}, minute={0}, timeout=timedelta(minutes=2)),
-        cron(delete_expired_uploads, hour={2}, minute={0}, timeout=timedelta(hours=1)),
+        cron(delete_expired_uploads, hour={3}, minute={0}, timeout=timedelta(hours=1)),
     ]
 
     on_startup = startup
