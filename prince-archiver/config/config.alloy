@@ -32,30 +32,35 @@ prometheus.remote_write "grafana_cloud" {
 }
 
 
-// loki config
+// Loki config
 
 discovery.docker "containers" {
     host = "unix:///var/run/docker.sock"
+    refresh_interval = "5s"
+
+	filter {
+		name = "label"
+		values = ["logging=loki"]
+	}
+
 }
 
 
 discovery.relabel "default" {
-	targets = discovery.docker.containers.targets
-
-  rule {
-        action = "keep"
-        source_labels = ["__meta_docker_container_label_logging"]
-        regex = "loki"
-    }
+	targets = []
 
 	rule {
-		action = "replace"
-		source_labels = ["__meta_docker_container_name"]
-		target_label  = "container_name"
+		source_labels = ["__meta_docker_container_log_stream"]
+		target_label  = "logstream"
 	}
 
 	rule {
-		action = "replace"
+		source_labels = ["__meta_docker_container_name"]
+		target_label  = "container_name"
+    regex = "/(.*)"
+	}
+
+	rule {
 		source_labels = ["__meta_docker_container_label_logging_jobname"]
 		target_label = "job"
 	}
@@ -64,21 +69,26 @@ discovery.relabel "default" {
 
 loki.source.docker "default" {
   host = "unix:///var/run/docker.sock"
-  targets = discovery.relabel.default.output
+  targets = discovery.docker.containers.targets
+  forward_to = [loki.relabel.default.receiver]
+  relabel_rules = discovery.relabel.default.rules 
+  refresh_interval = "30s"
+}
+
+
+loki.relabel "default" {
   forward_to = [loki.process.pipeline.receiver]
-  refresh_interval = "60s"
+
 }
 
 
 loki.process "pipeline" {
 
-  forward_to = [loki.write.remote.receiver]
-
-  stage.docker {}
+  forward_to = [loki.write.grafana_cloud.receiver]
 
   stage.multiline {
-    firstline = "^\\d{4}-\\d{2}-\\d{2} \\d{1,2}:\\d{2}:\\d{2},\\d{3}"
-    max_wait_time = "3s"
+      firstline = "^\\d{4}-\\d{2}-\\d{2} \\d{1,2}:\\d{2}:\\d{2},\\d{3}"
+      max_wait_time = "3s"
   }
 
 }
@@ -89,8 +99,8 @@ loki.write "grafana_cloud" {
     url = "http://logs-prod-012.grafana.net/loki/api/v1/push"
 
     basic_auth {
-        username = env("LOKI_USERNAME")
-        password = env("GRAFANA_API_TOKEN")
+      username = env("LOKI_USERNAME")
+      password = env("GRAFANA_API_TOKEN")
     }
   }
 
