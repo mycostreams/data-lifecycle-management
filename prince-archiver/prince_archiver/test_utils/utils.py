@@ -1,12 +1,23 @@
 from functools import lru_cache
 from pathlib import Path
 from shutil import copy
+from timeit import default_timer
 
 import httpx
 
 from prince_archiver.dto import DirectoryConfig, TimestepMeta
 
 DOWNLOAD_URL = "https://vu.data.surfsara.nl/index.php/s/ndI1UoMRwliVYGR/download"
+
+
+class Timer:
+
+    def __init__(self):
+        self.ref = default_timer()
+
+    @property
+    def delta(self) -> float:
+        return default_timer() - self.ref
 
 
 @lru_cache

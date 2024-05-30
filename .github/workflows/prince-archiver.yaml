@@ -82,7 +82,7 @@ jobs:
         run: poetry install
       - name: Start services
         run: |
-          docker compose -f compose.test.yml up --detach --wait
+          docker compose -f tests/compose.integration.yml up --detach --wait
           poetry run alembic upgrade head
         env:
           POSTGRES_DSN: "postgresql+asyncpg://postgres:postgres@localhost:5431/postgres"

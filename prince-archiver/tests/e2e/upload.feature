@@ -1,7 +1,7 @@
 
 Feature: Upload flow
     @fixture.client
-    @fixture.db_conn
+    @fixture.db_engine
     Scenario: New timestep added
         Given the watcher and worker are running
         When a timestep is added

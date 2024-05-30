@@ -1,13 +1,15 @@
 from datetime import date, datetime, timezone
-from uuid import UUID, uuid4
-from timeit import default_timer
 from textwrap import dedent
+from uuid import UUID, uuid4
 
 import httpx
 from behave import *
-from sqlalchemy import Connection, text
+from behave.api.async_step import async_run_until_complete
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 from prince_archiver.dto import TimestepMeta
+from prince_archiver.test_utils.utils import Timer
 
 
 @given("the watcher and worker are running")
@@ -38,30 +40,31 @@ def step_impl(context):
 
 
 @then("the results are stored locally")
-def step_impl(context, timeout=30):
-    conn: Connection = context.db_conn
+@async_run_until_complete
+async def step_impl(context, timeout=30):
+
+    db_engine: AsyncEngine = context.db_engine
     timestep_id: UUID = context.timestep_id
 
-    raw_stmt = """\
+    raw_stmt = dedent(
+        """
         SELECT COUNT(1)
         FROM object_store_entry 
         WHERE timestep_id=:timestep_id
-    """
+        """
+    )
 
-    exists = False
+    async with db_engine.begin() as conn:
+        timer = Timer()
+        exists = False
+        while not exists and timer.delta < timeout:
+            _exists: int = await conn.scalar(
+                text(raw_stmt),
+                {"timestep_id": timestep_id.hex},
+            )
+            exists = bool(_exists)
 
-    ref = default_timer()
-    now = ref
-
-    while exists is False and (now - ref) < timeout:
-        cursor = conn.execute(
-            text(dedent(raw_stmt)), 
-            {"timestep_id": timestep_id.hex}
-        )
-        exists = bool(cursor.scalar())
-        now = default_timer()
-
-    assert exists
+        assert exists
 
 
 @then("the processed timestep is available in the object store")
