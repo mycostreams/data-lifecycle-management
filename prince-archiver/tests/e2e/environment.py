@@ -1,7 +1,6 @@
 from behave.fixture import use_fixture_by_tag
 
-from tests.e2e.fixtures import db_engine, client
-
+from tests.e2e.fixtures import client, db_engine
 
 fixture_registry = {
     "fixture.db_engine": db_engine,

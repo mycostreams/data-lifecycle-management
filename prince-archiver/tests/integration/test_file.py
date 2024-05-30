@@ -7,6 +7,8 @@ import pytest
 
 from prince_archiver.file import Compression, compress, tar
 
+pytestmark = pytest.mark.integration
+
 
 @dataclass(kw_only=True)
 class _TempDir:

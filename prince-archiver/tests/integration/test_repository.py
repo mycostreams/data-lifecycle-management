@@ -7,6 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from prince_archiver.db import TimestepRepo
 from prince_archiver.models import ObjectStoreEntry, Timestep
 
+pytestmark = pytest.mark.integration
+
 
 @pytest.fixture(name="timestep")
 async def fixture_timestep() -> Timestep:

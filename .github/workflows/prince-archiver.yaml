@@ -80,13 +80,5 @@ jobs:
           cache: poetry
       - name: Install dependencies
         run: poetry install
-      - name: Start services
-        run: |
-          docker compose -f tests/compose.integration.yml up --detach --wait
-          poetry run alembic upgrade head
-        env:
-          POSTGRES_DSN: "postgresql+asyncpg://postgres:postgres@localhost:5431/postgres"
-      - name: Run tests
-        run: poetry run pytest tests/integration
-      - name: Cleanup services
-        run: docker compose -f compose.test.yml down --volumes
+      - name: Run
+        run: ./scripts/run-integration-tests.sh

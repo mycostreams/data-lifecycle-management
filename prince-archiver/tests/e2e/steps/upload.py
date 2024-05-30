@@ -3,7 +3,7 @@ from textwrap import dedent
 from uuid import UUID, uuid4
 
 import httpx
-from behave import *
+from behave import *  # noqa:
 from behave.api.async_step import async_run_until_complete
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
