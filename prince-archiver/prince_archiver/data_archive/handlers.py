@@ -118,7 +118,8 @@ class DeletedExpiredUploadsHandler(AbstractHandler[DeleteExpiredUploads]):
         )
 
         if not check:
-            LOGGER.info("[%s] Cannot delete object store entry %s", job_id)
+            msg = "[%s] Cannot delete object store entry %s"
+            LOGGER.info(msg, job_id, timestamp.timestep_id)
 
         return check
 
