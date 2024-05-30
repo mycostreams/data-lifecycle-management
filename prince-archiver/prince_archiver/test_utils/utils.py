@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from shutil import copy
 
 import httpx
 
@@ -18,6 +19,7 @@ def make_timestep_directory(
     target_dir: Path,
     meta: TimestepMeta,
     config: DirectoryConfig | None = None,
+    src_img: Path | None = None,
 ) -> None:
     """Construct a new timestep directory."""
     config = config or DirectoryConfig()
@@ -26,7 +28,10 @@ def make_timestep_directory(
     img_dir.mkdir(parents=True, exist_ok=True)
 
     img = img_dir / "Img_r10_c15.tif"
-    img.write_bytes(_get_image())
+    if src_img:
+        copy(src_img, img)
+    else:
+        img.write_bytes(_get_image())
 
     param_file = target_dir / config.param_filename
     param_file.write_text(meta.model_dump_json(indent=4, by_alias=True))
