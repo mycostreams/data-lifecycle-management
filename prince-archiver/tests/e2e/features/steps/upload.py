@@ -59,6 +59,7 @@ def step_impl(context, timeout=30):
             {"timestep_id": timestep_id.hex}
         )
         exists = bool(cursor.scalar())
+        now = default_timer()
 
     assert exists
 
