@@ -87,7 +87,8 @@ class DeletedExpiredUploadsHandler(AbstractHandler[DeleteExpiredUploads]):
 
     async def __call__(self, message: DeleteExpiredUploads, uow: AbstractUnitOfWork):
         async with uow:
-            LOGGER.info("[%s] Deleting expired uploads", message.job_id)
+            msg = "[%s] Deleting expired uploads for %s"
+            LOGGER.info(msg, message.job_id, message.uploaded_on)
 
             expiring_timestamps = filter(
                 partial(self._is_deletable, job_id=message.job_id),
@@ -118,7 +119,8 @@ class DeletedExpiredUploadsHandler(AbstractHandler[DeleteExpiredUploads]):
         )
 
         if not check:
-            LOGGER.info("[%s] Cannot delete object store entry %s", job_id)
+            msg = "[%s] Cannot delete object store entry %s"
+            LOGGER.info(msg, job_id, timestamp.timestep_id)
 
         return check
 

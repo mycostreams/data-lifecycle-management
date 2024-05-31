@@ -40,13 +40,7 @@ and that it has the following contents:
 First run the migraitons. To do this run:
 
 ```bash
-docker compose run -ti watcher bash
-```
-
-This enters the watcher service. Then run:
-
-```bash
-alembic upgrade head
+docker compose run -ti db-migrations
 ```
 
 This executes the migrations. Now you can get all services started with:
