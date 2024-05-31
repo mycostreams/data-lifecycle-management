@@ -52,6 +52,19 @@ services:
       db:
         condition: service_healthy
 
+  db-migrations:
+    image: prince-archiver
+    command: ["alembic", "upgrade", "head"]
+    environment: 
+      POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - prince-archiver-e2e
+    profiles:
+      - tools
+
   redis:
     image: redis:7.2.4
     ports:

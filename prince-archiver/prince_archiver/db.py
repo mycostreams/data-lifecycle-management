@@ -57,11 +57,10 @@ class TimestepRepo(AbstractTimestepRepo):
         return list(result.all())
 
     async def get_by_upload_date(self, date_: date) -> list[Timestep]:
-        subquery = select(ObjectStoreEntry.timestep_id).where(
-            func.date(ObjectStoreEntry.created_at) == date_
-        )
         result = await self.session.scalars(
-            self._base_query().where(Timestep.timestep_id.in_(subquery))
+            self._base_query()
+            .join(Timestep.object_store_entry)
+            .where(func.date(ObjectStoreEntry.created_at) == date_)
         )
         return list(result.all())
 

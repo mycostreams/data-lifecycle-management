@@ -87,7 +87,8 @@ class DeletedExpiredUploadsHandler(AbstractHandler[DeleteExpiredUploads]):
 
     async def __call__(self, message: DeleteExpiredUploads, uow: AbstractUnitOfWork):
         async with uow:
-            LOGGER.info("[%s] Deleting expired uploads", message.job_id)
+            msg = "[%s] Deleting expired uploads for %s"
+            LOGGER.info(msg, message.job_id, message.uploaded_on)
 
             expiring_timestamps = filter(
                 partial(self._is_deletable, job_id=message.job_id),
@@ -102,6 +103,7 @@ class DeletedExpiredUploadsHandler(AbstractHandler[DeleteExpiredUploads]):
                 object_store_entry.deletion_event = DeletionEvent(job_id=message.job_id)
                 remote_paths.append(self._get_remote_path(object_store_entry))
 
+            # NB: Can only delete 1000 at once
             await self.s3._bulk_delete(remote_paths)
             await uow.commit()
 
@@ -111,15 +113,13 @@ class DeletedExpiredUploadsHandler(AbstractHandler[DeleteExpiredUploads]):
     def _is_deletable(timestamp: Timestep, *, job_id: UUID | None = None) -> bool:
         object_store_entry = timestamp.object_store_entry
 
-        check = bool(
-            object_store_entry
-            and not object_store_entry.deletion_event
-            and timestamp.data_archive_entry
-        )
+        is_deleted = bool(object_store_entry and object_store_entry.deletion_event)
+        is_archived = bool(timestamp.data_archive_entry)
 
+        check = is_archived and not is_deleted
         if not check:
-            msg = "[%s] Cannot delete object store entry %s"
-            LOGGER.info(msg, job_id, timestamp.timestep_id)
+            msg = "[%s] Skipping %s: Archived- %s/ Deleted- %s"
+            LOGGER.info(msg, job_id, timestamp.timestep_id, is_archived, is_deleted)
 
         return check
 
