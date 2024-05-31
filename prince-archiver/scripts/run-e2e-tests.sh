@@ -6,7 +6,7 @@ COMPOSE_FILE=tests/compose.e2e.yml
 compose_down(){
     docker compose -f ${COMPOSE_FILE} down --volumes --remove-orphans
 }
-trap compose-down EXIT
+trap compose_down EXIT
 
 
 compose_down

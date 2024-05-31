@@ -6,7 +6,7 @@ COMPOSE_FILE=tests/compose.integration.yml
 compose_down(){
     docker compose -f ${COMPOSE_FILE} down --volumes --remove-orphans
 }
-trap compose-down EXIT
+trap compose_down EXIT
 
 
 export POSTGRES_DSN="postgresql+asyncpg://postgres:postgres@localhost:5431/postgres"
