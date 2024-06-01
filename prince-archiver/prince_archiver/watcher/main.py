@@ -41,9 +41,14 @@ async def amain(*, _settings: WatcherSettings | None = None):
         recursive=False,
     )
     async for changes in watcher:
-        for _, filepath in changes:
-            data = parse_timestep_dir(Path(filepath))
+        for _, _filepath in changes:
+            filepath = Path(_filepath)
+
+            data = parse_timestep_dir(filepath)
             await messagebus.handle(data)
+
+            filepath.unlink()
+
 
 
 def main():
