@@ -5,7 +5,7 @@ from timeit import default_timer
 
 import httpx
 
-from prince_archiver.dto import DirectoryConfig, TimestepMeta
+from prince_archiver.dto import TimestepMeta
 
 DOWNLOAD_URL = "https://vu.data.surfsara.nl/index.php/s/ndI1UoMRwliVYGR/download"
 
@@ -27,15 +27,12 @@ def _get_image(url: str = DOWNLOAD_URL):
 
 
 def make_timestep_directory(
-    target_dir: Path,
     meta: TimestepMeta,
-    config: DirectoryConfig | None = None,
+    base_dir: Path,
     src_img: Path | None = None,
 ) -> None:
     """Construct a new timestep directory."""
-    config = config or DirectoryConfig()
-
-    img_dir = target_dir / config.img_dir_name
+    img_dir = base_dir / meta.img_dir
     img_dir.mkdir(parents=True, exist_ok=True)
 
     img = img_dir / "Img_r10_c15.tif"
@@ -44,5 +41,8 @@ def make_timestep_directory(
     else:
         img.write_bytes(_get_image())
 
-    param_file = target_dir / config.param_filename
-    param_file.write_text(meta.model_dump_json(indent=4, by_alias=True))
+    events_dir = base_dir / "events"
+    events_dir.mkdir(parents=True, exist_ok=True)
+
+    event_file = events_dir / f"{meta.timestep_id}.json"
+    event_file.write_text(meta.model_dump_json(indent=4, by_alias=True))

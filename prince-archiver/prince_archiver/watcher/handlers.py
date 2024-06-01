@@ -15,7 +15,7 @@ async def add_to_db(message: TimestepDTO, uow: AbstractUnitOfWork) -> None:
     LOGGER.info("Saving %s to db", message.key)
     async with uow:
         timestep = Timestep(
-            local_dir=message.timestep_dir_name,
+            local_dir=message.img_dir.as_posix(),
             img_count=message.img_count,
             timestamp=message.timestamp.astimezone(UTC),
             position=message.position,
