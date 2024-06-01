@@ -1,4 +1,5 @@
 from datetime import date, datetime, timezone
+from pathlib import Path
 from textwrap import dedent
 from uuid import UUID, uuid4
 
@@ -29,6 +30,7 @@ def step_impl(context):
         cross_date=date(2000, 1, 1),
         position=1,
         timestamp=datetime(2000, 1, 1, tzinfo=timezone.utc),
+        img_dir=Path(uuid4().hex[:6]),
     )
 
     resp = client.post(
@@ -41,7 +43,7 @@ def step_impl(context):
 
 @then("the results are stored locally")
 @async_run_until_complete
-async def step_impl(context, timeout=30):
+async def step_impl(context, timeout=15):
 
     db_engine: AsyncEngine = context.db_engine
     timestep_id: UUID = context.timestep_id

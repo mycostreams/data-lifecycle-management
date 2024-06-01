@@ -38,7 +38,7 @@ types-pyyaml = "^6.0.12.12"
 
 
 [tool.poetry.scripts]
-cli = "prince_archiver.test_utils.cli:app"
+test_tools = "prince_archiver.test_utils.cli:app"
 watch = "prince_archiver.watcher.main:main"
 
 [tool.isort]
