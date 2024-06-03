@@ -6,7 +6,7 @@ from pathlib import Path
 from uuid import uuid4
 
 import httpx
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 
 from prince_archiver.dto import TimestepMeta
 from prince_archiver.logging import configure_logging
@@ -25,6 +25,7 @@ def _create_meta() -> TimestepMeta:
         cross_date=date(2000, 1, 1),
         position=1,
         timestamp=now(),
+        img_dir=uuid4().hex[:6],
     )
 
 
@@ -32,11 +33,11 @@ def create_app() -> FastAPI:
 
     app = FastAPI()
 
-    @app.post("/timestep")
-    def create_timestep(data: TimestepMeta):
-        target_dir = BASE_DIR / uuid4().hex[:4]
-        LOGGER.info("Added directory")
-        make_timestep_directory(target_dir=target_dir, meta=data)
+    @app.post("/timestep", status_code=200)
+    def create_timestep(data: TimestepMeta) -> Response:
+        logging.info("Added timestep")
+        make_timestep_directory(meta=data, base_dir=BASE_DIR)
+        return Response(status_code=200)
 
     return app
 
@@ -45,14 +46,19 @@ async def main():
     """Add new timestep directory every minute."""
     configure_logging()
 
+    logging.info("Starting up mock prince")
+
     transport = httpx.ASGITransport(app=create_app())
 
     client = httpx.AsyncClient(transport=transport, base_url="http://mockprince")
     async with client:
         while True:
             meta = _create_meta()
-            await client.post("/timestep", data=meta.model_dump(mode="json"))
-            await asyncio.sleep(10)
+            await client.post(
+                "/timestep",
+                json=meta.model_dump(mode="json"),
+            )
+            await asyncio.sleep(60)
 
 
 if __name__ == "__main__":

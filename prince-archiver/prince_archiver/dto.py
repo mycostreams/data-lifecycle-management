@@ -1,17 +1,10 @@
 """Definition of data transfer objects."""
 
-from dataclasses import dataclass
 from datetime import date, datetime
+from pathlib import Path
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, model_validator
-
-
-@dataclass(kw_only=True)
-class DirectoryConfig:
-
-    param_filename = "param.json"
-    img_dir_name: str = "Img"
 
 
 class TimestepMeta(BaseModel):
@@ -21,16 +14,14 @@ class TimestepMeta(BaseModel):
     cross_date: date
     position: int
     timestamp: datetime
-    img_count: int = 150
+    img_count: int = Field(150, alias="image_count")
+    img_dir: Path = Field(..., alias="path")
 
 
 class TimestepDTO(TimestepMeta):
 
-    timestep_dir_name: str
-    img_dir_name: str
-
     experiment_id: str = Field(default_factory=str)
-    archive_name: str = Field(default_factory=str)
+    key: str = Field(default_factory=str)
 
     @model_validator(mode="after")
     def set_experiment_id(self) -> "TimestepDTO":
@@ -40,11 +31,8 @@ class TimestepDTO(TimestepMeta):
         return self
 
     @model_validator(mode="after")
-    def set_archive_name(self) -> "TimestepDTO":
-        if not self.archive_name:
-            self.archive_name = self.timestamp.strftime("%Y%m%d_%H%M.tar")
+    def set_key(self) -> "TimestepDTO":
+        if not self.key:
+            root = self.timestamp.strftime("%Y%m%d_%H%M.tar")
+            self.key = f"{self.experiment_id}/{root}"
         return self
-
-    @property
-    def key(self) -> str:
-        return f"{self.experiment_id}/{self.archive_name}"

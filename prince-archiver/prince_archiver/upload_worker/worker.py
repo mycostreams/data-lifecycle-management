@@ -5,6 +5,7 @@ from contextlib import AsyncExitStack
 
 from arq.connections import RedisSettings
 
+from prince_archiver.config import WorkerSettings as _Settings
 from prince_archiver.config import get_worker_settings
 from prince_archiver.db import UnitOfWork, get_session_maker
 from prince_archiver.dto import TimestepDTO
@@ -22,9 +23,19 @@ async def workflow(
     ctx: dict,
     input_data: dict,
 ):
-    data = TimestepDTO.model_validate(input_data)
     messagebus: MessageBus = ctx["messagebus"]
-    await messagebus.handle(data)
+    settings: _Settings = ctx["settings"]
+
+    data = TimestepDTO.model_validate(input_data)
+
+    message = UploadDTO(
+        timestep_id=data.timestep_id,
+        img_dir=settings.DATA_DIR / data.img_dir,
+        key=data.key,
+        bucket=settings.AWS_BUCKET_NAME,
+    )
+
+    await messagebus.handle(message)
 
 
 async def startup(ctx):
@@ -42,19 +53,12 @@ async def startup(ctx):
     def _message_bus_factory():
         return MessageBus(
             handlers={
-                UploadDTO: [add_upload_to_db],
-                TimestepDTO: [
-                    UploadHandler(
-                        s3=s3,
-                        bucket_name=settings.AWS_BUCKET_NAME,
-                        pool=pool,
-                        base_dir=settings.DATA_DIR,
-                    ),
-                ],
+                UploadDTO: [UploadHandler(s3=s3, pool=pool), add_upload_to_db],
             },
             uow=UnitOfWork(sessionmaker),
         )
 
+    ctx["settings"] = settings
     ctx["messagebus_factory"] = _message_bus_factory
     ctx["exit_stack"] = exit_stack
 

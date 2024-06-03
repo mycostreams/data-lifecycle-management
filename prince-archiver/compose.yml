@@ -60,8 +60,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    networks:
-      - prince-archiver-e2e
     profiles:
       - tools
 

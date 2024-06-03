@@ -12,8 +12,11 @@ trap compose_down EXIT
 compose_down
 
 docker compose build
-docker compose -f ${COMPOSE_FILE} up --detach --wait
+
 docker compose -f ${COMPOSE_FILE} run -ti db-migrations
+docker compose -f ${COMPOSE_FILE} run -ti timestep-generator test_tools init
+
+docker compose -f ${COMPOSE_FILE} up --detach --wait
 
 poetry run behave ${@}
 

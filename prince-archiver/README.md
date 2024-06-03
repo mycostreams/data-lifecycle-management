@@ -15,25 +15,27 @@ Broadly speaking, it consists of the following components:
 The input directory structure is assumed to have the form:
 
 ```
+|- events:
+|   |-- *.json
 |-- <timestamp>-<Prince position>
 |   |-- Img
 |   |   |-- *.tif
-|   |-- param.json
 ```
 
-The `param.json` file is assumed to be the the last file created within a directory
-and that it has the following contents:
+The `*.json` files contain meta data relating to an imaging event. They have the form:
 ```
 {
-
     timestep_id: UUID
     plate: int
     cross_date: date
     position: int
     timestamp: datetime
     img_count: int
+    img_dir: str
 }
 ```
+Where `img_dir` is the relative path to directory containing the images.
+
 
 # Running via docker compose
 
