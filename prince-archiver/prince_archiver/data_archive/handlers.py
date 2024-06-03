@@ -1,8 +1,8 @@
 import logging
+from asyncio import Semaphore, TaskGroup
 from functools import partial
 from typing import Callable
 from uuid import UUID
-from asyncio import Semaphore, TaskGroup
 
 from aio_pika.abc import AbstractIncomingMessage
 from s3fs import S3FileSystem
