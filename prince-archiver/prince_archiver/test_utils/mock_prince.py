@@ -56,7 +56,7 @@ async def main():
             meta = _create_meta()
             await client.post(
                 "/timestep",
-                json=meta.model_dump(mode="json"),
+                json=meta.model_dump(mode="json", by_alias=True),
             )
             await asyncio.sleep(60)
 
