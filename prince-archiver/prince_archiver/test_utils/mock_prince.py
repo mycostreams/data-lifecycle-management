@@ -25,7 +25,7 @@ def _create_meta() -> TimestepMeta:
         cross_date=date(2000, 1, 1),
         position=1,
         timestamp=now(),
-        img_dir=uuid4().hex[:6],
+        path=Path(uuid4().hex[:6]),
     )
 
 

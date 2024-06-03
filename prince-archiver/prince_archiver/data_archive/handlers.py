@@ -2,6 +2,7 @@ import logging
 from functools import partial
 from typing import Callable
 from uuid import UUID
+from asyncio import Semaphore, TaskGroup
 
 from aio_pika.abc import AbstractIncomingMessage
 from s3fs import S3FileSystem
@@ -79,11 +80,12 @@ async def update_data_archive_entries(
 
 class DeletedExpiredUploadsHandler(AbstractHandler[DeleteExpiredUploads]):
 
-    def __init__(
-        self,
-        s3: S3FileSystem,
-    ):
+    CONCURRENT_DELETIONS = 5
+    DELETE_CHUNK_SIZE = 50
+
+    def __init__(self, s3: S3FileSystem, *, sem: Semaphore | None = None):
         self.s3 = s3
+        self.sem = sem or Semaphore(self.CONCURRENT_DELETIONS)
 
     async def __call__(self, message: DeleteExpiredUploads, uow: AbstractUnitOfWork):
         async with uow:
@@ -103,11 +105,20 @@ class DeletedExpiredUploadsHandler(AbstractHandler[DeleteExpiredUploads]):
                 object_store_entry.deletion_event = DeletionEvent(job_id=message.job_id)
                 remote_paths.append(self._get_remote_path(object_store_entry))
 
-            # NB: Can only delete 1000 at once
-            await self.s3._bulk_delete(remote_paths)
+            await self._bulk_delete(remote_paths)
             await uow.commit()
 
             LOGGER.info("[%s] Deleted %i entires", message.job_id, len(remote_paths))
+
+    async def _bulk_delete(self, keys: list[str]):
+        async with TaskGroup() as tasks:
+            for index in range(0, len(keys), self.DELETE_CHUNK_SIZE):
+                chunk = keys[index : index + self.DELETE_CHUNK_SIZE]
+                tasks.create_task(self._delete_chunk(chunk))
+
+    async def _delete_chunk(self, keys: list[str]):
+        async with self.sem:
+            await self.s3._bulk_delete(keys)
 
     @staticmethod
     def _is_deletable(timestamp: Timestep, *, job_id: UUID | None = None) -> bool:
