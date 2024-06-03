@@ -50,7 +50,6 @@ async def amain(*, _settings: WatcherSettings | None = None):
             filepath.unlink()
 
 
-
 def main():
     asyncio.run(amain())
 
