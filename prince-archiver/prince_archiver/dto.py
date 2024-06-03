@@ -14,8 +14,8 @@ class TimestepMeta(BaseModel):
     cross_date: date
     position: int
     timestamp: datetime
-    img_count: int = 150
-    img_dir: Path
+    img_count: int = Field(150, alias="image_count")
+    img_dir: Path = Field(..., alias="path")
 
 
 class TimestepDTO(TimestepMeta):
