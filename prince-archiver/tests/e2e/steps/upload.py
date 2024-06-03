@@ -30,12 +30,12 @@ def step_impl(context):
         cross_date=date(2000, 1, 1),
         position=1,
         timestamp=datetime(2000, 1, 1, tzinfo=timezone.utc),
-        img_dir=Path(uuid4().hex[:6]),
+        path=Path(uuid4().hex[:6]),
     )
 
     resp = client.post(
         "http://localhost:8001/timestep",
-        json=meta.model_dump(mode="json"),
+        json=meta.model_dump(mode="json", by_alias=True),
     )
 
     assert resp.status_code == 200
