@@ -17,7 +17,7 @@ services:
       SENTRY_DSN: ${SENTRY_DSN}
       WATCHFILES_FORCE_POLLING: "true"
     volumes:
-      - cifs_mount:/data/input/:ro
+      - cifs_mount:/data/input/
     labels: *log-labels
     deploy:
       restart_policy:
