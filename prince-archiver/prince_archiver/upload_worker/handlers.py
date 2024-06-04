@@ -66,9 +66,9 @@ class UploadHandler(AbstractHandler[UploadDTO]):
 
     async def _compress_img_folder(self, src_dir: Path, target_dir: Path):
         src_files = map(lambda path: src_dir / path, await aiofiles.os.listdir(src_dir))
-        await asyncio.gather(
-            *(self._acompress(file, target_dir / file.name) for file in src_files),
-        )
+        async with asyncio.TaskGroup() as task_group:
+            for file in src_files:
+                task_group.create_task(self._acompress(file, target_dir / file.name))
 
     async def _acompress(self, src_path: Path, target_path: Path):
         await self._run_in_pool(compress, src_path, target_path)

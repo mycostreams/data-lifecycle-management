@@ -3,13 +3,17 @@ from functools import lru_cache
 from pathlib import Path
 
 import sentry_sdk
-from pydantic import PostgresDsn, RedisDsn
+from pydantic import Field, PostgresDsn, RedisDsn, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),
     enable_tracing=True,
 )
+
+
+class _SentinelPath(Path):
+    """Sentinel value for `pathlib.Path` objects."""
 
 
 class CommonSettings(BaseSettings):
@@ -38,7 +42,15 @@ class WatcherSettings(CommonSettings):
 
     DATA_DIR: Path
 
+    EVENTS_DIR: Path = Field(default_factory=_SentinelPath)
+
     WATCHFILES_FORCE_POLLING: bool | None = None
+
+    @model_validator(mode="after")
+    def set_events_dir(self) -> "WatcherSettings":
+        if isinstance(self.EVENTS_DIR, _SentinelPath):
+            self.EVENTS_DIR = self.DATA_DIR / "events"
+        return self
 
 
 class WorkerSettings(AWSSettings, CommonSettings):
