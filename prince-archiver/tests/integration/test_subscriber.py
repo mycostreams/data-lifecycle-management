@@ -19,7 +19,7 @@ def fixture_exchange_config() -> ExchangeConfig:
 @pytest.fixture(name="exchange")
 async def fixture_exchange(exchange_config: ExchangeConfig):
 
-    connection = await connect("amqp://guest:guest@rabbitmq:5671")
+    connection = await connect("amqp://guest:guest@localhost:5671")
 
     async with connection:
         channel = await connection.channel()
@@ -35,11 +35,11 @@ class MessageHandler:
         self.event = asyncio.Event() or event
 
     async def __call__(self, message: AbstractIncomingMessage):
-        async with message:
+        async with message.process():
             self.messages.append(message.body)
             self.event.set()
 
-    async def wait_for_message(self, timeout: int = 10):
+    async def wait_for_message(self, timeout: int = 5):
         try:
             await asyncio.wait_for(self.event.wait(), timeout)
         except TimeoutError:
@@ -53,14 +53,14 @@ async def test_managed_subscriber(
     message_handler = MessageHandler()
 
     subscriber = ManagedSubscriber(
-        "amqp://guest:guest@rabbitmq:5671",
+        "amqp://guest:guest@localhost:5671",
         message_handler=message_handler,
         exchange_config=exchange_config,
     )
     async with subscriber:
         message_body = uuid4().hex.encode()
 
-        await exchange.publish(Message(message_body=message_body), routing_key="misc")
+        await exchange.publish(Message(body=message_body), routing_key="misc")
 
         await message_handler.wait_for_message()
         assert message_body in message_handler.messages
