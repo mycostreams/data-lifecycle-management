@@ -8,6 +8,9 @@ from aio_pika.abc import AbstractExchange, AbstractIncomingMessage
 from prince_archiver.data_archive.subscriber import ExchangeConfig, ManagedSubscriber
 
 
+pytestmark = pytest.mark.integration
+
+
 @pytest.fixture(name="exchange_config")
 def fixture_exchange_config() -> ExchangeConfig:
     return ExchangeConfig(name=uuid4().hex)
@@ -36,7 +39,7 @@ class MessageHandler:
             self.messages.append(message.body)
             self.event.set()
 
-    async def waiter(self, timeout: int = 10):
+    async def wait_for_message(self, timeout: int = 10):
         try:
             await asyncio.wait_for(self.event.wait(), timeout)
         except TimeoutError:
@@ -59,5 +62,5 @@ async def test_managed_subscriber(
 
         await exchange.publish(Message(message_body=message_body), routing_key="misc")
 
-        await message_handler.waiter()
+        await message_handler.wait_for_message()
         assert message_body in message_handler.messages
