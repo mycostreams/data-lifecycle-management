@@ -45,7 +45,7 @@ async def test_subscriber_handler(update_archive_entries_msg: UpdateArchiveEntri
     )
 
     await handler(incoming_message)
-    assert messagebus.handle.awaited_once_with(update_archive_entries_msg)
+    messagebus.handle.assert_awaited_once_with(update_archive_entries_msg)
 
 
 async def test_add_data_archive_entries_handler(
@@ -65,7 +65,7 @@ async def test_add_data_archive_entries_handler(
     assert unarchived_timestep.data_archive_entry
     assert archived_timestep.data_archive_entry == existing_archive_entry
 
-    assert uow.commit.awaited_once_with()
+    uow.commit.assert_awaited_once_with()
 
 
 async def test_delete_expired_uploads_handler(
@@ -86,5 +86,5 @@ async def test_delete_expired_uploads_handler(
     object_store_entry = archived_timestep.object_store_entry
     assert object_store_entry and object_store_entry.deletion_event
 
-    assert mock_s3._bulk_delete.awaited_once_with(["test/a"])
-    assert uow.commit.awaited_once_with()
+    mock_s3._bulk_delete.assert_awaited_once_with(["test/a"])
+    uow.commit.assert_awaited_once_with()
