@@ -18,6 +18,17 @@ services:
     networks:
       - prince-archiver-test
 
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports:
+      - 5671:5672
+      - 15672:15672
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
 networks:
   prince-archiver-test:
 
