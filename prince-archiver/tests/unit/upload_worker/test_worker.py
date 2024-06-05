@@ -12,7 +12,6 @@ from prince_archiver.upload_worker.worker import workflow
 
 @pytest.fixture(name="upload_worker_settings")
 def fixture_upload_worker_settings() -> WorkerSettings:
-
     return WorkerSettings(
         REDIS_DSN="redis://test:6379",
         POSTGRES_DSN="postgresql+asyncpg://test:test@test-db:5432/test",
