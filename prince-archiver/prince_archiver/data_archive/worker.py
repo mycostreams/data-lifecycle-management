@@ -16,7 +16,7 @@ from prince_archiver.messagebus import MessageBus, MessagebusFactoryT
 
 from .archiver import AbstractArchiver, Settings, SurfArchiver
 from .dto import DeleteExpiredUploads, UpdateArchiveEntries
-from .handlers import DeletedExpiredUploadsHandler, update_data_archive_entries
+from .handlers import DeletedExpiredUploadsHandler, add_data_archive_entries
 
 LOGGER = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ async def delete_expired_uploads(ctx: dict, *, _date: date | None = None):
     LOGGER.info("[%s] Deleting uploads for %s", job_id, uploaded_on)
 
     await messagebus.handle(
-        message=DeleteExpiredUploads(
+        DeleteExpiredUploads(
             job_id=job_id,
             uploaded_on=uploaded_on,
         ),
@@ -65,7 +65,7 @@ async def startup(ctx: dict):
     def _messagebus_factory() -> MessageBus:
         return MessageBus(
             handlers={
-                UpdateArchiveEntries: [update_data_archive_entries],
+                UpdateArchiveEntries: [add_data_archive_entries],
                 DeleteExpiredUploads: [DeletedExpiredUploadsHandler(s3=s3)],
             },
             uow=UnitOfWork(sessionmaker),
