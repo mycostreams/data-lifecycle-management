@@ -26,8 +26,8 @@ class TimestepDTO(TimestepMeta):
     @model_validator(mode="after")
     def set_experiment_id(self) -> "TimestepDTO":
         if not self.experiment_id:
-            cross_date = self.cross_date.strftime("%Y")
-            self.experiment_id = f"{cross_date}_{self.plate:02d}"
+            cross_date = self.cross_date.strftime("%Y%m%d")
+            self.experiment_id = f"{cross_date}_{self.plate:03d}"
         return self
 
     @model_validator(mode="after")

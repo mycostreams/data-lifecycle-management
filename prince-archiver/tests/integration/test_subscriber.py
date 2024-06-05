@@ -7,7 +7,6 @@ from aio_pika.abc import AbstractExchange, AbstractIncomingMessage
 
 from prince_archiver.data_archive.subscriber import ExchangeConfig, ManagedSubscriber
 
-
 pytestmark = pytest.mark.integration
 
 
