@@ -12,16 +12,11 @@ class TimestepMeta(BaseModel):
     timestep_id: UUID = Field(default_factory=uuid4)
     plate: int
     cross_date: date
+    experiment_id: str = Field(default_factory=str)
     position: int
     timestamp: datetime
     img_count: int = Field(150, alias="image_count")
     img_dir: Path = Field(..., alias="path")
-
-
-class TimestepDTO(TimestepMeta):
-
-    experiment_id: str = Field(default_factory=str)
-    key: str = Field(default_factory=str)
 
     @model_validator(mode="after")
     def set_experiment_id(self) -> "TimestepDTO":
@@ -29,6 +24,11 @@ class TimestepDTO(TimestepMeta):
             cross_date = self.cross_date.strftime("%Y%m%d")
             self.experiment_id = f"{cross_date}_{self.plate:03d}"
         return self
+
+
+class TimestepDTO(TimestepMeta):
+
+    key: str = Field(default_factory=str)
 
     @model_validator(mode="after")
     def set_key(self) -> "TimestepDTO":

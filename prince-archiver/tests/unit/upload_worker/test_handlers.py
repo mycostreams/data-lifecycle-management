@@ -1,13 +1,13 @@
-from unittest.mock import AsyncMock
 from pathlib import Path
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
 
+from prince_archiver.db import AbstractTimestepRepo, AbstractUnitOfWork
+from prince_archiver.models import ObjectStoreEntry, Timestep
 from prince_archiver.upload_worker.dto import UploadDTO
 from prince_archiver.upload_worker.handlers import add_upload_to_db
-from prince_archiver.models import Timestep, ObjectStoreEntry
-from prince_archiver.db import AbstractUnitOfWork, AbstractTimestepRepo
 
 
 class TestAddUploadToDB:
@@ -59,4 +59,3 @@ class TestAddUploadToDB:
         assert timestep.object_store_entry == existing_entry
 
         uow.commit.assert_awaited_once_with()
-

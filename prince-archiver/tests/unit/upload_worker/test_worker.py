@@ -28,6 +28,7 @@ def fixture_workflow_payload():
         "timestep_id": "8b5b871a23454f9bb22b2e6fbae51764",
         "plate": 1,
         "cross_date": "2000-01-01",
+        "experiment_id": "test-id",
         "position": 1,
         "timestamp": "2001-01-01T00:00:00+00:00",
         "image_count": 1,
@@ -51,7 +52,7 @@ async def test_workflow(
     expected_message = UploadDTO(
         timestep_id=UUID("8b5b871a23454f9bb22b2e6fbae51764"),
         img_dir=Path("/root/test/path"),
-        key="20000101_001/20010101_0000.tar",
+        key="test-id/20010101_0000.tar",
         bucket="test-bucket",
     )
 

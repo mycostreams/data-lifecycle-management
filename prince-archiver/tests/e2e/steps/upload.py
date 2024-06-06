@@ -73,7 +73,7 @@ async def step_impl(context, timeout=15):
 def step_impl(context, timeout=30):
     client: httpx.Client = context.client
 
-    expected_path = "mycostreams/2000_01/20000101_0000.tar"
+    expected_path = "mycostreams/20000101_001/20000101_0000.tar"
 
     resp = client.head(f"http://localhost:9091/{expected_path}")
 
