@@ -13,8 +13,8 @@ compose_down
 
 docker compose build --quiet
 
-docker compose -f ${COMPOSE_FILE} run -ti --rm db-migrations
-docker compose -f ${COMPOSE_FILE} run -ti --rm timestep-generator test_tools init
+docker compose -f ${COMPOSE_FILE} run --rm db-migrations
+docker compose -f ${COMPOSE_FILE} run --rm timestep-generator test_tools init
 
 docker compose -f ${COMPOSE_FILE} up --detach --wait
 

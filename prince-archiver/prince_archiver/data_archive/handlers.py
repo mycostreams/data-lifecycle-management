@@ -46,7 +46,7 @@ class SubscriberMessageHandler:
         await messagebus.handle(message)
 
 
-async def update_data_archive_entries(
+async def add_data_archive_entries(
     message: UpdateArchiveEntries,
     uow: AbstractUnitOfWork,
 ):

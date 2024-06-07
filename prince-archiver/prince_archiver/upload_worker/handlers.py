@@ -88,8 +88,9 @@ async def add_upload_to_db(
     LOGGER.info("Adding object store db entry %s", message.key)
     async with uow:
         if timestep := await uow.timestamps.get(id=message.timestep_id):
-            timestep.object_store_entry = ObjectStoreEntry(
-                key=message.key,
-                bucket=message.bucket,
-            )
+            if not timestep.object_store_entry:
+                timestep.object_store_entry = ObjectStoreEntry(
+                    key=message.key,
+                    bucket=message.bucket,
+                )
         await uow.commit()

@@ -13,7 +13,7 @@ from prince_archiver.logging import configure_logging
 from prince_archiver.messagebus import MessageBus
 
 from .dto import UpdateArchiveEntries
-from .handlers import SubscriberMessageHandler, update_data_archive_entries
+from .handlers import SubscriberMessageHandler, add_data_archive_entries
 
 LOGGER = logging.getLogger(__name__)
 
@@ -73,7 +73,7 @@ async def main(*, _settings: SubscriberSettings | None = None):
 
     def _messagebus_factory() -> MessageBus:
         return MessageBus(
-            handlers={UpdateArchiveEntries: [update_data_archive_entries]},
+            handlers={UpdateArchiveEntries: [add_data_archive_entries]},
             uow=UnitOfWork(sessionmaker),
         )
 
