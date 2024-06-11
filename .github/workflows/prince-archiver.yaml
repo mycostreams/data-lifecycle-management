@@ -12,8 +12,6 @@ defaults:
 jobs:
   static-analysis:
     name: Static analysis
-    strategy:
-      fail-fast: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,13 +23,11 @@ jobs:
           cache: poetry
       - name: Install dependencies
         run: poetry install 
-      - name: Run black
-        run: poetry run black . --check
-      - name: Run isort
-        run: poetry run isort . --check-only
-      - name: Run flake8
-        run: poetry run flake8 .
-      - name: Run mypy
+      - name: Formatting
+        run: poetry run ruff format --check
+      - name: Linting
+        run: poetry run ruff check
+      - name: Typing
         run: poetry run mypy .
   
   unit-tests:

@@ -24,7 +24,7 @@ def fixture_src_tar_dir(tmp_path: Path) -> _TempDir:
     src_dir.mkdir()
 
     file_list = {"./a.txt", "./b.txt"}
-    for file_path in map(lambda file: src_dir / file, file_list):
+    for file_path in (src_dir / file for file in file_list):
         file_path.touch()
 
     return _TempDir(

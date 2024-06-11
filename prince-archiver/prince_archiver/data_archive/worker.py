@@ -3,10 +3,10 @@ import os
 from contextlib import AsyncExitStack
 from datetime import date, timedelta
 from uuid import UUID, uuid4
-from zoneinfo import ZoneInfo
 
 from arq import cron
 from arq.connections import RedisSettings
+from zoneinfo import ZoneInfo
 
 from prince_archiver.config import ArchiveWorkerSettings
 from prince_archiver.db import UnitOfWork, get_session_maker

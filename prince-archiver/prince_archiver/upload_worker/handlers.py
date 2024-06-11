@@ -28,7 +28,7 @@ class UploadHandler(AbstractHandler[UploadDTO]):
     def __init__(
         self,
         s3: s3fs.S3FileSystem,
-        pool: Executor,
+        pool: Executor
     ):
         self.s3 = s3
         self.pool = pool
@@ -65,7 +65,7 @@ class UploadHandler(AbstractHandler[UploadDTO]):
             yield temp_archive_path
 
     async def _compress_img_folder(self, src_dir: Path, target_dir: Path):
-        src_files = map(lambda path: src_dir / path, await aiofiles.os.listdir(src_dir))
+        src_files = (src_dir / path  for path in  await aiofiles.os.listdir(src_dir))
         async with asyncio.TaskGroup() as task_group:
             for file in src_files:
                 task_group.create_task(self._acompress(file, target_dir / file.name))
