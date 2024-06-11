@@ -12,14 +12,12 @@ pytestmark = pytest.mark.integration
 
 @dataclass(kw_only=True)
 class _TempDir:
-
     path: Path
     file_list: set[str]
 
 
 @pytest.fixture(name="src_tar_dir")
 def fixture_src_tar_dir(tmp_path: Path) -> _TempDir:
-
     src_dir = tmp_path / uuid4().hex[:5]
     src_dir.mkdir()
 
@@ -53,7 +51,6 @@ def test_compress(image_path: Path, tmp_path: Path, mode: Compression):
 
 
 def test_tar(src_tar_dir: _TempDir, tmp_path: Path):
-
     target_tar = tmp_path / "target.tar"
 
     tar(src_tar_dir.path, target_tar)

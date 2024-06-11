@@ -44,7 +44,6 @@ def step_impl(context):
 @then("the results are stored locally")
 @async_run_until_complete
 async def step_impl(context, timeout=15):
-
     db_engine: AsyncEngine = context.db_engine
     timestep_id: UUID = context.timestep_id
 

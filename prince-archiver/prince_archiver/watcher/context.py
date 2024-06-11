@@ -24,7 +24,6 @@ async def managed_context(
     *,
     _settings: WatcherSettings | None = None,
 ) -> AsyncGenerator[Context, None]:
-
     settings = _settings or WatcherSettings()
 
     redis = await create_pool(

@@ -27,7 +27,6 @@ async def add_to_db(message: TimestepDTO, uow: AbstractUnitOfWork) -> None:
 
 
 class ArqHandler(AbstractHandler[TimestepDTO]):
-
     def __init__(self, client: ArqRedis):
         self.client = client
 

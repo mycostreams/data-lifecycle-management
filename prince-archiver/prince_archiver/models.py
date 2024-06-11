@@ -9,7 +9,6 @@ from .utils import now
 
 
 class Base(DeclarativeBase):
-
     created_at: Mapped[datetime] = mapped_column(default=now)
     updated_at: Mapped[datetime] = mapped_column(default=now, onupdate=now)
 
@@ -19,7 +18,6 @@ class Base(DeclarativeBase):
 
 
 class DeletionEvent(Base):
-
     __tablename__ = "deletion_event"
 
     id: Mapped[UUID] = mapped_column(
@@ -33,7 +31,6 @@ class DeletionEvent(Base):
 
 
 class ObjectStoreEntry(Base):
-
     __tablename__ = "object_store_entry"
 
     id: Mapped[UUID] = mapped_column(
@@ -48,7 +45,6 @@ class ObjectStoreEntry(Base):
 
 
 class DataArchiveEntry(Base):
-
     __tablename__ = "data_archive_entry"
 
     id: Mapped[UUID] = mapped_column(
@@ -64,7 +60,6 @@ class DataArchiveEntry(Base):
 
 
 class Timestep(Base):
-
     __tablename__ = "prince_timestep"
 
     timestep_id: Mapped[UUID] = mapped_column(Uuid(native_uuid=False), primary_key=True)

@@ -11,7 +11,6 @@ DOWNLOAD_URL = "https://vu.data.surfsara.nl/index.php/s/ndI1UoMRwliVYGR/download
 
 
 class Timer:
-
     def __init__(self):
         self.ref = default_timer()
 

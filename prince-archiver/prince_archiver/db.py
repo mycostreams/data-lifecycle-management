@@ -22,7 +22,6 @@ def get_session_maker(url: str) -> async_sessionmaker[AsyncSession]:
 
 
 class AbstractTimestepRepo(ABC):
-
     @abstractmethod
     def add(self, timestep: Timestep) -> None: ...
 
@@ -37,7 +36,6 @@ class AbstractTimestepRepo(ABC):
 
 
 class TimestepRepo(AbstractTimestepRepo):
-
     def __init__(self, session: AsyncSession):
         self.session = session
         self.messages: list[BaseModel] = []
@@ -75,7 +73,6 @@ class TimestepRepo(AbstractTimestepRepo):
 
 
 class AbstractUnitOfWork(ABC):
-
     messages: list[BaseModel]
     timestamps: AbstractTimestepRepo
 
@@ -100,7 +97,6 @@ class AbstractUnitOfWork(ABC):
 
 
 class UnitOfWork(AbstractUnitOfWork):
-
     session: AsyncSession
 
     timestamps: TimestepRepo

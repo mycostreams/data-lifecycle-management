@@ -14,7 +14,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Compression(IntEnum):
-
     DEFLATE = 8
     LZW = 5
 

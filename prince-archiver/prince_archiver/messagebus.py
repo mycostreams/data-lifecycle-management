@@ -16,7 +16,6 @@ MessagebusFactoryT = Callable[[], "MessageBus"]
 
 
 class AbstractHandler(Generic[ModelT], ABC):
-
     @abstractmethod
     async def __call__(self, message: ModelT, uow: AbstractUnitOfWork): ...
 

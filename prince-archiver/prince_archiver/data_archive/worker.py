@@ -101,7 +101,6 @@ async def shutdown(ctx: dict):
 
 
 class WorkerSettings:
-
     queue_name = "arq:queue-cron"
 
     cron_jobs = [

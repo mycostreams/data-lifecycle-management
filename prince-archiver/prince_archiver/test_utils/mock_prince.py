@@ -30,7 +30,6 @@ def _create_meta() -> TimestepMeta:
 
 
 def create_app() -> FastAPI:
-
     app = FastAPI()
 
     @app.post("/timestep", status_code=200)

@@ -20,13 +20,11 @@ class Settings:
 
 
 class AbstractArchiver(ABC):
-
     @abstractmethod
     async def archive(self, date_: date, job_id: UUID | None = None): ...
 
 
 class SurfArchiver(AbstractArchiver):
-
     COMMAND = "nohup surf-archiver archive {date} {job_id} > /dev/null 2>&1 &"
 
     def __init__(self, settings: Settings):

@@ -12,7 +12,6 @@ from .context import Context, managed_context
 
 
 async def process_backlog(context: Context):
-
     for filepath in context.settings.EVENTS_DIR.iterdir():
         data = parse_timestep_dir(filepath)
         await context.messagebus.handle(data)

@@ -40,7 +40,6 @@ async def test_workflow(
     upload_worker_settings: WorkerSettings,
     workflow_payload: dict,
 ):
-
     mock_messagebus = AsyncMock(MessageBus)
     ctx = {
         "settings": upload_worker_settings,
