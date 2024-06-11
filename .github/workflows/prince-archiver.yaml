@@ -4,6 +4,13 @@ on:
     paths: 
       - 'prince-archiver/**'
       - '.github/workflows/prince-archiver.yaml'
+  push:
+    branches:
+      - main
+    paths: 
+      - 'prince-archiver/**'
+      - '.github/workflows/prince-archiver.yaml'
+  
 
 defaults:
   run:
