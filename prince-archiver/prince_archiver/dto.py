@@ -1,10 +1,10 @@
 """Definition of data transfer objects."""
 
-from datetime import date, UTC
+from datetime import UTC, date
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, AwareDatetime, Field, model_validator
+from pydantic import AwareDatetime, BaseModel, Field, model_validator
 
 
 class TimestepMeta(BaseModel):
