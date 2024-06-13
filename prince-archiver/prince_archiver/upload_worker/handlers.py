@@ -3,7 +3,7 @@ import logging
 from concurrent.futures import Executor
 from contextlib import AsyncExitStack, asynccontextmanager
 from pathlib import Path
-from typing import Any, AsyncGenerator, Callable, TypeVar
+from typing import AsyncGenerator
 from uuid import uuid4
 
 import s3fs
@@ -18,11 +18,9 @@ from .dto import UploadDTO
 
 LOGGER = logging.getLogger(__name__)
 
-_T = TypeVar("_T")
-
 
 class UploadHandler(AbstractHandler[UploadDTO]):
-    def __init__(self, s3: s3fs.S3FileSystem, pool: Executor):
+    def __init__(self, s3: s3fs.S3FileSystem, pool: Executor | None = None):
         self.s3 = s3
         self.pool = pool
 
@@ -54,11 +52,8 @@ class UploadHandler(AbstractHandler[UploadDTO]):
             yield temp_archive_path
 
     async def _tar_img_folder(self, src_dir: Path, target_path: Path):
-        await self._run_in_pool(tar, src_dir, target_path)
-
-    async def _run_in_pool(self, func: Callable[..., _T], *args: Any) -> _T:
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(self.pool, func, *args)
+        await loop.run_in_executor(self.pool, tar, src_dir, target_path)
 
 
 async def add_upload_to_db(
