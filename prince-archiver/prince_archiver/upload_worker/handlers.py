@@ -46,8 +46,8 @@ class UploadHandler(AbstractHandler[UploadDTO]):
         LOGGER.info("Creating temp archive %s", message.key)
 
         async with AsyncExitStack() as stack:
-            temp_archive = await stack.enter_async_context(TemporaryDirectory())
-            temp_archive_path = Path(temp_archive, f"{uuid4().hex[:4]}.tar")
+            temp_dir = await stack.enter_async_context(TemporaryDirectory())
+            temp_archive_path = Path(temp_dir, f"{uuid4().hex[:4]}.tar")
 
             await self._tar_img_folder(message.img_dir, temp_archive_path)
 
