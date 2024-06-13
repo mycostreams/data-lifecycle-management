@@ -1,34 +1,14 @@
 import logging
 import tarfile
 from contextlib import asynccontextmanager
-from enum import IntEnum
 from pathlib import Path
 from typing import AsyncGenerator
 
-import cv2
 import s3fs
 
 from .config import AWSSettings
 
 LOGGER = logging.getLogger(__name__)
-
-
-class Compression(IntEnum):
-    DEFLATE = 8
-    LZW = 5
-
-
-def compress(src: Path, target: Path, mode: Compression = Compression.DEFLATE):
-    LOGGER.debug("Compressing %s", src)
-
-    img = cv2.imread(str(src))
-    cv2.imwrite(
-        str(target),
-        img,
-        params=(cv2.IMWRITE_TIFF_COMPRESSION, mode),
-    )
-
-    LOGGER.debug("Compressed %s", src)
 
 
 def tar(src: Path, target: Path):
