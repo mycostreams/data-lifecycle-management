@@ -1,10 +1,10 @@
 """Definition of data transfer objects."""
 
-from datetime import date, datetime
+from datetime import date, UTC
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, AwareDatetime, Field, model_validator
 
 
 class TimestepMeta(BaseModel):
@@ -13,7 +13,7 @@ class TimestepMeta(BaseModel):
     cross_date: date
     experiment_id: str = Field(default_factory=str)
     position: int
-    timestamp: datetime
+    timestamp: AwareDatetime
     img_count: int = Field(150, alias="image_count")
     img_dir: Path = Field(..., alias="path")
 
@@ -31,6 +31,7 @@ class TimestepDTO(TimestepMeta):
     @model_validator(mode="after")
     def set_key(self) -> "TimestepDTO":
         if not self.key:
-            root = self.timestamp.strftime("%Y%m%d_%H%M.tar")
+            ts = self.timestamp.astimezone(UTC)
+            root = ts.strftime("%Y%m%d_%H%M.tar")
             self.key = f"{self.experiment_id}/{root}"
         return self

@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, UTC
 from uuid import UUID, uuid4
 
 import pytest
@@ -17,12 +17,12 @@ async def fixture_timestep() -> Timestep:
         experiment_id="test-experiment-id",
         position=1,
         img_count=150,
-        timestamp=datetime(2000, 1, 1, tzinfo=timezone.utc),
+        timestamp=datetime(2000, 1, 1, tzinfo=UTC),
         local_dir=None,
         object_store_entry=ObjectStoreEntry(
             key="test-key",
             bucket="test-bucket",
-            created_at=datetime(2010, 1, 1, tzinfo=timezone.utc),
+            created_at=datetime(2010, 1, 1, tzinfo=UTC),
         ),
     )
 
@@ -52,12 +52,3 @@ async def test_get_by_id(repo: TimestepRepo):
     # Valid id
     timestep = await repo.get(UUID("8d2b1f49f5af4b6b853173e9ae9ef3b3"))
     assert timestep
-
-
-async def test_get_by_upload_date(repo: TimestepRepo):
-    # Invalid
-    assert not await repo.get_by_upload_date(date.today())
-
-    # Valid
-    timesteps = await repo.get_by_upload_date(date(2010, 1, 1))
-    assert len(timesteps) == 1

@@ -76,7 +76,7 @@ async def test_delete_expired_uploads_handler(
     handler = DeletedExpiredUploadsHandler(mock_s3)
 
     repo = AsyncMock(AbstractTimestepRepo)
-    repo.get_by_upload_date.return_value = [archived_timestep, unarchived_timestep]
+    repo.get_by_date.return_value = [archived_timestep, unarchived_timestep]
     uow = AsyncMock(AbstractUnitOfWork, timestamps=repo)
 
     message = DeleteExpiredUploads(job_id=uuid4(), uploaded_on=date(2000, 1, 1))

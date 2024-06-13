@@ -31,9 +31,6 @@ class AbstractTimestepRepo(ABC):
     @abstractmethod
     async def get_by_date(self, date_: date) -> list[Timestep]: ...
 
-    @abstractmethod
-    async def get_by_upload_date(self, date_: date) -> list[Timestep]: ...
-
 
 class TimestepRepo(AbstractTimestepRepo):
     def __init__(self, session: AsyncSession):
@@ -51,14 +48,6 @@ class TimestepRepo(AbstractTimestepRepo):
     async def get_by_date(self, date_: date) -> list[Timestep]:
         result = await self.session.scalars(
             self._base_query().where(func.date(Timestep.timestamp) == date_),
-        )
-        return list(result.all())
-
-    async def get_by_upload_date(self, date_: date) -> list[Timestep]:
-        result = await self.session.scalars(
-            self._base_query()
-            .join(Timestep.object_store_entry)
-            .where(func.date(ObjectStoreEntry.created_at) == date_)
         )
         return list(result.all())
 
