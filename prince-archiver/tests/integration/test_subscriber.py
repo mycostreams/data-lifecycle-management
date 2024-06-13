@@ -17,7 +17,6 @@ def fixture_exchange_config() -> ExchangeConfig:
 
 @pytest.fixture(name="exchange")
 async def fixture_exchange(exchange_config: ExchangeConfig):
-
     connection = await connect("amqp://guest:guest@localhost:5671")
 
     async with connection:
@@ -28,7 +27,6 @@ async def fixture_exchange(exchange_config: ExchangeConfig):
 
 
 class MessageHandler:
-
     def __init__(self, event: asyncio.Event | None = None):
         self.messages = []
         self.event = asyncio.Event() or event

@@ -26,13 +26,10 @@ uvicorn = "^0.30.0"
 
 [tool.poetry.group.dev.dependencies]
 behave = "^1.2.6"
-black = "^24.1.1"
-flake8 = "^7.0.0"
-flake8-bugbear = "^24.2.6"
-isort = "^5.13.2"
 mypy = "^1.8.0"
 pytest = "^8.0.0"
 pytest-asyncio = "^0.23.7"
+ruff = "^0.4.8"
 types-aiofiles = "^23.2.0.20240331"
 types-pyyaml = "^6.0.12.12"
 
@@ -41,8 +38,6 @@ types-pyyaml = "^6.0.12.12"
 test_tools = "prince_archiver.test_utils.cli:app"
 watch = "prince_archiver.watcher.main:main"
 
-[tool.isort]
-profile = "black"
 
 [tool.mypy]
 exclude = ["tests"]
@@ -61,6 +56,22 @@ asyncio_mode = "auto"
 markers = [
     "integration"
 ]
+
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+exclude = [
+    "tests/e2e/*"
+]
+
 
 [build-system]
 requires = ["poetry-core"]

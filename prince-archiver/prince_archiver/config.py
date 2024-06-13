@@ -17,7 +17,6 @@ class _SentinelPath(Path):
 
 
 class CommonSettings(BaseSettings):
-
     REDIS_DSN: RedisDsn
     POSTGRES_DSN: PostgresDsn
 
@@ -29,7 +28,6 @@ class CommonSettings(BaseSettings):
 
 
 class AWSSettings(BaseSettings):
-
     AWS_ACCESS_KEY_ID: str
     AWS_SECRET_ACCESS_KEY: str
     AWS_ENDPOINT_URL: str | None = None
@@ -39,7 +37,6 @@ class AWSSettings(BaseSettings):
 
 
 class WatcherSettings(CommonSettings):
-
     DATA_DIR: Path
 
     EVENTS_DIR: Path = Field(default_factory=_SentinelPath)
@@ -54,14 +51,12 @@ class WatcherSettings(CommonSettings):
 
 
 class WorkerSettings(AWSSettings, CommonSettings):
-
     DATA_DIR: Path
 
     AWS_BUCKET_NAME: str
 
 
 class ArchiveWorkerSettings(AWSSettings, CommonSettings):
-
     SURF_USERNAME: str
     SURF_PASSWORD: str
 
@@ -72,7 +67,6 @@ class ArchiveWorkerSettings(AWSSettings, CommonSettings):
 
 
 class SubscriberSettings(BaseSettings):
-
     POSTGRES_DSN: PostgresDsn
     RABBITMQ_DSN: str
 

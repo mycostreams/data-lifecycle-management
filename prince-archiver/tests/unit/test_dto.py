@@ -10,7 +10,6 @@ from prince_archiver.dto import TimestepDTO, TimestepMeta
 
 @dataclass
 class _BaseKwargs:
-
     timestep_id: UUID = UUID("a8a808e9abbe4544b6f46bed44bf6a70")
     position: int = 3
     plate: int = 1

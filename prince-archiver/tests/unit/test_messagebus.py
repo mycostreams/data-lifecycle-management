@@ -12,7 +12,6 @@ class MockMessage(BaseModel):
 
 
 class MockHandler:
-
     def __init__(self):
         self.processed_messages: list[MockMessage] = []
 
@@ -21,7 +20,6 @@ class MockHandler:
 
 
 async def test_messagebus_handler():
-
     first_message = MockMessage()
     second_message = MockMessage()
 

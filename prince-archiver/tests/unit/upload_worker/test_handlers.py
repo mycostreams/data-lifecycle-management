@@ -11,7 +11,6 @@ from prince_archiver.upload_worker.handlers import add_upload_to_db
 
 
 class TestAddUploadToDB:
-
     @pytest.fixture(name="message")
     def fixture_message(self) -> UploadDTO:
         return UploadDTO(

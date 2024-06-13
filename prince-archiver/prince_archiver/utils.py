@@ -15,5 +15,4 @@ def parse_timestep_dir(path: Path) -> TimestepDTO:
 
 def get_plate_timesteps(data_dir: Path) -> Generator[TimestepDTO, None, None]:
     """Iterate over plate timesteps."""
-    for item in map(parse_timestep_dir, data_dir.iterdir()):
-        yield item
+    yield from map(parse_timestep_dir, data_dir.iterdir())

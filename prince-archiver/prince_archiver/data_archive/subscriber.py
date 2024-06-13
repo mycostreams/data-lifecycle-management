@@ -20,13 +20,11 @@ LOGGER = logging.getLogger(__name__)
 
 @dataclass
 class ExchangeConfig:
-
     name: str = "surf-data-archive"
     type: ExchangeType = ExchangeType.FANOUT
 
 
 class ManagedSubscriber:
-
     def __init__(
         self,
         connection_url: str,

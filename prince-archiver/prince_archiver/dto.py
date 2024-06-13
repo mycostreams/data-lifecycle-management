@@ -8,7 +8,6 @@ from pydantic import BaseModel, Field, model_validator
 
 
 class TimestepMeta(BaseModel):
-
     timestep_id: UUID = Field(default_factory=uuid4)
     plate: int
     cross_date: date
@@ -27,7 +26,6 @@ class TimestepMeta(BaseModel):
 
 
 class TimestepDTO(TimestepMeta):
-
     key: str = Field(default_factory=str)
 
     @model_validator(mode="after")

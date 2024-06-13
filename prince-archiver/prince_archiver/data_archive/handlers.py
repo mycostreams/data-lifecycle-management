@@ -22,7 +22,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 class SubscriberMessageHandler:
-
     DTO_CLASS = UpdateArchiveEntries
 
     def __init__(
@@ -79,7 +78,6 @@ async def add_data_archive_entries(
 
 
 class DeletedExpiredUploadsHandler(AbstractHandler[DeleteExpiredUploads]):
-
     DELETE_CHUNK_SIZE = 50
 
     def __init__(self, s3: S3FileSystem):

@@ -5,7 +5,6 @@ from pydantic import BaseModel
 
 
 class UploadDTO(BaseModel):
-
     timestep_id: UUID
     img_dir: Path
     bucket: str
