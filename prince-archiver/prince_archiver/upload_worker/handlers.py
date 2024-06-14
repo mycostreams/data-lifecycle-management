@@ -20,7 +20,11 @@ LOGGER = logging.getLogger(__name__)
 
 
 class UploadHandler(AbstractHandler[UploadDTO]):
-    def __init__(self, s3: s3fs.S3FileSystem, pool: Executor | None = None):
+    def __init__(
+        self,
+        s3: s3fs.S3FileSystem,
+        pool: Executor,
+    ):
         self.s3 = s3
         self.pool = pool
 
