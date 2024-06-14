@@ -90,7 +90,7 @@ class DeletedExpiredUploadsHandler(AbstractHandler[DeleteExpiredUploads]):
 
             expiring_timestamps = filter(
                 partial(self._is_deletable, job_id=message.job_id),
-                await uow.timestamps.get_by_upload_date(message.uploaded_on),
+                await uow.timestamps.get_by_date(message.uploaded_on),
             )
 
             remote_paths: list[str] = []

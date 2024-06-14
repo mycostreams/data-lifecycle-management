@@ -24,7 +24,11 @@ _T = TypeVar("_T")
 
 
 class UploadHandler(AbstractHandler[UploadDTO]):
-    def __init__(self, s3: s3fs.S3FileSystem, pool: Executor):
+    def __init__(
+        self,
+        s3: s3fs.S3FileSystem,
+        pool: Executor,
+    ):
         self.s3 = s3
         self.pool = pool
 
