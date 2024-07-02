@@ -1,6 +1,6 @@
 import logging
 import os
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import AsyncExitStack
 
 from arq.connections import RedisSettings
@@ -46,7 +46,7 @@ async def startup(ctx):
     exit_stack = await AsyncExitStack().__aenter__()
 
     settings = get_worker_settings()
-    pool = exit_stack.enter_context(ProcessPoolExecutor())
+    pool = exit_stack.enter_context(ThreadPoolExecutor())
     s3 = await exit_stack.enter_async_context(managed_file_system(settings))
     sessionmaker = get_session_maker(str(settings.POSTGRES_DSN))
 
@@ -77,10 +77,12 @@ async def shutdown(ctx: dict):
 
 class WorkerSettings:
     functions = [workflow]
-    max_jobs = 2
     on_startup = startup
     on_shutdown = shutdown
     on_job_start = on_job_start
+
+    keep_result = 0
+    max_jobs = 2
 
     redis_settings = RedisSettings.from_dsn(
         os.getenv("REDIS_DSN", "redis://localhost:6379"),
