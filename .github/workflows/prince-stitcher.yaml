@@ -1,16 +1,19 @@
 name: prince-stitcher
-on: 
-  push:
-    branches: main
+on:
+  pull_request:
     paths: 
-     - 'prince-stitcher/**'
-     - '.github/workflows/prince-stitcher.yaml'
-
+      - 'prince-stitcher/**'
+      - '.github/workflows/prince-stitcher.yaml'
+  push:
+    branches:
+      - main
+    paths: 
+      - 'prince-stitcher/**'
+      - '.github/workflows/prince-stitcher.yaml'
 
 defaults:
   run:
     working-directory: ./prince-stitcher
-
 
 jobs:
   static-analysis:
@@ -48,7 +51,7 @@ jobs:
           distribution: 'temurin'
       - name: Install poetry
         run: pipx install poetry
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
