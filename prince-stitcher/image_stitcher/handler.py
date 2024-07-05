@@ -64,7 +64,7 @@ class Handler:
             )
 
             await self.add_missing_files(
-                src_dir=temp_dir,
+                src=temp_dir,
                 frame_size=message.frame_size,
                 grid_size=message.grid_size,
             )
