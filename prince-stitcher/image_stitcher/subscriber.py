@@ -8,8 +8,8 @@ from redis.asyncio.client import PubSub
 from .handler import Handler, Message
 from .log import configure_logging
 
-class Settings:
 
+class Settings:
     REDIS_DSN: str
     CHANNEL: str
     DATA_DIR: str
@@ -27,7 +27,6 @@ async def worker(
 
 
 async def main():
-
     configure_logging()
 
     redis_conn = redis.from_url(os.getenv("REDIS_DSN"))
