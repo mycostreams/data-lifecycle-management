@@ -1,11 +1,12 @@
 import asyncio
 import logging
+import os
 from concurrent.futures import Executor
 from concurrent.futures.process import ProcessPoolExecutor
-from contextlib import AsyncExitStack, asynccontextmanager, contextmanager
+from contextlib import AsyncExitStack, asynccontextmanager
+from contextvars import ContextVar
 from datetime import datetime
 from pathlib import Path
-from typing import Awaitable, Callable
 
 from aiofiles.tempfile import NamedTemporaryFile, TemporaryDirectory
 from pydantic import BaseModel
@@ -15,6 +16,9 @@ from .stitcher import AbstractStitcher, Params, Stitcher
 from .utils import Dimensions, resize_image
 
 LOGGER = logging.getLogger(__name__)
+
+
+BASE_PATH = ContextVar("BASE_PATH", default=os.getenv("DATA_DIR", ""))
 
 
 class Message(BaseModel):
@@ -53,7 +57,7 @@ class Handler:
             temp_file = Path(_temp_file.name)
 
             await self.resize_directory(
-                src=message.local_path,
+                src=Path(BASE_PATH.get()) / message.local_path,
                 target=temp_dir,
                 dimensions=message.dimensions,
             )
@@ -99,7 +103,7 @@ class Handler:
 
         LOGGER.info("Uploaded to S3")
 
-    async def __aenter__(self) -> "Consumer":
+    async def __aenter__(self) -> "Handler":
         self.stack = await AsyncExitStack().__aenter__()
 
         self.pool = self.stack.enter_context(ProcessPoolExecutor())
@@ -117,50 +121,3 @@ class Handler:
         yield session
 
         await session.close()
-
-
-class Consumer:
-    """Consumer used to deletegate processing."""
-
-    def __init__(
-        self,
-        *,
-        handler: Callable[[Message], Awaitable[None]],
-        queue: asyncio.Queue[Message] | None = None,
-    ):
-        self.handler = handler
-        self.queue = queue or asyncio.Queue[Message]()
-
-    async def worker(self):
-        while True:
-            timestep = await self.queue.get()
-
-            await self.handler(timestep)
-
-            self.queue.task_done()
-
-    async def __aenter__(self) -> "Consumer":
-        self.stack = await AsyncExitStack().__aenter__()
-
-        # Now start the actual worker
-        self.stack.enter_context(self.worker_manager())
-
-        LOGGER.info("Consumer running")
-
-        return self
-
-    async def __aexit__(self, *args, **kwargs):
-        await self.stack.aclose()
-
-    @contextmanager
-    def worker_manager(self):
-        LOGGER.info("Worker starting up")
-
-        worker_task = asyncio.create_task(self.worker())
-
-        yield worker_task
-
-        LOGGER.info("Worker shutting down")
-
-        self.queue.join()
-        worker_task.cancel()
