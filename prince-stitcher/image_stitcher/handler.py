@@ -8,12 +8,13 @@ from contextvars import ContextVar
 from datetime import datetime
 from pathlib import Path
 
+import aiofiles.os
 from aiofiles.tempfile import NamedTemporaryFile, TemporaryDirectory
 from pydantic import BaseModel
 from s3fs import S3FileSystem
 
 from .stitcher import AbstractStitcher, Params, Stitcher
-from .utils import Dimensions, resize_image
+from .utils import Dimensions, resize_image, write_blank_image
 
 LOGGER = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class Message(BaseModel):
     experiment_id: str
     local_path: Path
     timestamp: datetime
-    dimensions: Dimensions = Dimensions(1024, 750)
+    frame_size: Dimensions = Dimensions(1024, 750)
     grid_size: Dimensions = Dimensions(15, 10)
 
 
@@ -59,11 +60,19 @@ class Handler:
             await self.resize_directory(
                 src=Path(BASE_PATH.get()) / message.local_path,
                 target=temp_dir,
-                dimensions=message.dimensions,
+                frame_size=message.frame_size,
+            )
+
+            await self.add_missing_files(
+                src_dir=temp_dir,
+                frame_size=message.frame_size,
+                grid_size=message.grid_size,
             )
 
             await self.run_stitch(
-                src=temp_dir, target=temp_file, grid_size=message.grid_size
+                src=temp_dir,
+                target=temp_file,
+                grid_size=message.grid_size,
             )
 
             await self.upload(src=temp_file, target=target_key)
@@ -72,14 +81,16 @@ class Handler:
         self,
         src: Path,
         target: Path,
-        dimensions: Dimensions,
+        frame_size: Dimensions,
+        *,
+        _loop: asyncio.AbstractEventLoop | None = None,
     ):
         LOGGER.info("Resizing directory")
 
-        loop = asyncio.get_event_loop()
+        loop = _loop or asyncio.get_event_loop()
 
         resize_args = (
-            (file, target / file.name, dimensions) for file in src.glob("*.tif")
+            (file, target / file.name, frame_size) for file in src.glob("*.tif")
         )
         resize_jobs = (
             loop.run_in_executor(self.pool, resize_image, *args) for args in resize_args
@@ -88,10 +99,43 @@ class Handler:
 
         LOGGER.info("Resized directory")
 
-    async def run_stitch(self, src: Path, target: Path, grid_size: Dimensions):
+    async def add_missing_files(
+        self,
+        src: Path,
+        grid_size: Dimensions,
+        frame_size: Dimensions,
+        *,
+        _loop: asyncio.AbstractEventLoop | None = None,
+    ):
+        required_files = set()
+        for row in range(1, grid_size.x + 1):
+            for col in range(1, grid_size.y + 1):
+                required_files.add(src / f"Img_{row:2d}_{col:2d}.tif")
+
+        existing_files = {Path(item) for item in await aiofiles.os.listdir(src)}
+
+        loop = _loop or asyncio.get_event_loop()
+
+        tasks = []
+        for file in required_files - existing_files:
+            tasks.append(
+                loop.run_in_executor(self.pool, write_blank_image, file, frame_size)
+            )
+
+        await asyncio.gather(*tasks)
+
+    async def run_stitch(
+        self,
+        src: Path,
+        target: Path,
+        grid_size: Dimensions,
+    ):
         LOGGER.info("Starting stitching")
 
-        params = Params(grid_size_x=grid_size.x, grid_size_y=grid_size.y)
+        params = Params(
+            grid_size_x=grid_size.x,
+            grid_size_y=grid_size.y,
+        )
         await asyncio.to_thread(self.stitcher.run_stitch, src, target, params)
 
         LOGGER.info("Completed stitching")
