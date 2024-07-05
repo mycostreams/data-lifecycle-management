@@ -1,10 +1,11 @@
 import asyncio
 import os
+from datetime import datetime
 from pathlib import Path
 
 from watchfiles import Change, awatch
 
-from .consumer import Consumer, Handler
+from .consumer import Consumer, Handler, Message
 from .log import configure_logging
 
 
@@ -13,18 +14,22 @@ def last_image_frame(change: Change, path: str):
 
 
 async def main():
-
     configure_logging()
 
     data_dir = os.getenv("DATA_DIR")
 
-    queue = asyncio.Queue[Path]()
+    queue = asyncio.Queue[Message]()
 
     async with Handler() as handler:
         async with Consumer(handler=handler, queue=queue):
             async for changes in awatch(data_dir, watch_filter=last_image_frame):
                 for _, path in changes:
-                    queue.put_nowait(Path(path).parent)
+                    message = Message(
+                        experiment_id="test_id",
+                        local_path=Path(path).parent,
+                        timestamp=datetime.now(),
+                    )
+                    queue.put_nowait(message)
 
 
 if __name__ == "__main__":

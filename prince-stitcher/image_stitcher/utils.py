@@ -1,15 +1,21 @@
 from pathlib import Path
+from typing import NamedTuple
 
 import cv2
+
+
+class Dimensions(NamedTuple):
+    x: int
+    y: int
 
 
 def resize_image(
     source: Path,
     target: Path,
-    scale_factor: float = 0.25,
+    dimensions: Dimensions,
 ):
     """Resize an image by a given scale factor."""
     image = cv2.imread(source.as_posix())
-    small = cv2.resize(image, (0, 0), fx=scale_factor, fy=scale_factor)
+    small = cv2.resize(image, dimensions)
 
     cv2.imwrite(target.as_posix(), small)

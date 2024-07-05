@@ -31,7 +31,6 @@ def get_timestep_data(target: Path | None = None):
 
 
 def main():
-
     configure_logging()
 
     img_dir = Path(os.getenv("IMG_CACHE"))

@@ -1,17 +1,28 @@
 import asyncio
 import logging
+from concurrent.futures import Executor
 from concurrent.futures.process import ProcessPoolExecutor
 from contextlib import AsyncExitStack, asynccontextmanager, contextmanager
+from datetime import datetime
 from pathlib import Path
 from typing import Awaitable, Callable
 
 from aiofiles.tempfile import NamedTemporaryFile, TemporaryDirectory
+from pydantic import BaseModel
 from s3fs import S3FileSystem
 
-from .stitcher import AbstractStitcher, Stitcher
-from .utils import resize_image
+from .stitcher import AbstractStitcher, Params, Stitcher
+from .utils import Dimensions, resize_image
 
 LOGGER = logging.getLogger(__name__)
+
+
+class Message(BaseModel):
+    experiment_id: str
+    local_path: Path
+    timestamp: datetime
+    dimensions: Dimensions = Dimensions(1024, 750)
+    grid_size: Dimensions = Dimensions(15, 10)
 
 
 class Handler:
@@ -24,9 +35,15 @@ class Handler:
     ):
         self.stitcher = stitcher or Stitcher()
         self.s3 = s3 or S3FileSystem(..., asynchronous=True)
+        self.pool: Executor | None = None
 
-    async def __call__(self, path: Path):
-        LOGGER.info(f"Received {path.name} for processing")
+    async def __call__(self, message: Message):
+        LOGGER.info(f"Received {message.local_path.name} for processing")
+
+        target_key = "{experiment_id}/{date_str}.tif".format(
+            experiment_id=message.experiment_id,
+            date_str=message.timestamp.strftime("%Y%m%d_%H%M"),
+        )
 
         async with (
             TemporaryDirectory() as _temp_dir,
@@ -35,27 +52,43 @@ class Handler:
             temp_dir = Path(_temp_dir)
             temp_file = Path(_temp_file.name)
 
-            await self.resize_directory(src=path, target=temp_dir)
-            await self.run_stitch(src=temp_dir, target=temp_file)
-            await self.upload(src=temp_file, target=f"{path.name}.tif")
+            await self.resize_directory(
+                src=message.local_path,
+                target=temp_dir,
+                dimensions=message.dimensions,
+            )
 
-    async def resize_directory(self, src: Path, target: Path):
+            await self.run_stitch(
+                src=temp_dir, target=temp_file, grid_size=message.grid_size
+            )
+
+            await self.upload(src=temp_file, target=target_key)
+
+    async def resize_directory(
+        self,
+        src: Path,
+        target: Path,
+        dimensions: Dimensions,
+    ):
         LOGGER.info("Resizing directory")
 
         loop = asyncio.get_event_loop()
 
-        resize_jobs = map(
-            lambda args: loop.run_in_executor(self.pool, resize_image, *args),
-            map(lambda file: (file, target / file.name), src.glob("*.tif")),
+        resize_args = (
+            (file, target / file.name, dimensions) for file in src.glob("*.tif")
+        )
+        resize_jobs = (
+            loop.run_in_executor(self.pool, resize_image, *args) for args in resize_args
         )
         await asyncio.gather(*resize_jobs)
 
         LOGGER.info("Resized directory")
 
-    async def run_stitch(self, src: Path, target: Path):
+    async def run_stitch(self, src: Path, target: Path, grid_size: Dimensions):
         LOGGER.info("Starting stitching")
 
-        await asyncio.to_thread(self.stitcher.run_stitch, src, target)
+        params = Params(grid_size_x=grid_size.x, grid_size_y=grid_size.y)
+        await asyncio.to_thread(self.stitcher.run_stitch, src, target, params)
 
         LOGGER.info("Completed stitching")
 
@@ -92,15 +125,14 @@ class Consumer:
     def __init__(
         self,
         *,
-        handler: Callable[[Path], Awaitable[None]],
-        queue: asyncio.Queue[Path] | None = None,
+        handler: Callable[[Message], Awaitable[None]],
+        queue: asyncio.Queue[Message] | None = None,
     ):
         self.handler = handler
-        self.queue = queue or asyncio.Queue[Path]()
+        self.queue = queue or asyncio.Queue[Message]()
 
     async def worker(self):
         while True:
-
             timestep = await self.queue.get()
 
             await self.handler(timestep)
@@ -118,7 +150,7 @@ class Consumer:
         return self
 
     async def __aexit__(self, *args, **kwargs):
-        await self.stack.__aexit__(*args, **kwargs)
+        await self.stack.aclose()
 
     @contextmanager
     def worker_manager(self):
