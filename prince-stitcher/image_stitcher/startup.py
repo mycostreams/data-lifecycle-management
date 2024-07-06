@@ -4,7 +4,7 @@ import imagej
 
 
 def main():
-    ij = imagej.init(os.getenv("FIJI_HOME"))
+    ij = imagej.init(os.getenv("FIJI_HOME", "Fiji.app"))
     ij.getVersion()
 
 
