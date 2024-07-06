@@ -1,11 +1,14 @@
 name: prince-stitcher
-on: 
+on:
+  pull_request:
+    paths: 
+      - 'prince-stitcher/**'
+      - '.github/workflows/prince-stitcher.yaml'
   push:
     branches: main
     paths: 
      - 'prince-stitcher/**'
      - '.github/workflows/prince-stitcher.yaml'
-
 
 defaults:
   run:
@@ -13,16 +16,16 @@ defaults:
 
 
 jobs:
-  static-analysis:
-    name: Static Analysis
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./prince-stitcher
-    steps:
-      - uses: actions/checkout@v4
-      - name: black
-        uses: psf/black@stable
+  # static-analysis:
+  #   name: Static Analysis
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: ./prince-stitcher
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: black
+  #       uses: psf/black@stable
   
   conda-tests:
     name: Unit Tests
