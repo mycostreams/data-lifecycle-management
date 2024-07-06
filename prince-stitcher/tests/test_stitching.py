@@ -54,4 +54,4 @@ def test_stitching(
     assert target_path.exists()
     assert (data_dir / stitcher_defaults.output_file_name).exists()
 
-    stitcher.ij.dispose()
+    # stitcher.ij.dispose()
