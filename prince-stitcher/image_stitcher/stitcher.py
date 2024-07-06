@@ -86,6 +86,7 @@ class AbstractStitcher(ABC):
 
 
 class Stitcher(AbstractStitcher):
+    """Trigger update."""
 
     def __init__(
         self,
