@@ -7,7 +7,7 @@ cd "$dir/.."
 if [ ! -d Fiji.app ]
 then
   echo "Installing Fiji"
-  wget https://downloads.imagej.net/fiji/latest/fiji-nojre.zip \
+  wget https://downloads.imagej.net/fiji/archive/20240220-2017/fiji-nojre.zip \
       && unzip fiji-nojre.zip \
       && rm fiji-nojre.zip \
       && echo "Installation complete"
