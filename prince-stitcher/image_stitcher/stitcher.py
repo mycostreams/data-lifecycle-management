@@ -1,9 +1,10 @@
 import os
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import ClassVar
+from typing import ClassVar, Generator
 
 import imagej
 from pydantic import BaseModel, Field
@@ -11,10 +12,16 @@ from pydantic import BaseModel, Field
 
 @dataclass
 class AbstractParms:
-    pass
+    """
+    Base parameters used for performing stitching.
+    """
 
 
 class AbstractStitcher(ABC):
+    """
+    Base class used to perform stitching.
+    """
+
     @abstractmethod
     def run_stitch(self, src_dir: Path, target: Path, params: AbstractParms): ...
 
@@ -80,6 +87,10 @@ class _PluginParams(BaseModel):
 
 
 class Stitcher(AbstractStitcher):
+    """
+    Stitcher class which wraps around Fiji.
+    """
+
     def __init__(
         self,
         fiji_home: str | None = None,
@@ -104,3 +115,9 @@ class Stitcher(AbstractStitcher):
             # Move the stitched image to the target directory
             stitched_image = next(temp_dir.iterdir())
             stitched_image.rename(target)
+
+    @contextmanager
+    def gateway_lifespan(self) -> Generator[None, None, None]:
+        yield
+
+        self.ij.dispose()

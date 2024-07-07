@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y \
 # Retrieve ImageJ and source code
 WORKDIR /opt/fiji
 
-RUN wget https://downloads.imagej.net/fiji/latest/fiji-nojre.zip \
-    && unzip fiji-nojre.zip \
+RUN wget -nv https://downloads.imagej.net/fiji/latest/fiji-nojre.zip \
+    && unzip -q fiji-nojre.zip \
     && rm fiji-nojre.zip \
     && rm Fiji.app/*.exe
 
