@@ -31,8 +31,6 @@ jobs:
   # tests:
   #   name: Tests
   #   runs-on: ubuntu-latest
-  #   strategy:
-  #     fail-fast: true
   #   steps:
   #     - uses: actions/checkout@v4
   #     - name: Run tests
