@@ -28,10 +28,10 @@ jobs:
         with:
           args: 'format --check'
 
-  # tests:
-  #   name: Tests
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Run tests
-  #       run: ./scripts/run-tests.sh
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tests
+        run: ./scripts/run-tests.sh
