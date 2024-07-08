@@ -19,6 +19,8 @@ RUN wget -nv https://downloads.imagej.net/fiji/latest/fiji-nojre.zip \
 # The builder image, used to build the virtual environment
 FROM python:3.12-bullseye as builder
 
+ARG INSTALL_DEV=false
+
 ENV POETRY_VERSION=1.4.2 \
     POETRY_HOME=/opt/poetry \
     POETRY_NO_INTERACTION=1 \
@@ -34,7 +36,7 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
 
-RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
+RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --no-root --only main ; fi"
 
 
 # The runtime image, used to just run the code provided its virtual environment

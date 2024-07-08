@@ -1,0 +1,11 @@
+---
+
+services:
+  image-stitcher:
+    build:
+      context: .
+      args:
+        - INSTALL_DEV=true
+    volumes:
+      - ./tests:/app/tests/
+    platform: linux/amd64
