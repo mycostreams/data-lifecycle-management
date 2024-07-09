@@ -42,6 +42,7 @@ RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; els
 # The runtime image, used to just run the code provided its virtual environment
 FROM python:3.12-slim-bullseye as runtime
 
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
 ENV VENV_PATH=/app/.venv
 ENV PATH=$VENV_PATH/bin:$PATH
 ENV FIJI_HOME=/opt/fiji/Fiji.app
