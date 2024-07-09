@@ -4,7 +4,7 @@ from contextlib import AsyncExitStack
 from dataclasses import dataclass
 from typing import Awaitable, Callable
 
-from aio_pika import ExchangeType, connect
+from aio_pika import ExchangeType, connect_robust
 from aio_pika.abc import AbstractIncomingMessage
 
 from prince_archiver.config import SubscriberSettings
@@ -40,7 +40,7 @@ class ManagedSubscriber:
     async def __aenter__(self):
         self.exit_stack = await AsyncExitStack().__aenter__()
 
-        connection = await connect(self.connection_url)
+        connection = await connect_robust(self.connection_url)
         await self.exit_stack.enter_async_context(connection)
 
         channel = await connection.channel()
