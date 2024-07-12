@@ -1,12 +1,15 @@
 #! /usr/bin/env sh
 
-set -e
-
 cd "$(dirname $(dirname $0))"
 
-BASE_PATH=${1:-"/data/prince"}
+
+TEMP_DIR="$(mktemp -d)"
 FILENAME="$(date +%s).bak"
 
-TARGET_PATH=$BASE_PATH/$FILENAME
+trap "rm -rf $TEMP_DIR" EXIT
 
-docker compose exec -ti db pg_dump --username postgres postgres > $TARGET_PATH
+TARGET_PATH=$TEMP_DIR/$FILENAME
+
+docker compose run -ti db pg_dump --username postgres postgres > $TARGET_PATH
+
+rclone copy $TARGET_PATH ceph-s3:backups/db
