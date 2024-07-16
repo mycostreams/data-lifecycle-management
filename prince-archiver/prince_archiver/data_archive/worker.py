@@ -2,7 +2,6 @@ import logging
 import os
 from contextlib import AsyncExitStack
 from datetime import date, timedelta
-from uuid import uuid4
 
 from arq import cron
 from arq.connections import RedisSettings
@@ -10,7 +9,6 @@ from zoneinfo import ZoneInfo
 
 from prince_archiver.config import ArchiveWorkerSettings
 from prince_archiver.logging import configure_logging
-from prince_archiver.messagebus import MessagebusFactoryT
 
 from .archiver import AbstractArchiver, Settings, SurfArchiver
 
@@ -54,13 +52,6 @@ async def startup(ctx: dict):
     LOGGER.info("Start up complete")
 
 
-async def job_start(ctx: dict):
-    messagebus_factory: MessagebusFactoryT = ctx["messagebus_factory"]
-
-    ctx["messagebus"] = messagebus_factory()
-    ctx["internal_job_id"] = uuid4()
-
-
 async def shutdown(ctx: dict):
     exit_stack: AsyncExitStack = ctx["exit_stack"]
     await exit_stack.aclose()
@@ -75,7 +66,6 @@ class WorkerSettings:
 
     on_startup = startup
     on_shutdown = shutdown
-    on_job_start = job_start
 
     timezone = ZoneInfo("Europe/Amsterdam")
 
