@@ -34,10 +34,7 @@ class UploadHandler(AbstractHandler[UploadDTO]):
             self.get_temp_archive(message) as temp_archive_path,
         ):
             LOGGER.info("Uploading %s", message.key)
-            await self.s3._put_file(
-                temp_archive_path,
-                f"{message.bucket}/{message.key}",
-            )
+            (await self.s3._put_file(temp_archive_path, message.key),)
             await uow.commit()
 
     @asynccontextmanager
@@ -68,8 +65,6 @@ async def add_upload_to_db(
     async with uow:
         if timestep := await uow.timestamps.get(id=message.timestep_id):
             if not timestep.object_store_entry:
-                timestep.object_store_entry = ObjectStoreEntry(
-                    key=message.key,
-                    bucket=message.bucket,
-                )
+                timestep.object_store_entry = ObjectStoreEntry(key=message.key)
+
         await uow.commit()

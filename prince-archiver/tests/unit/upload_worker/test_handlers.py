@@ -16,8 +16,7 @@ class TestAddUploadToDB:
         return UploadDTO(
             timestep_id=uuid4(),
             img_dir=Path("test/path"),
-            bucket="test-bucket",
-            key="test-key",
+            key="test-bucket/test-key",
         )
 
     @pytest.fixture(name="timestep")
