@@ -26,7 +26,6 @@ class ObjectStoreEntry(Base):
     timestep_id: Mapped[int] = mapped_column(ForeignKey("prince_timestep.timestep_id"))
 
     key: Mapped[str]
-    bucket: Mapped[str]
 
 
 class DataArchiveEntry(Base):

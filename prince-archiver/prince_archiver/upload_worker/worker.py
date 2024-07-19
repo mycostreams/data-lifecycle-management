@@ -8,6 +8,7 @@ from arq.connections import RedisSettings
 from prince_archiver.config import WorkerSettings as _Settings
 from prince_archiver.config import get_worker_settings
 from prince_archiver.db import UnitOfWork, get_session_maker
+from prince_archiver.definitions import EventType
 from prince_archiver.dto import TimestepDTO
 from prince_archiver.file import managed_file_system
 from prince_archiver.logging import configure_logging
@@ -28,13 +29,13 @@ async def workflow(
 
     data = TimestepDTO.model_validate(input_data)
 
+    base_path = "images" if data.event_type == EventType.STITCH else "videos"
+
     message = UploadDTO(
         timestep_id=data.timestep_id,
         img_dir=settings.DATA_DIR / data.img_dir,
-        key=data.key,
-        bucket=settings.AWS_BUCKET_NAME,
+        key=f"{settings.AWS_BUCKET_NAME}/{base_path}/{data.key}",
     )
-
     await messagebus.handle(message)
 
 

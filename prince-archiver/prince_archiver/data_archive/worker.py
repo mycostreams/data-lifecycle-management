@@ -8,7 +8,9 @@ from arq.connections import RedisSettings
 from zoneinfo import ZoneInfo
 
 from prince_archiver.config import ArchiveWorkerSettings
+from prince_archiver.db import UnitOfWork, get_session_maker
 from prince_archiver.logging import configure_logging
+from prince_archiver.messagebus import MessageBus
 
 from .archiver import AbstractArchiver, Settings, SurfArchiver
 
@@ -35,6 +37,14 @@ async def startup(ctx: dict):
 
     exit_stack = await AsyncExitStack().__aenter__()
     settings = ArchiveWorkerSettings()
+
+    sessionmaker = get_session_maker(str(settings.POSTGRES_DSN))
+
+    def _messagebus_factory() -> MessageBus:
+        return MessageBus(
+            handlers={},
+            uow=UnitOfWork(sessionmaker),
+        )
 
     ctx["exit_stack"] = exit_stack
     ctx["settings"] = settings
