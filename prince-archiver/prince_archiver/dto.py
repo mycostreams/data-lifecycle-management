@@ -6,6 +6,8 @@ from uuid import UUID, uuid4
 
 from pydantic import AwareDatetime, BaseModel, Field, model_validator
 
+from .definitions import EventType
+
 
 class TimestepMeta(BaseModel):
     timestep_id: UUID = Field(default_factory=uuid4)
@@ -14,6 +16,8 @@ class TimestepMeta(BaseModel):
     experiment_id: str = Field(default_factory=str)
     position: int
     timestamp: AwareDatetime
+    event_type: EventType = Field(EventType.STITCH)
+
     img_count: int = Field(150, alias="image_count")
     img_dir: Path = Field(..., alias="path")
 

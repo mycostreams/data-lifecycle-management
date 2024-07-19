@@ -9,6 +9,7 @@ from behave.api.async_step import async_run_until_complete
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from prince_archiver.definitions import EventType
 from prince_archiver.dto import TimestepMeta
 from prince_archiver.test_utils.utils import Timer
 
@@ -30,6 +31,7 @@ def step_impl(context):
         cross_date=date(2000, 1, 1),
         position=1,
         timestamp=datetime(2000, 1, 1, tzinfo=timezone.utc),
+        event_type=EventType.STITCH,
         path=Path(uuid4().hex[:6]),
     )
 
@@ -72,7 +74,7 @@ async def step_impl(context, timeout=15):
 def step_impl(context, timeout=30):
     client: httpx.Client = context.client
 
-    expected_path = "mycostreams/20000101_001/20000101_0000.tar"
+    expected_path = "mycostreams/images/20000101_001/20000101_0000.tar"
 
     resp = client.head(f"http://localhost:9091/{expected_path}")
 

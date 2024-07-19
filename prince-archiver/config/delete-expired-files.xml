@@ -3,7 +3,7 @@
 		<ID>1f1a4ccb4e804ffeac3586db4ff541e3</ID>
         <Filter>
             <And>
-                <Prefix/>
+            	<Prefix>images/<Prefix>
                 <Tag>
                     <Key>archived</Key>
                     <Value>true</Value>
@@ -18,7 +18,7 @@
 	<Rule>
 		<ID>9cff2c87ec5f4c7ca8bdbb17b075d456</ID>
         <Filter>
-            <Prefix />
+            <Prefix>images/<Prefix>
         </Filter>
 		<Status>Enabled</Status>
 		<Expiration>

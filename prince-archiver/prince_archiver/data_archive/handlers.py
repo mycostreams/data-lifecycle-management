@@ -51,7 +51,7 @@ async def add_data_archive_entries(
         mapped_timesteps: dict[str, Timestep] = {}
         for item in timesteps:
             if obj := item.object_store_entry:
-                mapped_timesteps[f"{obj.bucket}/{obj.key}"] = item
+                mapped_timesteps[obj.key] = item
         persisted_keys = mapped_timesteps.keys()
 
         for archive in message.archives:

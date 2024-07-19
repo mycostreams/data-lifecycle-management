@@ -2,8 +2,8 @@
 x-aws-env-variables: &aws-env-variables
   AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-  AWS_ENDPOINT_URL: https://proxy.swift.surfsara.nl
-  AWS_REGION_NAME: NL
+  AWS_ENDPOINT_URL: https://objectstore.surf.nl
+  AWS_REGION_NAME: default
 
 
 x-log-labels: &log-labels
