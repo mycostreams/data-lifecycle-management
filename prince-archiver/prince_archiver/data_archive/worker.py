@@ -2,7 +2,7 @@ import logging
 import os
 from contextlib import AsyncExitStack
 from datetime import date, timedelta
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from arq import cron
 from arq.connections import RedisSettings
@@ -10,13 +10,10 @@ from zoneinfo import ZoneInfo
 
 from prince_archiver.config import ArchiveWorkerSettings
 from prince_archiver.db import UnitOfWork, get_session_maker
-from prince_archiver.file import managed_file_system
 from prince_archiver.logging import configure_logging
 from prince_archiver.messagebus import MessageBus, MessagebusFactoryT
 
 from .archiver import AbstractArchiver, Settings, SurfArchiver
-from .dto import DeleteExpiredUploads, UpdateArchiveEntries
-from .handlers import DeletedExpiredUploadsHandler, add_data_archive_entries
 
 LOGGER = logging.getLogger(__name__)
 
@@ -34,23 +31,6 @@ async def run_archiving(ctx: dict, *, _date: date | None = None):
         await archiver.archive(archive_files_from)
 
 
-async def delete_expired_uploads(ctx: dict, *, _date: date | None = None):
-    job_id: UUID = ctx["internal_job_id"]
-    settings: ArchiveWorkerSettings = ctx["settings"]
-    messagebus: MessageBus = ctx["messagebus"]
-
-    uploaded_on = (_date or date.today()) - timedelta(days=settings.UPLOAD_EXPIRY_DAYS)
-
-    LOGGER.info("[%s] Deleting uploads for %s", job_id, uploaded_on)
-
-    await messagebus.handle(
-        DeleteExpiredUploads(
-            job_id=job_id,
-            uploaded_on=uploaded_on,
-        ),
-    )
-
-
 async def startup(ctx: dict):
     configure_logging()
 
@@ -59,15 +39,11 @@ async def startup(ctx: dict):
     exit_stack = await AsyncExitStack().__aenter__()
     settings = ArchiveWorkerSettings()
 
-    s3 = await exit_stack.enter_async_context(managed_file_system(settings))
     sessionmaker = get_session_maker(str(settings.POSTGRES_DSN))
 
     def _messagebus_factory() -> MessageBus:
         return MessageBus(
-            handlers={
-                UpdateArchiveEntries: [add_data_archive_entries],
-                DeleteExpiredUploads: [DeletedExpiredUploadsHandler(s3=s3)],
-            },
+            handlers={},
             uow=UnitOfWork(sessionmaker),
         )
 
@@ -105,7 +81,6 @@ class WorkerSettings:
 
     cron_jobs = [
         cron(run_archiving, hour={2}, minute={0}, timeout=timedelta(minutes=2)),
-        cron(delete_expired_uploads, hour={3}, minute={0}, timeout=timedelta(hours=1)),
     ]
 
     on_startup = startup

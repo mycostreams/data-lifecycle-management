@@ -4,15 +4,12 @@ from uuid import uuid4
 
 import pytest
 from aio_pika.abc import AbstractIncomingMessage
-from s3fs import S3FileSystem
 
 from prince_archiver.data_archive.dto import (
     Archive,
-    DeleteExpiredUploads,
     UpdateArchiveEntries,
 )
 from prince_archiver.data_archive.handlers import (
-    DeletedExpiredUploadsHandler,
     SubscriberMessageHandler,
     add_data_archive_entries,
 )
@@ -65,26 +62,4 @@ async def test_add_data_archive_entries_handler(
     assert unarchived_timestep.data_archive_entry
     assert archived_timestep.data_archive_entry == existing_archive_entry
 
-    uow.commit.assert_awaited_once_with()
-
-
-async def test_delete_expired_uploads_handler(
-    archived_timestep: Timestep,
-    unarchived_timestep: Timestep,
-):
-    mock_s3 = AsyncMock(S3FileSystem)
-    handler = DeletedExpiredUploadsHandler(mock_s3)
-
-    repo = AsyncMock(AbstractTimestepRepo)
-    repo.get_by_date.return_value = [archived_timestep, unarchived_timestep]
-    uow = AsyncMock(AbstractUnitOfWork, timestamps=repo)
-
-    message = DeleteExpiredUploads(job_id=uuid4(), uploaded_on=date(2000, 1, 1))
-
-    await handler(message, uow)
-
-    object_store_entry = archived_timestep.object_store_entry
-    assert object_store_entry and object_store_entry.deletion_event
-
-    mock_s3._bulk_delete.assert_awaited_once_with(["test/a"])
     uow.commit.assert_awaited_once_with()

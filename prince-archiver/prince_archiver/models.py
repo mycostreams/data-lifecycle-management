@@ -17,19 +17,6 @@ class Base(DeclarativeBase):
     }
 
 
-class DeletionEvent(Base):
-    __tablename__ = "deletion_event"
-
-    id: Mapped[UUID] = mapped_column(
-        Uuid(native_uuid=False), default=uuid4, primary_key=True
-    )
-    object_store_entry_id: Mapped[UUID] = mapped_column(
-        ForeignKey("object_store_entry.id"),
-    )
-
-    job_id: Mapped[UUID | None] = mapped_column(Uuid(native_uuid=False))
-
-
 class ObjectStoreEntry(Base):
     __tablename__ = "object_store_entry"
 
@@ -40,8 +27,6 @@ class ObjectStoreEntry(Base):
 
     key: Mapped[str]
     bucket: Mapped[str]
-
-    deletion_event: Mapped[DeletionEvent | None] = relationship()
 
 
 class DataArchiveEntry(Base):
