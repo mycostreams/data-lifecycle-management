@@ -51,7 +51,7 @@ async def test_workflow(
     expected_message = UploadDTO(
         timestep_id=UUID("8b5b871a23454f9bb22b2e6fbae51764"),
         img_dir=Path("/root/test/path"),
-        key="test-bucket/test-id/20010101_0000.tar",
+        key="test-bucket/images/test-id/20010101_0000.tar",
     )
 
     mock_messagebus.handle.assert_awaited_once_with(expected_message)

@@ -6,7 +6,7 @@ from prince_archiver.models import DataArchiveEntry, ObjectStoreEntry, Timestep
 @pytest.fixture(name="archived_timestep")
 def fixture_archived_timestep() -> Timestep:
     return Timestep(
-        object_store_entry=ObjectStoreEntry(bucket="test", key="a"),
+        object_store_entry=ObjectStoreEntry(key="test/a"),
         data_archive_entry=DataArchiveEntry(),
     )
 
@@ -14,5 +14,5 @@ def fixture_archived_timestep() -> Timestep:
 @pytest.fixture(name="unarchived_timestep")
 def unarchived_timestep() -> Timestep:
     return Timestep(
-        object_store_entry=ObjectStoreEntry(bucket="test", key="b"),
+        object_store_entry=ObjectStoreEntry(key="test/b"),
     )
