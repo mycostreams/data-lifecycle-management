@@ -3,7 +3,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import sentry_sdk
-from pydantic import Field, PostgresDsn, RedisDsn, model_validator
+from pydantic import Field, HttpUrl, PostgresDsn, RedisDsn, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 sentry_sdk.init(
@@ -33,6 +33,8 @@ class AWSSettings(BaseSettings):
     AWS_ENDPOINT_URL: str | None = None
     AWS_REGION_NAME: str | None = None
 
+    AWS_BUCKET_NAME: str
+
     UPLOAD_MAX_CONCURRENCY: int = 5
 
 
@@ -53,14 +55,14 @@ class WatcherSettings(CommonSettings):
 class WorkerSettings(AWSSettings, CommonSettings):
     DATA_DIR: Path
 
-    AWS_BUCKET_NAME: str
-
 
 class ArchiveWorkerSettings(AWSSettings, CommonSettings):
     SURF_USERNAME: str
     SURF_PASSWORD: str
 
     DATA_ARCHIVE_HOST: str = "archive.surfsara.nl"
+
+    WEBHOOK_URL: HttpUrl | None = None
 
     UPLOAD_EXPIRY_DAYS: int = 5
     ARCHIVE_TRANSITION_DAYS: int = 2

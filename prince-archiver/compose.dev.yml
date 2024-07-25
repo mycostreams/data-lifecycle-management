@@ -3,6 +3,7 @@ x-aws-env-variables: &aws-env-variables
   AWS_ACCESS_KEY_ID: aws-access-key-id
   AWS_SECRET_ACCESS_KEY: aws-access-key-id
   AWS_ENDPOINT_URL: http://s3:9090
+  AWS_BUCKET_NAME: mycostreams
 
 
 services:
@@ -25,7 +26,6 @@ services:
   upload-worker:
     environment:
       <<: *aws-env-variables
-      AWS_BUCKET_NAME: mycostreams
     volumes:
       - ./prince_archiver:/app/prince_archiver
       - ./alembic/:/app/alembic
@@ -39,6 +39,7 @@ services:
       <<: *aws-env-variables
       SURF_USERNAME: ""
       SURF_PASSWORD: ""
+      WEBHOOK_URL: ${WEBHOOK_URL}
     volumes:
       - ./prince_archiver:/app/prince_archiver
       - ./alembic/:/app/alembic

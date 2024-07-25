@@ -4,6 +4,7 @@ x-aws-env-variables: &aws-env-variables
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
   AWS_ENDPOINT_URL: https://objectstore.surf.nl
   AWS_REGION_NAME: default
+  AWS_BUCKET_NAME: "mycostreams-raw-data"
 
 
 x-log-labels: &log-labels
@@ -27,7 +28,6 @@ services:
     environment:
       <<: *aws-env-variables
       SENTRY_DSN: ${SENTRY_DSN}
-      AWS_BUCKET_NAME: ${AWS_BUCKET_NAME}
     volumes:
       - cifs_mount:/data/input/:ro
     labels: *log-labels
