@@ -13,8 +13,3 @@ class UpdateArchiveEntries(BaseModel):
     job_id: UUID
     date: date
     archives: list[Archive]
-
-
-class DeleteExpiredUploads(BaseModel):
-    job_id: UUID
-    uploaded_on: date

@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql import Select
 
-from .models import ObjectStoreEntry, Timestep
+from .models import Timestep
 
 
 def get_session_maker(url: str) -> async_sessionmaker[AsyncSession]:
@@ -55,9 +55,7 @@ class TimestepRepo(AbstractTimestepRepo):
     def _base_query() -> Select[tuple[Timestep]]:
         return select(Timestep).options(
             joinedload(Timestep.data_archive_entry),
-            joinedload(Timestep.object_store_entry).joinedload(
-                ObjectStoreEntry.deletion_event
-            ),
+            joinedload(Timestep.object_store_entry),
         )
 
 

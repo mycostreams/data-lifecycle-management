@@ -21,7 +21,6 @@ async def fixture_timestep() -> Timestep:
         local_dir=None,
         object_store_entry=ObjectStoreEntry(
             key="test-key",
-            bucket="test-bucket",
             created_at=datetime(2010, 1, 1, tzinfo=UTC),
         ),
     )

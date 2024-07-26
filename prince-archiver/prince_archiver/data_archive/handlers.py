@@ -1,22 +1,16 @@
 import logging
-from asyncio import TaskGroup
-from functools import partial
 from typing import Callable
-from uuid import UUID
 
 from aio_pika.abc import AbstractIncomingMessage
-from s3fs import S3FileSystem
 
 from prince_archiver.db import AbstractUnitOfWork
-from prince_archiver.messagebus import AbstractHandler, MessageBus
+from prince_archiver.messagebus import MessageBus
 from prince_archiver.models import (
     DataArchiveEntry,
-    DeletionEvent,
-    ObjectStoreEntry,
     Timestep,
 )
 
-from .dto import DeleteExpiredUploads, UpdateArchiveEntries
+from .dto import UpdateArchiveEntries
 
 LOGGER = logging.getLogger(__name__)
 
@@ -57,7 +51,7 @@ async def add_data_archive_entries(
         mapped_timesteps: dict[str, Timestep] = {}
         for item in timesteps:
             if obj := item.object_store_entry:
-                mapped_timesteps[f"{obj.bucket}/{obj.key}"] = item
+                mapped_timesteps[obj.key] = item
         persisted_keys = mapped_timesteps.keys()
 
         for archive in message.archives:
@@ -75,57 +69,3 @@ async def add_data_archive_entries(
                 )
 
         await uow.commit()
-
-
-class DeletedExpiredUploadsHandler(AbstractHandler[DeleteExpiredUploads]):
-    DELETE_CHUNK_SIZE = 50
-
-    def __init__(self, s3: S3FileSystem):
-        self.s3 = s3
-
-    async def __call__(self, message: DeleteExpiredUploads, uow: AbstractUnitOfWork):
-        async with uow:
-            msg = "[%s] Deleting expired uploads for %s"
-            LOGGER.info(msg, message.job_id, message.uploaded_on)
-
-            expiring_timestamps = filter(
-                partial(self._is_deletable, job_id=message.job_id),
-                await uow.timestamps.get_by_date(message.uploaded_on),
-            )
-
-            remote_paths: list[str] = []
-            for item in expiring_timestamps:
-                object_store_entry = item.object_store_entry
-                assert object_store_entry
-
-                object_store_entry.deletion_event = DeletionEvent(job_id=message.job_id)
-                remote_paths.append(self._get_remote_path(object_store_entry))
-
-            await self._bulk_delete(remote_paths)
-            await uow.commit()
-
-            LOGGER.info("[%s] Deleted %i entires", message.job_id, len(remote_paths))
-
-    async def _bulk_delete(self, keys: list[str]):
-        async with TaskGroup() as tasks:
-            for index in range(0, len(keys), self.DELETE_CHUNK_SIZE):
-                chunk = keys[index : index + self.DELETE_CHUNK_SIZE]
-                tasks.create_task(self.s3._bulk_delete(chunk))
-
-    @staticmethod
-    def _is_deletable(timestamp: Timestep, *, job_id: UUID | None = None) -> bool:
-        object_store_entry = timestamp.object_store_entry
-
-        is_deleted = bool(object_store_entry and object_store_entry.deletion_event)
-        is_archived = bool(timestamp.data_archive_entry)
-
-        check = is_archived and not is_deleted
-        if not check:
-            msg = "[%s] Skipping %s: Archived- %s/ Deleted- %s"
-            LOGGER.info(msg, job_id, timestamp.timestep_id, is_archived, is_deleted)
-
-        return check
-
-    @staticmethod
-    def _get_remote_path(object_store_entry: ObjectStoreEntry) -> str:
-        return f"{object_store_entry.bucket}/{object_store_entry.key}"
