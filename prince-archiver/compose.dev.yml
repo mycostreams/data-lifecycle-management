@@ -39,7 +39,6 @@ services:
       <<: *aws-env-variables
       SURF_USERNAME: ""
       SURF_PASSWORD: ""
-      WEBHOOK_URL: ${WEBHOOK_URL}
     volumes:
       - ./prince_archiver:/app/prince_archiver
       - ./alembic/:/app/alembic
