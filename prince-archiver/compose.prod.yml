@@ -44,6 +44,7 @@ services:
       SENTRY_DSN: ${SENTRY_DSN}
       UPLOAD_EXPIRY_DAYS: ${UPLOAD_EXPIRY_DAYS:-5}
       ARCHIVE_TRANSITION_DAYS: ${ARCHIVE_TRANSITION_DAYS:-2}
+      WEBHOOK_URL: ${WEBHOOK_URL}
     labels: *log-labels
     deploy:
       restart_policy:
