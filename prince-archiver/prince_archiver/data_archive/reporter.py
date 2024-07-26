@@ -1,7 +1,7 @@
 import asyncio
 import json
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from enum import StrEnum
 from typing import Any
 from uuid import UUID
@@ -70,7 +70,7 @@ class Reporter:
         self.messenger = messenger
 
         # TODO: make configurable
-        self.timeout = 86400  # 1 day
+        self.timeout = timedelta(days=3)  # 1 day
 
     async def generate_report(
         self,
@@ -83,12 +83,11 @@ class Reporter:
             uow,
             asyncio.TaskGroup() as tg,
         ):
-            task = tg.create_task(self.s3._url(target, expires=self.timeout))
+            task = tg.create_task(self._get_url(target))
             entries = await self._get_events(uow, date)
             tg.create_task(self._write_events(entries, target))
 
-        url: str = task.result()
-        await self._notify(url, img_count=len(entries), date=date)
+        await self._notify(task.result(), img_count=len(entries), date=date)
 
     async def _notify(self, url: str, img_count: int, date: date):
         if self.messenger:
@@ -107,29 +106,22 @@ class Reporter:
             ),
         )
 
-        event_kwargs: list[dict] = []
-        presigned_url_tasks: list[asyncio.Task] = []
+        event_kwargs: list[tuple[dict, asyncio.Task[str]]] = []
+        async with asyncio.TaskGroup() as tg:
+            for event in timestamps:
+                assert event.object_store_entry
 
-        for event in timestamps:
-            assert event.object_store_entry
-
-            event_kwargs.append(
-                {
+                base_kwargs = {
                     "timestep_id": event.timestep_id,
                     "experiment_id": event.experiment_id,
                     "key": event.object_store_entry.key,
                     "timestamp": event.timestamp,
                 }
-            )
-            presigned_url_tasks.append(
-                self.s3._url(
-                    event.object_store_entry.key,
-                    self.timeout,
-                )
-            )
+                url_task = tg.create_task(self._get_url(event.object_store_entry.key))
 
-        urls: list[str] = await asyncio.gather(*presigned_url_tasks)
-        return [Event(**kwargs, url=url) for kwargs, url in zip(event_kwargs, urls)]
+                event_kwargs.append((base_kwargs, url_task))
+
+        return [Event(**_kwargs, url=_url.result()) for _kwargs, _url in event_kwargs]
 
     async def _write_events(self, entries: list[Event], target: str):
         data = json.dumps(
@@ -137,3 +129,10 @@ class Reporter:
             indent=4,
         )
         await self.s3._pipe_file(target, data)
+
+    async def _get_url(self, target: str, *, timeout: int | None = None) -> str:
+        url: str = await self.s3._url(
+            target,
+            timeout or self.timeout.total_seconds(),
+        )
+        return url
