@@ -10,6 +10,6 @@ trap "rm -rf $TEMP_DIR" EXIT
 
 TARGET_PATH=$TEMP_DIR/$FILENAME
 
-docker compose run --rm db pg_dump --username postgres postgres > $TARGET_PATH
+docker compose exec db pg_dump --username postgres postgres > $TARGET_PATH
 
 rclone copy $TARGET_PATH ceph-s3:backups/db
