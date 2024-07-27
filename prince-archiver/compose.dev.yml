@@ -55,7 +55,7 @@ services:
       - ./alembic/:/app/alembic
 
   s3:
-    image: adobe/s3mock:3.1.0
+    image: adobe/s3mock:3.10.0
     ports:
       - 9090:9090
       - 9191:9191
