@@ -23,7 +23,7 @@ class UploadHandler(AbstractHandler[UploadDTO]):
     def __init__(
         self,
         s3: s3fs.S3FileSystem,
-        pool: Executor,
+        pool: Executor | None = None,
     ):
         self.s3 = s3
         self.pool = pool
@@ -34,7 +34,7 @@ class UploadHandler(AbstractHandler[UploadDTO]):
             self.get_temp_archive(message) as temp_archive_path,
         ):
             LOGGER.info("Uploading %s", message.key)
-            (await self.s3._put_file(temp_archive_path, message.key),)
+            await self.s3._put_file(temp_archive_path, message.key)
             await uow.commit()
 
     @asynccontextmanager

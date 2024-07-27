@@ -43,15 +43,6 @@ services:
       redis:
         condition: service_healthy
 
-  data-archive-subscriber:
-    image: prince-archiver
-    command: ["python", "-m", "prince_archiver.data_archive.subscriber"]
-    environment:
-      POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
-    depends_on:
-      db:
-        condition: service_healthy
-
   db-migrations:
     image: prince-archiver
     command: ["alembic", "upgrade", "head"]
