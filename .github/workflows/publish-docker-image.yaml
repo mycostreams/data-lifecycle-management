@@ -3,19 +3,18 @@ name: Publish Docker image
 
 on:
   push:
-    branches:
-      - prince-archiver/push-to-docker-hub
     tags:
       - "data-exporter/*"
 
 
 env:
-  REGISTRY: index.docker.io
   IMAGE_NAME: data-exporter
+  REGISTRY: index.docker.io
 
 
 jobs:
   push_to_registry:
+    environment: hello
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     permissions:
