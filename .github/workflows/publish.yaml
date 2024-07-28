@@ -8,13 +8,9 @@ on:
     tags:
       - "data-exporter/*"
 
-defaults:
-  run:
-    working-directory: ./prince-archiver
-
 
 env:
-  REGISTRY: docker.io
+  REGISTRY: index.docker.io
   IMAGE_NAME: data-exporter
 
 
