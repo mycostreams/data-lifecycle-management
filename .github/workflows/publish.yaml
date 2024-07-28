@@ -44,7 +44,7 @@ jobs:
           images: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}
 
       - name: echo
-        run: echo $PWD
+        run: cat ./Dockerfile
 
       - name: Build and push Docker image
         id: push
