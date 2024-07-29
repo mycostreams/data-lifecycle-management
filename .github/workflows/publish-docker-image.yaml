@@ -37,7 +37,7 @@ jobs:
         with:
           images: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=tag,prefix=data-exporter/
+            type=match,pattern=data-exporter/(v.*),group=1
 
       - name: Build and push Docker image
         id: push
