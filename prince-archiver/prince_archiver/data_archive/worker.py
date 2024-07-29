@@ -4,6 +4,7 @@ from contextlib import AsyncExitStack
 from datetime import date, timedelta
 from functools import partial
 from typing import Callable
+from uuid import UUID, uuid4
 
 from arq import cron
 from arq.connections import RedisSettings
@@ -28,8 +29,13 @@ from .subscriber import ManagedSubscriber
 LOGGER = logging.getLogger(__name__)
 
 
-async def run_archiving(ctx: dict, *, _date: date | None = None):
-    job_id = ctx["internal_job_id"]
+async def run_archiving(
+    ctx: dict,
+    *,
+    _date: date | None = None,
+    _job_id: UUID | None = None,
+):
+    job_id = _job_id or uuid4()
     settings: ArchiveWorkerSettings = ctx["settings"]
     archiver: AbstractArchiver | None = ctx["archiver"]
 
