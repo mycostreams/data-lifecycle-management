@@ -1,6 +1,5 @@
 import logging
 import os
-from concurrent.futures import ThreadPoolExecutor
 from contextlib import AsyncExitStack
 
 from arq.connections import RedisSettings
@@ -47,14 +46,14 @@ async def startup(ctx):
     exit_stack = await AsyncExitStack().__aenter__()
 
     settings = get_worker_settings()
-    pool = exit_stack.enter_context(ThreadPoolExecutor())
+
     s3 = await exit_stack.enter_async_context(managed_file_system(settings))
     sessionmaker = get_session_maker(str(settings.POSTGRES_DSN))
 
     def _message_bus_factory():
         return MessageBus(
             handlers={
-                UploadDTO: [UploadHandler(s3=s3, pool=pool), add_upload_to_db],
+                UploadDTO: [UploadHandler(s3=s3), add_upload_to_db],
             },
             uow=UnitOfWork(sessionmaker),
         )

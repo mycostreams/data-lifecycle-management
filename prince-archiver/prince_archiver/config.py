@@ -57,6 +57,8 @@ class WorkerSettings(AWSSettings, CommonSettings):
 
 
 class ArchiveWorkerSettings(AWSSettings, CommonSettings):
+    RABBITMQ_DSN: str
+
     SURF_USERNAME: str
     SURF_PASSWORD: str
 
@@ -64,19 +66,7 @@ class ArchiveWorkerSettings(AWSSettings, CommonSettings):
 
     WEBHOOK_URL: HttpUrl | None = None
 
-    UPLOAD_EXPIRY_DAYS: int = 5
     ARCHIVE_TRANSITION_DAYS: int = 2
-
-
-class SubscriberSettings(BaseSettings):
-    POSTGRES_DSN: PostgresDsn
-    RABBITMQ_DSN: str
-
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore",
-    )
 
 
 @lru_cache

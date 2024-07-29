@@ -4,6 +4,7 @@ from contextlib import AsyncExitStack
 from datetime import date, timedelta
 from functools import partial
 from typing import Callable
+from uuid import UUID, uuid4
 
 from arq import cron
 from arq.connections import RedisSettings
@@ -14,15 +15,27 @@ from prince_archiver.config import ArchiveWorkerSettings
 from prince_archiver.db import UnitOfWork, get_session_maker
 from prince_archiver.file import managed_file_system
 from prince_archiver.logging import configure_logging
+from prince_archiver.messagebus import MessageBus
 
 from .archiver import AbstractArchiver, Settings, SurfArchiver
+from .dto import UpdateArchiveEntries
+from .handlers import (
+    SubscriberMessageHandler,
+    add_data_archive_entries,
+)
 from .reporter import Messenger, Reporter
+from .subscriber import ManagedSubscriber
 
 LOGGER = logging.getLogger(__name__)
 
 
-async def run_archiving(ctx: dict, *, _date: date | None = None):
-    job_id = ctx["internal_job_id"]
+async def run_archiving(
+    ctx: dict,
+    *,
+    _date: date | None = None,
+    _job_id: UUID | None = None,
+):
+    job_id = _job_id or uuid4()
     settings: ArchiveWorkerSettings = ctx["settings"]
     archiver: AbstractArchiver | None = ctx["archiver"]
 
@@ -55,10 +68,27 @@ async def startup(ctx: dict):
     exit_stack = await AsyncExitStack().__aenter__()
     settings = ArchiveWorkerSettings()
 
-    sessionmaker = get_session_maker(str(settings.POSTGRES_DSN))
+    uow_factory = partial(
+        UnitOfWork,
+        get_session_maker(str(settings.POSTGRES_DSN)),
+    )
+
+    def _messagebus_factory() -> MessageBus:
+        return MessageBus(
+            handlers={UpdateArchiveEntries: [add_data_archive_entries]},
+            uow=uow_factory(),
+        )
 
     ctx["exit_stack"] = exit_stack
     ctx["settings"] = settings
+    ctx["uow_factory"] = uow_factory
+
+    # Configure archive subscriber
+    subscriber = ManagedSubscriber(
+        connection_url=settings.RABBITMQ_DSN,
+        message_handler=SubscriberMessageHandler(_messagebus_factory),
+    )
+    await exit_stack.enter_async_context(subscriber)
 
     # Configure archiver
     if settings.SURF_USERNAME and settings.SURF_PASSWORD:
@@ -78,7 +108,6 @@ async def startup(ctx: dict):
         messenger = Messenger(client, str(settings.WEBHOOK_URL))
     s3 = await exit_stack.enter_async_context(managed_file_system(settings))
 
-    ctx["uow_factory"] = partial(UnitOfWork, sessionmaker)
     ctx["reporter"] = Reporter(s3, messenger=messenger)
 
     LOGGER.info("Start up complete")
