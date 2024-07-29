@@ -4,7 +4,7 @@ name: Publish Docker image
 on:
   push:
     tags:
-      - "dummy/*"
+      - "data-exporter/*"
 
 
 env:
@@ -37,7 +37,7 @@ jobs:
         with:
           images: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=match,pattern=dummy/(v.*),group=1
+            type=match,pattern=data-exporter/(v.*),group=1
 
       - name: Build and push Docker image
         id: push
