@@ -2,8 +2,7 @@
 
 from dataclasses import dataclass
 
-from prince_archiver.definitions import System
-from prince_archiver.definitions import Algorithm
+from prince_archiver.definitions import Algorithm, System
 
 
 @dataclass

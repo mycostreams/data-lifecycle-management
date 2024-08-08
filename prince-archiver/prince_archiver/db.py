@@ -61,6 +61,7 @@ class ImagingEventRepo(AbstractImagingEventRepo):
     def _base_query() -> Select[tuple[ImagingEvent]]:
         return select(ImagingEvent).options(selectinload("*"))
 
+
 class AbstractTimestepRepo(ABC):
     @abstractmethod
     def add(self, timestep: Timestep) -> None: ...

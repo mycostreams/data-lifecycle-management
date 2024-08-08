@@ -4,6 +4,7 @@ from typing import Generic, TypeVar
 from uuid import UUID, uuid4
 
 from prince_archiver.definitions import EventType
+
 from .value_objects import Checksum, GridSize, Location
 
 
@@ -43,7 +44,7 @@ class StitchParams(Params):
 @dataclass
 class VideoParams(Params):
     pass
-    
+
 
 ParamT = TypeVar("ParamT", bound=Params)
 
@@ -107,7 +108,7 @@ class ConcreteImagingEvent(Generic[ParamT], ImagingEvent[ParamT]):
         location: Location,
         *,
         params: ParamT | None = None,
-        _id: UUID | None = None
+        _id: UUID | None = None,
     ):
         return cls(
             _id or uuid4(),
@@ -139,4 +140,3 @@ class VideoEvent(ConcreteImagingEvent[VideoParams]):
     """
 
     TYPE = EventType.VIDEO
-
