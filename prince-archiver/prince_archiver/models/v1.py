@@ -5,7 +5,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import TIMESTAMP, Uuid
 
-from .utils import now
+from prince_archiver.utils import now
 
 
 class Base(DeclarativeBase):
