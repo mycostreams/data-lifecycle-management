@@ -8,35 +8,12 @@ from sqlalchemy.orm import selectinload
 from prince_archiver.definitions import EventType, System
 from prince_archiver.domain import models as domain_model
 from prince_archiver.domain.value_objects import Checksum, Location
-from prince_archiver.models import v2 as data_models
-from prince_archiver.models.mappers import init_mappers
+
+pytestmark = pytest.mark.integration
 
 
-@pytest.fixture(name="data")
-async def fixture_seed_data(
-    imaging_event: data_models.ImagingEvent,
-    data_archive_member: data_models.DataArchiveMember,
-    object_store_entry: data_models.ObjectStoreEntry,
-    event_archive: data_models.EventArchive,
-    checksum: data_models.ArchiveChecksum,
-    session: AsyncSession,
-):
-    items = [
-        imaging_event,
-        data_archive_member,
-        object_store_entry,
-        event_archive,
-        checksum,
-    ]
-    for object in items:
-        session.add(object)
-        await session.commit()
-
-
-@pytest.mark.usefixtures("data")
+@pytest.mark.usefixtures("seed_data")
 async def test_mappers(session: AsyncSession):
-    init_mappers()
-
     imaging_event = await session.scalar(
         select(domain_model.ImagingEvent).options(selectinload("*"))
     )

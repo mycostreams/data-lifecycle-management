@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 from typing import AsyncGenerator
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from sqlalchemy.ext.asyncio import (
@@ -9,11 +9,22 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+from sqlalchemy.orm import clear_mappers
 
 from prince_archiver.definitions import Algorithm, EventType, System
 from prince_archiver.models import v2 as data_models
+from prince_archiver.models.mappers import init_mappers
 
 CONNECTION_URL = "postgresql+asyncpg://postgres:postgres@localhost:5431/postgres"
+
+
+@pytest.fixture(name="mappers", scope="session", autouse=True)
+def fixture_mappers():
+    init_mappers()
+
+    yield
+
+    clear_mappers()
 
 
 @pytest.fixture(name="conn")
@@ -51,7 +62,7 @@ async def fixture_session(
 def fixture_imaging_event() -> data_models.ImagingEvent:
     return data_models.ImagingEvent(
         id=uuid4(),
-        ref_id=uuid4(),
+        ref_id=UUID("0b036a6a5ba745aea24290106014b08d"),
         type=EventType.STITCH,
         experiment_id="test_experiment_id",
         local_path="/test/path/",
@@ -103,3 +114,24 @@ def fixture_checksum(event_archive: data_models.EventArchive):
         algorithm=Algorithm.SHA256,
         event_archive_id=event_archive.id,
     )
+
+
+@pytest.fixture(name="seed_data")
+async def fixture_seed_data(
+    imaging_event: data_models.ImagingEvent,
+    data_archive_member: data_models.DataArchiveMember,
+    object_store_entry: data_models.ObjectStoreEntry,
+    event_archive: data_models.EventArchive,
+    checksum: data_models.ArchiveChecksum,
+    session: AsyncSession,
+):
+    items = [
+        imaging_event,
+        data_archive_member,
+        object_store_entry,
+        event_archive,
+        checksum,
+    ]
+    for object in items:
+        session.add(object)
+        await session.commit()

@@ -102,7 +102,7 @@ class ConcreteImagingEvent(Generic[ParamT], ImagingEvent[ParamT]):
     def factory(
         cls,
         ref_id: UUID,
-        experment_id: str,
+        experiment_id: str,
         local_path: str,
         timestamp: datetime,
         location: Location,
@@ -114,7 +114,7 @@ class ConcreteImagingEvent(Generic[ParamT], ImagingEvent[ParamT]):
             _id or uuid4(),
             ref_id,
             cls.TYPE,
-            experment_id,
+            experiment_id,
             local_path,
             timestamp,
             location,
