@@ -80,6 +80,16 @@ class StitchParams(Base):
     )
 
 
+class VideoParams(Base):
+    __tablename__ = "video_params"
+
+    id: Mapped[uuid_pk]
+
+    imaging_event_id: Mapped[UUID] = mapped_column(
+        ForeignKey("imaging_events.id"),
+    )
+
+
 class ImagingEvent(Base):
     __tablename__ = "imaging_events"
 
