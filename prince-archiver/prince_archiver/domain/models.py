@@ -95,7 +95,7 @@ class ImagingEvent(Generic[ParamT]):
         self.data_archive_member = archive_member
 
 
-class ConcreteImagingEvent(Generic[ParamT], ImagingEvent[ParamT]):
+class ConcreteImagingEvent(ImagingEvent[ParamT]):
     TYPE: EventType
 
     @classmethod

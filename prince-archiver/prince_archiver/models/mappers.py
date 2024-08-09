@@ -69,7 +69,7 @@ def init_mappers():
         exclude_properties=get_exclude_fields(data_models.EventArchive),
     )
 
-    image_params_mapper = mapper_registry.map_imperatively(
+    stitch_params_mapper = mapper_registry.map_imperatively(
         domain_models.StitchParams,
         data_models.StitchParams.__table__,
         properties={
@@ -78,7 +78,13 @@ def init_mappers():
             "_grid_col": data_models.StitchParams.grid_col.expression,
             "_imaging_event_id": (data_models.StitchParams.imaging_event_id.expression),
         },
-        exclude_properties=get_exclude_fields(data_models.EventArchive),
+        exclude_properties=get_exclude_fields(data_models.StitchParams),
+    )
+
+    video_params_mapper = mapper_registry.map_imperatively(
+        domain_models.VideoParams,
+        data_models.VideoParams.__table__,
+        exclude_properties=get_exclude_fields(data_models.VideoParams),
     )
 
     imaging_event_mapper = mapper_registry.map_imperatively(
@@ -105,6 +111,14 @@ def init_mappers():
         domain_models.StitchEvent,
         inherits=imaging_event_mapper,
         properties={
-            "_params": relationship(image_params_mapper, uselist=False),
+            "_params": relationship(stitch_params_mapper, uselist=False),
+        },
+    )
+
+    mapper_registry.map_imperatively(
+        domain_models.VideoEvent,
+        inherits=imaging_event_mapper,
+        properties={
+            "_params": relationship(video_params_mapper, uselist=False),
         },
     )
