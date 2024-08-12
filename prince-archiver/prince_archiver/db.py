@@ -6,10 +6,13 @@ from uuid import UUID
 from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.sql import Select
 
+from prince_archiver.domain.models import ImagingEvent, StitchEvent, VideoEvent
+
 from .models import Timestep
+from .models import v2 as data_models
 
 
 def get_session_maker(url: str) -> async_sessionmaker[AsyncSession]:
@@ -19,6 +22,44 @@ def get_session_maker(url: str) -> async_sessionmaker[AsyncSession]:
         autoflush=False,
         bind=engine,
     )
+
+
+class AbstractImagingEventRepo(ABC):
+    @abstractmethod
+    def add(self, image_event: StitchEvent | VideoEvent) -> None: ...
+
+    @abstractmethod
+    async def get_by_ref_id(self, event_id: UUID) -> ImagingEvent | None: ...
+
+    @abstractmethod
+    async def get_by_ref_date(self, date: date) -> list[ImagingEvent]: ...
+
+
+class ImagingEventRepo(AbstractImagingEventRepo):
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    def add(self, image_event: StitchEvent | VideoEvent) -> None:
+        self.session.add(image_event)
+
+    async def get_by_ref_id(self, event_id: UUID) -> ImagingEvent | None:
+        return await self.session.scalar(
+            self._base_query().where(
+                data_models.ImagingEvent.ref_id == event_id,
+            ),
+        )
+
+    async def get_by_ref_date(self, date_: date) -> list[ImagingEvent]:
+        result = await self.session.scalars(
+            self._base_query().where(
+                func.date(data_models.ImagingEvent.timestamp) == date_,
+            ),
+        )
+        return list(result.all())
+
+    @staticmethod
+    def _base_query() -> Select[tuple[ImagingEvent]]:
+        return select(ImagingEvent).options(selectinload("*"))
 
 
 class AbstractTimestepRepo(ABC):
@@ -35,7 +76,6 @@ class AbstractTimestepRepo(ABC):
 class TimestepRepo(AbstractTimestepRepo):
     def __init__(self, session: AsyncSession):
         self.session = session
-        self.messages: list[BaseModel] = []
 
     def add(self, timestamp: Timestep) -> None:
         self.session.add(timestamp)
@@ -61,7 +101,9 @@ class TimestepRepo(AbstractTimestepRepo):
 
 class AbstractUnitOfWork(ABC):
     messages: list[BaseModel]
+
     timestamps: AbstractTimestepRepo
+    imaging_events: AbstractImagingEventRepo
 
     @abstractmethod
     async def __aenter__(self) -> "AbstractUnitOfWork": ...
@@ -87,6 +129,7 @@ class UnitOfWork(AbstractUnitOfWork):
     session: AsyncSession
 
     timestamps: TimestepRepo
+    imaging_events: ImagingEventRepo
 
     def __init__(self, session_maker: async_sessionmaker[AsyncSession]):
         self.session_maker = session_maker
@@ -95,6 +138,7 @@ class UnitOfWork(AbstractUnitOfWork):
     async def __aenter__(self) -> "UnitOfWork":
         self.session = await self.session_maker().__aenter__()
         self.timestamps = TimestepRepo(self.session)
+        self.imaging_events = ImagingEventRepo(self.session)
         return self
 
     async def __aexit__(self, exc_type, exc_value, exc_traceback):

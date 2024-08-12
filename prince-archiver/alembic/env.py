@@ -32,7 +32,7 @@ target_metadata = Base.metadata
 def get_url() -> str:
     dsn = os.getenv(
         "POSTGRES_DSN",
-        "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres",
+        "postgresql+asyncpg://postgres:postgres@localhost:5431/postgres",
     )
     return dsn
 

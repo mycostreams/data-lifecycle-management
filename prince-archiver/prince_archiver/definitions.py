@@ -8,3 +8,7 @@ class System(StrEnum):
 class EventType(StrEnum):
     STITCH = auto()
     VIDEO = auto()
+
+
+class Algorithm(StrEnum):
+    SHA256 = auto()
