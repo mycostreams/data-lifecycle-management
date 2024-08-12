@@ -97,6 +97,7 @@ class ImagingEvent(Generic[ParamT]):
 
 class ConcreteImagingEvent(ImagingEvent[ParamT]):
     TYPE: EventType
+    PARAM_CLS: type[ParamT]
 
     @classmethod
     def factory(
@@ -125,6 +126,10 @@ class ConcreteImagingEvent(ImagingEvent[ParamT]):
     def params(self):
         return self._params
 
+    @classmethod
+    def get_param_cls(cls) -> type[ParamT]:
+        return cls.PARAM_CLS
+
 
 class StitchEvent(ConcreteImagingEvent[StitchParams]):
     """
@@ -132,6 +137,7 @@ class StitchEvent(ConcreteImagingEvent[StitchParams]):
     """
 
     TYPE = EventType.STITCH
+    PARAM_CLS = StitchParams
 
 
 class VideoEvent(ConcreteImagingEvent[VideoParams]):
@@ -140,3 +146,4 @@ class VideoEvent(ConcreteImagingEvent[VideoParams]):
     """
 
     TYPE = EventType.VIDEO
+    PARAM_CLS = VideoParams
