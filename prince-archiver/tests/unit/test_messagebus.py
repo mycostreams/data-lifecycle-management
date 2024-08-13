@@ -3,8 +3,8 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
-from prince_archiver.db import AbstractUnitOfWork
 from prince_archiver.service_layer.messagebus import MessageBus
+from prince_archiver.service_layer.uow import AbstractUnitOfWork
 
 
 class MockMessage(BaseModel):

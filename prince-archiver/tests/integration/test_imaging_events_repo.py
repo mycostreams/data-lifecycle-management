@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from prince_archiver.db import ImagingEventRepo
+from prince_archiver.adapters.repository import ImagingEventRepo
 from prince_archiver.definitions import System
 from prince_archiver.domain.models import StitchEvent, StitchParams
 from prince_archiver.domain.value_objects import GridSize, Location

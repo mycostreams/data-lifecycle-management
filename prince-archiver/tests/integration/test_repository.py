@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from prince_archiver.db import TimestepRepo
+from prince_archiver.adapters.repository import TimestepRepo
 from prince_archiver.models import ObjectStoreEntry, Timestep
 
 pytestmark = pytest.mark.integration

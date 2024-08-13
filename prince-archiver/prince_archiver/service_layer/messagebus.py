@@ -3,7 +3,7 @@ from typing import Awaitable, Callable, Generic, Mapping, TypeVar
 
 from pydantic import BaseModel
 
-from prince_archiver.db import AbstractUnitOfWork
+from prince_archiver.service_layer.uow import AbstractUnitOfWork
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 

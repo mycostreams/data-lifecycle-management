@@ -4,8 +4,9 @@ from uuid import uuid4
 
 import pytest
 
-from prince_archiver.db import AbstractTimestepRepo, AbstractUnitOfWork
+from prince_archiver.adapters.repository import AbstractTimestepRepo
 from prince_archiver.models import ObjectStoreEntry, Timestep
+from prince_archiver.service_layer.uow import AbstractUnitOfWork
 from prince_archiver.upload_worker.dto import UploadDTO
 from prince_archiver.upload_worker.handlers import add_upload_to_db
 

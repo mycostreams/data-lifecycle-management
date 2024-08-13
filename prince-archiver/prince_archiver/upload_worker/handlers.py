@@ -9,10 +9,10 @@ from uuid import uuid4
 import s3fs
 from aiofiles.tempfile import TemporaryDirectory
 
-from prince_archiver.db import AbstractUnitOfWork
 from prince_archiver.file import tar
 from prince_archiver.models import ObjectStoreEntry
 from prince_archiver.service_layer.messagebus import AbstractHandler
+from prince_archiver.service_layer.uow import AbstractUnitOfWork
 
 from .dto import UploadDTO
 

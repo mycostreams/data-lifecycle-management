@@ -6,9 +6,9 @@ from arq import create_pool
 from arq.connections import RedisSettings
 
 from prince_archiver.config import WatcherSettings
-from prince_archiver.db import UnitOfWork, get_session_maker
 from prince_archiver.dto import TimestepDTO
 from prince_archiver.service_layer.messagebus import MessageBus
+from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
 
 from .handlers import ArqHandler, add_to_db
 
