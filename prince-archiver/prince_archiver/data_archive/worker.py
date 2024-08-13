@@ -15,7 +15,7 @@ from prince_archiver.config import ArchiveWorkerSettings
 from prince_archiver.db import UnitOfWork, get_session_maker
 from prince_archiver.file import managed_file_system
 from prince_archiver.logging import configure_logging
-from prince_archiver.messagebus import MessageBus
+from prince_archiver.service_layer.messagebus import MessageBus
 
 from .archiver import AbstractArchiver, Settings, SurfArchiver
 from .dto import UpdateArchiveEntries

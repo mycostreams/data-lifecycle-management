@@ -5,8 +5,8 @@ from arq import ArqRedis
 
 from prince_archiver.db import AbstractUnitOfWork
 from prince_archiver.dto import TimestepDTO
-from prince_archiver.messagebus import AbstractHandler
 from prince_archiver.models import Timestep
+from prince_archiver.service_layer.messagebus import AbstractHandler
 
 LOGGER = logging.getLogger(__name__)
 

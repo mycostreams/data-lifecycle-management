@@ -4,11 +4,11 @@ from typing import Callable
 from aio_pika.abc import AbstractIncomingMessage
 
 from prince_archiver.db import AbstractUnitOfWork
-from prince_archiver.messagebus import MessageBus
 from prince_archiver.models import (
     DataArchiveEntry,
     Timestep,
 )
+from prince_archiver.service_layer.messagebus import MessageBus
 
 from .dto import UpdateArchiveEntries
 
