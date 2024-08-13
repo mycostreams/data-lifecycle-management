@@ -11,8 +11,8 @@ from jinja2 import Environment, PackageLoader
 from pydantic import BaseModel, Field, HttpUrl
 from s3fs import S3FileSystem
 
-from prince_archiver.db import UnitOfWork
 from prince_archiver.definitions import EventType
+from prince_archiver.service_layer.uow import UnitOfWork
 
 LOGGER = logging.getLogger(__name__)
 

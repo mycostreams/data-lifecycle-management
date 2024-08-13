@@ -6,12 +6,12 @@ from arq.connections import RedisSettings
 
 from prince_archiver.config import WorkerSettings as _Settings
 from prince_archiver.config import get_worker_settings
-from prince_archiver.db import UnitOfWork, get_session_maker
 from prince_archiver.definitions import EventType
 from prince_archiver.dto import TimestepDTO
 from prince_archiver.file import managed_file_system
 from prince_archiver.logging import configure_logging
 from prince_archiver.service_layer.messagebus import MessageBus, MessagebusFactoryT
+from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
 
 from .dto import UploadDTO
 from .handlers import UploadHandler, add_upload_to_db
