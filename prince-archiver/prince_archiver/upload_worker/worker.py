@@ -11,7 +11,7 @@ from prince_archiver.definitions import EventType
 from prince_archiver.dto import TimestepDTO
 from prince_archiver.file import managed_file_system
 from prince_archiver.logging import configure_logging
-from prince_archiver.messagebus import MessageBus, MessagebusFactoryT
+from prince_archiver.service_layer.messagebus import MessageBus, MessagebusFactoryT
 
 from .dto import UploadDTO
 from .handlers import UploadHandler, add_upload_to_db

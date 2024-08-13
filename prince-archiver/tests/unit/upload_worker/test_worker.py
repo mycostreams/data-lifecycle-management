@@ -5,7 +5,7 @@ from uuid import UUID
 import pytest
 
 from prince_archiver.config import WorkerSettings
-from prince_archiver.messagebus import MessageBus
+from prince_archiver.service_layer.messagebus import MessageBus
 from prince_archiver.upload_worker.dto import UploadDTO
 from prince_archiver.upload_worker.worker import workflow
 

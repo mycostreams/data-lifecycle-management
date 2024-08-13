@@ -14,7 +14,7 @@ from prince_archiver.data_archive.handlers import (
     add_data_archive_entries,
 )
 from prince_archiver.db import AbstractTimestepRepo, AbstractUnitOfWork
-from prince_archiver.messagebus import MessageBus
+from prince_archiver.service_layer.messagebus import MessageBus
 from prince_archiver.models import Timestep
 
 
