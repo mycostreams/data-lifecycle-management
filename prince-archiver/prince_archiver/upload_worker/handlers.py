@@ -11,8 +11,8 @@ from aiofiles.tempfile import TemporaryDirectory
 
 from prince_archiver.db import AbstractUnitOfWork
 from prince_archiver.file import tar
-from prince_archiver.service_layer.messagebus import AbstractHandler
 from prince_archiver.models import ObjectStoreEntry
+from prince_archiver.service_layer.messagebus import AbstractHandler
 
 from .dto import UploadDTO
 
