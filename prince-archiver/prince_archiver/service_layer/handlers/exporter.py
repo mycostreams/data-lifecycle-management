@@ -12,6 +12,7 @@ import s3fs
 from prince_archiver.adapters.file import ArchiveFileManager, SrcPath
 from prince_archiver.domain.models import EventArchive, ImagingEvent, ObjectStoreEntry
 from prince_archiver.service_layer import messages
+from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.messagebus import AbstractHandler
 from prince_archiver.service_layer.uow import AbstractUnitOfWork
 
@@ -36,7 +37,7 @@ async def initiate_imaging_event_export(
     async with uow:
         imaging_event = await uow.imaging_events.get_by_ref_id(message.ref_id)
         if not imaging_event or imaging_event.event_archive:
-            raise ValueError("No such imaging event")
+            raise ServiceLayerException("Rejecting export")
 
         uow.add_message(
             messages.ExportImagingEvent(
@@ -111,7 +112,7 @@ async def persist_imaging_event_export(
     async with uow:
         imaging_event = await uow.imaging_events.get_by_ref_id(message.ref_id)
         if not imaging_event:
-            raise ValueError("No such imaging event")
+            raise ServiceLayerException("Rejecting persistence")
 
         imaging_event.add_event_archive(
             EventArchive(

@@ -11,6 +11,7 @@ from prince_archiver.adapters.file import ArchiveFileManager
 from prince_archiver.definitions import EventType
 from prince_archiver.domain.models import StitchEvent
 from prince_archiver.domain.value_objects import Checksum
+from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.handlers.exporter import (
     Context,
     ExportHandler,
@@ -24,7 +25,7 @@ from prince_archiver.service_layer.messages import (
 )
 from prince_archiver.service_layer.uow import AbstractUnitOfWork
 
-from .utils import MockImagingEventRepo, MockUnitOfWork
+from .utils import MockUnitOfWork
 
 HandlerT = Callable[[InitiateExportEvent, AbstractUnitOfWork], Awaitable[None]]
 
@@ -39,18 +40,6 @@ def fixture_mock_file_manager() -> ArchiveFileManager:
     mock.get_temp_archive.return_value.__aenter__ = AsyncMock(return_value=Path("test"))
 
     return mock
-
-
-@pytest.fixture(name="uow")
-def fixture_uow(
-    exported_stitch_event: StitchEvent,
-    unexported_stitch_event: StitchEvent,
-):
-    return MockUnitOfWork(
-        imaging_event_repo=MockImagingEventRepo(
-            imaging_events=[exported_stitch_event, unexported_stitch_event],
-        ),
-    )
 
 
 @pytest.fixture(name="context_bound_handler")
@@ -120,7 +109,7 @@ async def test_initiate_imaging_event_export_non_existent_reference(
         type=EventType.STITCH,
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ServiceLayerException):
         await context_bound_handler(msg, MockUnitOfWork())
 
 
@@ -134,7 +123,7 @@ async def test_initiate_imaging_event_already_exported(
         type=EventType.STITCH,
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ServiceLayerException):
         await context_bound_handler(msg, uow)
 
 
@@ -169,5 +158,5 @@ async def test_persist_imaging_event_non_existent_reference():
         timestamp=datetime(2000, 1, 1, tzinfo=UTC),
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ServiceLayerException):
         await persist_imaging_event_export(msg, MockUnitOfWork())
