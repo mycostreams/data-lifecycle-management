@@ -1,0 +1,2 @@
+class ServiceLayerException(Exception):
+    pass
