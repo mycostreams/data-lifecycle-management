@@ -9,7 +9,7 @@ from s3fs import S3FileSystem
 
 from prince_archiver.adapters.file import ArchiveFileManager
 from prince_archiver.definitions import EventType
-from prince_archiver.domain.models import StitchEvent
+from prince_archiver.domain.models import ImagingEvent
 from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.handlers.exporter import (
@@ -83,16 +83,16 @@ async def test_export_handler_successful(
 async def test_initiate_imaging_event_export_successful(
     context_bound_handler: HandlerT,
     uow: MockUnitOfWork,
-    unexported_stitch_event: StitchEvent,
+    unexported_imaging_event: ImagingEvent,
 ):
     msg = InitiateExportEvent(
-        ref_id=unexported_stitch_event.ref_id, type=EventType.STITCH
+        ref_id=unexported_imaging_event.ref_id, type=EventType.STITCH
     )
 
     await context_bound_handler(msg, uow)
 
     expected_msg = ExportImagingEvent(
-        ref_id=unexported_stitch_event.ref_id,
+        ref_id=unexported_imaging_event.ref_id,
         type=EventType.STITCH,
         local_path=Path("/test/unexported/path"),
         target_key="test.tar",
@@ -116,10 +116,10 @@ async def test_initiate_imaging_event_export_non_existent_reference(
 async def test_initiate_imaging_event_already_exported(
     context_bound_handler: HandlerT,
     uow: MockUnitOfWork,
-    exported_stitch_event: StitchEvent,
+    exported_imaging_event: ImagingEvent,
 ):
     msg = InitiateExportEvent(
-        ref_id=exported_stitch_event.ref_id,
+        ref_id=exported_imaging_event.ref_id,
         type=EventType.STITCH,
     )
 
@@ -129,10 +129,10 @@ async def test_initiate_imaging_event_already_exported(
 
 async def test_persist_imaging_event_successful(
     uow: MockUnitOfWork,
-    unexported_stitch_event: StitchEvent,
+    unexported_imaging_event: ImagingEvent,
 ):
     msg = ExportedImagingEvent(
-        ref_id=unexported_stitch_event.ref_id,
+        ref_id=unexported_imaging_event.ref_id,
         checksum=Checksum("test"),
         img_count=5,
         size=1024,
@@ -142,8 +142,8 @@ async def test_persist_imaging_event_successful(
 
     await persist_imaging_event_export(msg, uow)
 
-    assert unexported_stitch_event.event_archive
-    assert unexported_stitch_event.object_store_entry
+    assert unexported_imaging_event.event_archive
+    assert unexported_imaging_event.object_store_entry
 
     assert uow.is_commited
 

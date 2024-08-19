@@ -5,9 +5,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from prince_archiver.definitions import EventType, System
+from prince_archiver.definitions import EventType
 from prince_archiver.domain import models as domain_model
-from prince_archiver.domain.value_objects import Checksum, Location
+from prince_archiver.domain.value_objects import Checksum
 
 pytestmark = pytest.mark.integration
 
@@ -23,7 +23,6 @@ async def test_mappers(session: AsyncSession):
     assert imaging_event.type == EventType.STITCH
     assert imaging_event.local_path == "/test/path/"
     assert imaging_event.experiment_id == "test_experiment_id"
-    assert imaging_event.location == Location(system=System.PRINCE, position=3)
 
     assert (data_archive_member := imaging_event.data_archive_member)
     assert data_archive_member.key == "test_key"

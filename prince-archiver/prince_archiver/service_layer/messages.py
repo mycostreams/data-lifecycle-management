@@ -9,7 +9,6 @@ from prince_archiver.definitions import EventType
 from prince_archiver.domain.value_objects import (
     Checksum,
     GridSize,
-    Location,
 )
 from prince_archiver.utils import now
 
@@ -31,11 +30,8 @@ class ImportImagingEvent(BaseModel):
     ref_id: UUID
     experiment_id: str
     local_path: str
-
     timestamp: datetime
-    location: Location
-
-    params: ParamsT
+    type: EventType
 
 
 class ImportedImagingEvent(ImportImagingEvent):

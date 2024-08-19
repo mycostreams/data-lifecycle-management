@@ -7,14 +7,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.sql import Select
 
-from prince_archiver.domain.models import ImagingEvent, StitchEvent, VideoEvent
+from prince_archiver.domain.models import ImagingEvent
 from prince_archiver.models import Timestep
 from prince_archiver.models import v2 as data_models
 
 
 class AbstractImagingEventRepo(ABC):
     @abstractmethod
-    def add(self, image_event: StitchEvent | VideoEvent) -> None: ...
+    def add(self, image_event: ImagingEvent) -> None: ...
 
     @abstractmethod
     async def get_by_ref_id(self, event_id: UUID) -> ImagingEvent | None: ...
@@ -27,7 +27,7 @@ class ImagingEventRepo(AbstractImagingEventRepo):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    def add(self, image_event: StitchEvent | VideoEvent) -> None:
+    def add(self, image_event: ImagingEvent) -> None:
         self.session.add(image_event)
 
     async def get_by_ref_id(self, event_id: UUID) -> ImagingEvent | None:
