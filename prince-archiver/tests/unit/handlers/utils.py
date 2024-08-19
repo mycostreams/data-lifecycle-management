@@ -5,7 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from prince_archiver.adapters.repository import AbstractImagingEventRepo
-from prince_archiver.domain.models import ImagingEvent, StitchEvent, VideoEvent
+from prince_archiver.domain.models import ImagingEvent
 from prince_archiver.service_layer.uow import AbstractUnitOfWork
 
 
@@ -18,7 +18,7 @@ class MockImagingEventRepo(AbstractImagingEventRepo):
             item.ref_id: item for item in imaging_events or []
         }
 
-    def add(self, image_event: StitchEvent | VideoEvent) -> None:
+    def add(self, image_event: ImagingEvent) -> None:
         self.imaging_events[image_event.ref_id] = image_event
 
     async def get_by_ref_id(self, event_id: UUID) -> ImagingEvent | None:

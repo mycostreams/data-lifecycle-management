@@ -6,9 +6,8 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from prince_archiver.adapters.repository import ImagingEventRepo
-from prince_archiver.definitions import System
-from prince_archiver.domain.models import StitchEvent, StitchParams
-from prince_archiver.domain.value_objects import GridSize, Location
+from prince_archiver.definitions import EventType
+from prince_archiver.domain.models import ImagingEvent
 
 pytestmark = pytest.mark.integration
 
@@ -19,26 +18,23 @@ def repo(session: AsyncSession) -> ImagingEventRepo:
 
 
 async def test_add(repo: ImagingEventRepo):
-    stitch_event = StitchEvent.factory(
+    stitch_event = ImagingEvent.factory(
         ref_id=uuid4(),
         experiment_id="experiment_id",
         local_path="/test/path/",
         timestamp=datetime.now(),
-        location=Location(system=System.PRINCE, position=3),
-        params=StitchParams(grid_size=GridSize(10, 10)),
+        type=EventType.STITCH,
     )
-    id = stitch_event.id
+
+    cached_id = stitch_event.id
 
     repo.add(stitch_event)
     await repo.session.commit()
 
     # Check that expected models are populated
     stmt = text("SELECT * FROM imaging_events WHERE id=:id")
-    result = await repo.session.execute(stmt.bindparams(id=id.hex))
+    result = await repo.session.execute(stmt.bindparams(id=cached_id.hex))
     assert len(result.all()) == 1
-
-    stmt = text("SELECT * FROM stitch_params WHERE imaging_event_id=:id")
-    result = await repo.session.execute(stmt.bindparams(id=id.hex))
 
 
 @pytest.mark.usefixtures("seed_data")

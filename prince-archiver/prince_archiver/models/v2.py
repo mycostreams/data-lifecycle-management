@@ -67,29 +67,6 @@ class EventArchive(Base):
     )
 
 
-class StitchParams(Base):
-    __tablename__ = "stitch_params"
-
-    id: Mapped[uuid_pk]
-
-    grid_row: Mapped[int]
-    grid_col: Mapped[int]
-
-    imaging_event_id: Mapped[UUID] = mapped_column(
-        ForeignKey("imaging_events.id"),
-    )
-
-
-class VideoParams(Base):
-    __tablename__ = "video_params"
-
-    id: Mapped[uuid_pk]
-
-    imaging_event_id: Mapped[UUID] = mapped_column(
-        ForeignKey("imaging_events.id"),
-    )
-
-
 class ImagingEvent(Base):
     __tablename__ = "imaging_events"
 
@@ -101,7 +78,9 @@ class ImagingEvent(Base):
     experiment_id: Mapped[str]
     local_path: Mapped[str]
     timestamp: Mapped[datetime]
-    system: Mapped[System] = mapped_column(
-        Enum(System, native_enum=False),
+
+    # TODO: remove these if not needed.
+    system: Mapped[System | None] = mapped_column(
+        Enum(System, native_enum=False), nullable=True
     )
-    system_position: Mapped[int]
+    system_position: Mapped[int | None]
