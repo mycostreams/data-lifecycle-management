@@ -21,6 +21,12 @@ def get_exclude_fields(model_cls: Type[data_models.Base]) -> list[ColumnElement]
 def init_mappers():
     mapper_registry = registry()
 
+    mapper_registry.map_imperatively(
+        domain_models.DataArchiveEntry,
+        data_models.DataArchiveEntry.__table__,
+        exclude_properties=get_exclude_fields(data_models.DataArchiveEntry),
+    )
+
     data_archive_member_mapper = mapper_registry.map_imperatively(
         domain_models.DataArchiveMember,
         data_models.DataArchiveMember.__table__,

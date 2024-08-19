@@ -7,9 +7,34 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.sql import Select
 
-from prince_archiver.domain.models import ImagingEvent
+from prince_archiver.domain.models import DataArchiveEntry, ImagingEvent
 from prince_archiver.models import Timestep
 from prince_archiver.models import v2 as data_models
+
+
+class AbstractDataArchiveEntryRepo(ABC):
+    @abstractmethod
+    def add(self, data_archive_entry: DataArchiveEntry) -> None: ...
+
+    @abstractmethod
+    async def get_by_path(self, path: str) -> DataArchiveEntry | None: ...
+
+
+class DataArchiveEntryRepo(AbstractDataArchiveEntryRepo):
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    def add(self, data_archive_entry: DataArchiveEntry) -> None:
+        self.session.add(data_archive_entry)
+
+    async def get_by_path(self, path: str) -> DataArchiveEntry | None:
+        return await self.session.scalar(
+            self._base_query().where(data_models.DataArchiveEntry.path == path)
+        )
+
+    @staticmethod
+    def _base_query() -> Select[tuple[DataArchiveEntry]]:
+        return select(DataArchiveEntry).options(selectinload("*"))
 
 
 class AbstractImagingEventRepo(ABC):

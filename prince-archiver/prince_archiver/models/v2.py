@@ -16,14 +16,27 @@ uuid_pk = Annotated[
 ]
 
 
+class DataArchiveEntry(Base):
+    __tablename__ = "data_archive_entries"
+
+    id: Mapped[uuid_pk]
+    type: Mapped[EventType] = mapped_column(
+        Enum(EventType, native_enum=False),
+    )
+    experiment_id: Mapped[str]
+    path: Mapped[str]
+
+
 class DataArchiveMember(Base):
     __tablename__ = "data_archive_members"
 
     id: Mapped[uuid_pk]
-    key: Mapped[str]
     member_key: Mapped[str]
     job_id: Mapped[UUID | None] = mapped_column(Uuid(native_uuid=False))
 
+    data_archive_entry_id: Mapped[UUID] = mapped_column(
+        ForeignKey("data_archive_entries.id"),
+    )
     imaging_event_id: Mapped[UUID] = mapped_column(
         ForeignKey("imaging_events.id"),
     )

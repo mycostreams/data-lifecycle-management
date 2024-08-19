@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from uuid import UUID
 
 import pytest
 from sqlalchemy import select
@@ -24,8 +25,9 @@ async def test_mappers(session: AsyncSession):
     assert imaging_event.local_path == "/test/path/"
     assert imaging_event.experiment_id == "test_experiment_id"
 
+    expected_ref_id = UUID("611598397745466bb78b82f4c462fd6a")
     assert (data_archive_member := imaging_event.data_archive_member)
-    assert data_archive_member.key == "test_key"
+    assert data_archive_member.data_archive_entry_id == expected_ref_id
     assert data_archive_member.member_key == "test_member_key"
 
     assert (object_store_entry := imaging_event.object_store_entry)

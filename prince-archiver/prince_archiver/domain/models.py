@@ -23,9 +23,17 @@ class ObjectStoreEntry:
 
 
 @dataclass
+class DataArchiveEntry:
+    id: UUID
+    type: EventType
+    experiment_id: str
+    path: str
+
+
+@dataclass
 class DataArchiveMember:
     id: UUID
-    key: str
+    data_archive_entry_id: UUID
     member_key: str
     job_id: UUID | None = None
 
