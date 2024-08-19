@@ -86,5 +86,9 @@ def init_mappers():
                 uselist=False,
             ),
         },
-        exclude_properties=get_exclude_fields(data_models.ImagingEvent),
+        exclude_properties=[
+            data_models.ImagingEvent.system,
+            data_models.ImagingEvent.system_position,
+            *get_exclude_fields(data_models.ImagingEvent),
+        ],
     )
