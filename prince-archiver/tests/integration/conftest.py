@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import AsyncGenerator
 from uuid import UUID, uuid4
 
@@ -65,7 +66,7 @@ def fixture_imaging_event() -> data_models.ImagingEvent:
         ref_id=UUID("0b036a6a5ba745aea24290106014b08d"),
         type=EventType.STITCH,
         experiment_id="test_experiment_id",
-        local_path="/test/path/",
+        local_path=Path("test/path/"),
         system=System.PRINCE,
         system_position=3,
         timestamp=datetime(2000, 1, 1, tzinfo=UTC),

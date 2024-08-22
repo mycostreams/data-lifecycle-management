@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from pathlib import Path
 from uuid import uuid4
 
 import pytest
@@ -30,7 +31,7 @@ def fixture_unexported_imaging_event() -> ImagingEvent:
         ref_id=uuid4(),
         type=EventType.STITCH,
         experiment_id="test_experiment_id",
-        local_path="unexported/path",
+        local_path=Path("unexported/path"),
         timestamp=datetime(2000, 1, 1, tzinfo=UTC),
     )
 
@@ -41,7 +42,7 @@ def fixture_exported_imaging_event() -> ImagingEvent:
         ref_id=uuid4(),
         type=EventType.STITCH,
         experiment_id="test_experiment_id",
-        local_path="exported/path",
+        local_path=Path("exported/path"),
         timestamp=datetime(2001, 1, 1, tzinfo=UTC),
     )
 

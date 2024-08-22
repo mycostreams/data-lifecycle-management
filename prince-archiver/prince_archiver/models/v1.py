@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 from uuid import UUID, uuid4
 
 from sqlalchemy import ForeignKey
@@ -7,6 +8,8 @@ from sqlalchemy.types import TIMESTAMP, Uuid
 
 from prince_archiver.utils import now
 
+from .types import PathType
+
 
 class Base(DeclarativeBase):
     created_at: Mapped[datetime] = mapped_column(default=now)
@@ -14,6 +17,7 @@ class Base(DeclarativeBase):
 
     type_annotation_map = {
         datetime: TIMESTAMP(timezone=True),
+        Path: PathType,
     }
 
 

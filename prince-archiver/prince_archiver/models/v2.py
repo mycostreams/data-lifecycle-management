@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 from typing import Annotated
 from uuid import UUID, uuid4
 
@@ -86,7 +87,7 @@ class ImagingEvent(Base):
         Enum(EventType, native_enum=False),
     )
     experiment_id: Mapped[str]
-    local_path: Mapped[str]
+    local_path: Mapped[Path]
     timestamp: Mapped[datetime]
 
     # TODO: remove these if not needed.

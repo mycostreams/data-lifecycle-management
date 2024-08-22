@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 from sqlalchemy import select
@@ -21,7 +22,7 @@ async def test_imaging_event_mappers(session: AsyncSession):
     assert imaging_event
     assert imaging_event.timestamp == datetime(2000, 1, 1, tzinfo=UTC)
     assert imaging_event.type == EventType.STITCH
-    assert imaging_event.local_path == "/test/path/"
+    assert imaging_event.local_path == Path("test/path/")
     assert imaging_event.experiment_id == "test_experiment_id"
 
     assert (object_store_entry := imaging_event.object_store_entry)
