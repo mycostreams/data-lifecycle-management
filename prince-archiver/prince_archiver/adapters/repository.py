@@ -7,11 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.sql import Select
 
-from prince_archiver.utils import now
 from prince_archiver.domain.models import DataArchiveEntry, ImagingEvent
 from prince_archiver.models import Timestep
 from prince_archiver.models import v2 as data_models
 from prince_archiver.models.read import Export
+from prince_archiver.utils import now
 
 
 class AbstractReadRepo(ABC):
@@ -21,8 +21,8 @@ class AbstractReadRepo(ABC):
 
     @abstractmethod
     async def get_exports(
-        self, 
-        start: datetime, 
+        self,
+        start: datetime,
         end: datetime | None = None,
     ) -> list[Export]: ...
 

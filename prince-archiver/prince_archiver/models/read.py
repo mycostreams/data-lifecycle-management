@@ -1,10 +1,11 @@
-from uuid import UUID
 from datetime import datetime
+from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.orm import DeclarativeBase, Mapped
 
 from prince_archiver.definitions import EventType
+
 from .v2 import ImagingEvent, ObjectStoreEntry
 
 

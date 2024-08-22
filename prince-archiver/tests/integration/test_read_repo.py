@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from prince_archiver.adapters.repository import ReadRepo
 
-
 pytestmark = pytest.mark.integration
 
 
@@ -24,5 +23,3 @@ async def test_export_within_time_range(repo: ReadRepo):
 async def test_export_outside_time_range(repo: ReadRepo):
     result = await repo.get_exports(start=datetime(2010, 1, 1))
     assert len(result) == 0
-
-
