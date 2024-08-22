@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import date
+from datetime import date, datetime
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -10,6 +10,42 @@ from sqlalchemy.sql import Select
 from prince_archiver.domain.models import DataArchiveEntry, ImagingEvent
 from prince_archiver.models import Timestep
 from prince_archiver.models import v2 as data_models
+from prince_archiver.models.read import Export
+
+
+class AbstractReadRepo(ABC):
+    """
+    Repository to be used with read models.
+    """
+
+    @abstractmethod
+    async def get_exports(
+        self, start: datetime, end: datetime | None = None
+    ) -> list[Export]: ...
+
+
+class ReadRepo:
+    """
+    Concrete read repository.
+    """
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def get_exports(
+        self,
+        start: datetime,
+        end: datetime | None = None,
+    ) -> list[Export]:
+        query_params = [
+            data_models.ObjectStoreEntry.uploaded_at > start,
+            data_models.ObjectStoreEntry.uploaded_at < (end or datetime.now()),
+        ]
+
+        result = await self.session.stream_scalars(
+            select(Export).where(*query_params),
+        )
+        return [item async for item in result]
 
 
 class AbstractDataArchiveEntryRepo(ABC):
