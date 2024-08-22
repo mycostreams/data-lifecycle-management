@@ -1,5 +1,8 @@
+from uuid import UUID
+from datetime import datetime
+
 from sqlalchemy import select
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Mapped
 
 from .v2 import ImagingEvent, ObjectStoreEntry
 
@@ -17,6 +20,12 @@ class Export(ReadBase):
             ObjectStoreEntry.key,
             ObjectStoreEntry.uploaded_at,
         )
-        .join(ImagingEvent)
+        .join_from(ObjectStoreEntry, ImagingEvent)
         .subquery()
     )
+
+    id: Mapped[UUID]
+    ref_id: Mapped[UUID]
+    experiment_id: Mapped[str]
+    key: Mapped[str]
+    uploaded_at: Mapped[datetime]

@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.sql import Select
 
+from prince_archiver.utils import now
 from prince_archiver.domain.models import DataArchiveEntry, ImagingEvent
 from prince_archiver.models import Timestep
 from prince_archiver.models import v2 as data_models
@@ -20,11 +21,13 @@ class AbstractReadRepo(ABC):
 
     @abstractmethod
     async def get_exports(
-        self, start: datetime, end: datetime | None = None
+        self, 
+        start: datetime, 
+        end: datetime | None = None,
     ) -> list[Export]: ...
 
 
-class ReadRepo:
+class ReadRepo(AbstractReadRepo):
     """
     Concrete read repository.
     """
@@ -38,8 +41,8 @@ class ReadRepo:
         end: datetime | None = None,
     ) -> list[Export]:
         query_params = [
-            data_models.ObjectStoreEntry.uploaded_at > start,
-            data_models.ObjectStoreEntry.uploaded_at < (end or datetime.now()),
+            Export.uploaded_at > start,
+            Export.uploaded_at < (end or now()),
         ]
 
         result = await self.session.stream_scalars(
