@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from pathlib import Path
 from uuid import UUID, uuid4
 
 import pytest
@@ -21,7 +22,7 @@ async def test_add(repo: ImagingEventRepo):
     stitch_event = ImagingEvent.factory(
         ref_id=uuid4(),
         experiment_id="experiment_id",
-        local_path="/test/path/",
+        local_path=Path("test/path/"),
         timestamp=datetime.now(),
         type=EventType.STITCH,
     )

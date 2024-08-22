@@ -29,7 +29,7 @@ ParamsT = Annotated[ImagingParams | VideoParams, Field(discriminator="type")]
 class ImportImagingEvent(BaseModel):
     ref_id: UUID
     experiment_id: str
-    local_path: str
+    local_path: Path
     timestamp: datetime
     type: EventType
 

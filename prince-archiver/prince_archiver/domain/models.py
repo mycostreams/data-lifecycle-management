@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from uuid import UUID, uuid4
 
 from prince_archiver.definitions import EventType
@@ -48,7 +49,7 @@ class ImagingEvent:
         ref_id: UUID,
         type: EventType,
         experiment_id: str,
-        local_path: str,
+        local_path: Path,
         timestamp: datetime,
         *,
         event_archive: EventArchive | None = None,
@@ -81,7 +82,7 @@ class ImagingEvent:
         ref_id: UUID,
         type: EventType,
         experiment_id: str,
-        local_path: str,
+        local_path: Path,
         timestamp: datetime,
         *,
         _id: UUID | None = None,
