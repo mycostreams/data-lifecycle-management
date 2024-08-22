@@ -5,7 +5,6 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from prince_archiver.adapters.repository import DataArchiveEntryRepo
-from prince_archiver.definitions import EventType
 from prince_archiver.domain.models import DataArchiveEntry
 
 pytestmark = pytest.mark.integration
@@ -17,21 +16,20 @@ def repo(session: AsyncSession) -> DataArchiveEntryRepo:
 
 
 async def test_add(repo: DataArchiveEntryRepo):
+    ref_id = uuid4()
+
     data_archive_entry = DataArchiveEntry(
-        id=uuid4(),
-        experiment_id="experiment_id",
-        type=EventType.STITCH,
+        id=ref_id,
+        job_id=None,
         path="test_path",
     )
-
-    cached_id = data_archive_entry.id
 
     repo.add(data_archive_entry)
 
     await repo.session.commit()
 
     stmt = text("SELECT * FROM data_archive_entries WHERE id=:id")
-    result = await repo.session.execute(stmt.bindparams(id=cached_id.hex))
+    result = await repo.session.execute(stmt.bindparams(id=ref_id.hex))
     assert len(result.all()) == 1
 
 

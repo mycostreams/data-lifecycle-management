@@ -76,8 +76,6 @@ def fixture_imaging_event() -> data_models.ImagingEvent:
 def fixture_data_archive_entry():
     return data_models.DataArchiveEntry(
         id=UUID("611598397745466bb78b82f4c462fd6a"),
-        type=EventType.STITCH,
-        experiment_id="test_experiment_id",
         path="images/test_experiment_id/test.tar",
     )
 
@@ -85,13 +83,11 @@ def fixture_data_archive_entry():
 @pytest.fixture(name="data_archive_member")
 def fixture_data_archive_member(
     data_archive_entry: data_models.DataArchiveEntry,
-    imaging_event: data_models.ImagingEvent,
 ) -> data_models.DataArchiveMember:
     return data_models.DataArchiveMember(
         member_key="test_member_key",
-        job_id=uuid4(),
+        src_key="test_key",
         data_archive_entry_id=data_archive_entry.id,
-        imaging_event_id=imaging_event.id,
     )
 
 
@@ -138,12 +134,12 @@ async def fixture_seed_data(
     session: AsyncSession,
 ):
     items = [
-        data_archive_entry,
         imaging_event,
-        data_archive_member,
-        object_store_entry,
         event_archive,
         checksum,
+        object_store_entry,
+        data_archive_entry,
+        data_archive_member,
     ]
     for object in items:
         session.add(object)
