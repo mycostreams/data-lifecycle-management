@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Annotated
 from uuid import UUID, uuid4
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import Enum, Uuid
 
@@ -16,21 +16,31 @@ uuid_pk = Annotated[
 ]
 
 
+class DataArchiveEntry(Base):
+    __tablename__ = "data_archive_entries"
+
+    id: Mapped[uuid_pk]
+    job_id: Mapped[UUID | None] = mapped_column(Uuid(native_uuid=False), default=None)
+    path: Mapped[str]
+
+
 class DataArchiveMember(Base):
     __tablename__ = "data_archive_members"
 
     id: Mapped[uuid_pk]
-    key: Mapped[str]
     member_key: Mapped[str]
-    job_id: Mapped[UUID | None] = mapped_column(Uuid(native_uuid=False))
 
-    imaging_event_id: Mapped[UUID] = mapped_column(
-        ForeignKey("imaging_events.id"),
+    src_key: Mapped[str] = mapped_column(
+        ForeignKey("object_store_entries.key"),
+    )
+    data_archive_entry_id: Mapped[UUID] = mapped_column(
+        ForeignKey("data_archive_entries.id"),
     )
 
 
 class ObjectStoreEntry(Base):
     __tablename__ = "object_store_entries"
+    __table_args__ = (UniqueConstraint("key"),)
 
     id: Mapped[uuid_pk]
     key: Mapped[str]

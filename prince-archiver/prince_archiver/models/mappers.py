@@ -21,15 +21,22 @@ def get_exclude_fields(model_cls: Type[data_models.Base]) -> list[ColumnElement]
 def init_mappers():
     mapper_registry = registry()
 
-    data_archive_member_mapper = mapper_registry.map_imperatively(
-        domain_models.DataArchiveMember,
+    archive_member_mapper = mapper_registry.map_imperatively(
+        domain_models.ArchiveMember,
         data_models.DataArchiveMember.__table__,
+        exclude_properties=(
+            data_models.DataArchiveMember.id,
+            *get_exclude_fields(data_models.DataArchiveMember),
+        ),
+    )
+
+    mapper_registry.map_imperatively(
+        domain_models.DataArchiveEntry,
+        data_models.DataArchiveEntry.__table__,
         properties={
-            "_imaging_event_id": (
-                data_models.DataArchiveMember.imaging_event_id.expression
-            )
+            "members": relationship(archive_member_mapper),
         },
-        exclude_properties=get_exclude_fields(data_models.DataArchiveMember),
+        exclude_properties=get_exclude_fields(data_models.DataArchiveEntry),
     )
 
     object_store_entry_mapper = mapper_registry.map_imperatively(
@@ -79,10 +86,6 @@ def init_mappers():
             ),
             "object_store_entry": relationship(
                 object_store_entry_mapper,
-                uselist=False,
-            ),
-            "data_archive_member": relationship(
-                data_archive_member_mapper,
                 uselist=False,
             ),
         },

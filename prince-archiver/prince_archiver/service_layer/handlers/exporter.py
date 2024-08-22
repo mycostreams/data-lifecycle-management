@@ -125,7 +125,6 @@ async def persist_imaging_event_export(
 
         imaging_event.add_object_store_entry(
             ObjectStoreEntry(
-                id=uuid4(),
                 key=message.key,
                 uploaded_at=message.timestamp,
             )
