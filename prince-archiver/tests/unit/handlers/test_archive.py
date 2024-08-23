@@ -36,7 +36,7 @@ def fixture_msg(data_archive_entry: models.DataArchiveEntry) -> AddDataArchiveEn
     )
 
 
-async def test_successful(msg: AddDataArchiveEntry):
+async def test_add_data_archive_entry_successful(msg: AddDataArchiveEntry):
     uow = MockUnitOfWork()
 
     await add_data_archive_entry(msg, uow)
@@ -51,7 +51,7 @@ async def test_successful(msg: AddDataArchiveEntry):
     assert next(uow.collect_messages()) == expected_msg
 
 
-async def test_unsuccessful(
+async def test_add_data_archive_entry_unsuccessful_when_path_exists(
     msg: AddDataArchiveEntry,
     data_archive_entry: models.DataArchiveEntry,
 ):
