@@ -89,6 +89,7 @@ def fixture_data_archive_member(
         member_key="test_member_key",
         src_key="test_key",
         data_archive_entry_id=data_archive_entry.id,
+        created_at=datetime(2002, 1, 1, tzinfo=UTC),
     )
 
 
