@@ -48,7 +48,14 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-  
+
+  api:
+    environment:
+      <<: *aws-env-variables
+    volumes:
+      - ./prince_archiver:/app/prince_archiver
+      - ./alembic/:/app/alembic
+
   db-migrations:
     volumes:
       - ./prince_archiver:/app/prince_archiver
