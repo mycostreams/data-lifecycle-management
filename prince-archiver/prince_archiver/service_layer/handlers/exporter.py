@@ -9,8 +9,8 @@ from uuid import uuid4
 
 import s3fs
 
-from prince_archiver.definitions import EventType
 from prince_archiver.adapters.file import ArchiveFileManager, SrcPath
+from prince_archiver.definitions import EventType
 from prince_archiver.domain.models import EventArchive, ImagingEvent, ObjectStoreEntry
 from prince_archiver.service_layer import messages
 from prince_archiver.service_layer.exceptions import ServiceLayerException
