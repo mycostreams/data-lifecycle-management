@@ -51,7 +51,7 @@ class WatcherSettings(CommonSettings):
         return self
 
 
-class WorkerSettings(AWSSettings, CommonSettings):
+class UploadWorkerSettings(AWSSettings, CommonSettings):
     DATA_DIR: Path
 
 

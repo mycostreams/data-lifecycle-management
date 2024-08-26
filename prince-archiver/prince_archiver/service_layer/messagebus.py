@@ -38,3 +38,11 @@ class MessageBus:
 
                 for message in self.uow.collect_messages():
                     messages.append(message)
+
+    @classmethod
+    def factory(
+        cls,
+        handlers: HandlerMappingT,
+        uow: Callable[[], AbstractUnitOfWork],
+    ) -> MessagebusFactoryT:
+        return lambda: cls(handlers, uow())

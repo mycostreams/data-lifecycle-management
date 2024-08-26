@@ -4,15 +4,15 @@ from uuid import UUID
 
 import pytest
 
-from prince_archiver.config import WorkerSettings
+from prince_archiver.config import UploadWorkerSettings
 from prince_archiver.service_layer.messagebus import MessageBus
 from prince_archiver.upload_worker.dto import UploadDTO
 from prince_archiver.upload_worker.worker import workflow
 
 
 @pytest.fixture(name="upload_worker_settings")
-def fixture_upload_worker_settings() -> WorkerSettings:
-    return WorkerSettings(
+def fixture_upload_worker_settings() -> UploadWorkerSettings:
+    return UploadWorkerSettings(
         REDIS_DSN="redis://test:6379",
         POSTGRES_DSN="postgresql+asyncpg://test:test@test-db:5432/test",
         AWS_ACCESS_KEY_ID="test-key",
@@ -37,7 +37,7 @@ def fixture_workflow_payload():
 
 
 async def test_workflow(
-    upload_worker_settings: WorkerSettings,
+    upload_worker_settings: UploadWorkerSettings,
     workflow_payload: dict,
 ):
     mock_messagebus = AsyncMock(MessageBus)
