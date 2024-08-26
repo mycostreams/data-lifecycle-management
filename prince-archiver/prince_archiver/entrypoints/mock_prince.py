@@ -8,11 +8,10 @@ from uuid import uuid4
 import httpx
 from fastapi import FastAPI, Response
 
-from prince_archiver.dto import TimestepMeta
 from prince_archiver.logging import configure_logging
+from prince_archiver.service_layer.external_dto import TimestepMeta
+from prince_archiver.test_utils.utils import make_timestep_directory
 from prince_archiver.utils import now
-
-from .utils import make_timestep_directory
 
 BASE_DIR = Path(os.environ.get("DATA_DIR", "/app/data"))
 

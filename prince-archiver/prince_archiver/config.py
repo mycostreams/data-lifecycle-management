@@ -1,5 +1,4 @@
 import os
-from functools import lru_cache
 from pathlib import Path
 
 import sentry_sdk
@@ -67,8 +66,3 @@ class ArchiveWorkerSettings(AWSSettings, CommonSettings):
     WEBHOOK_URL: HttpUrl | None = None
 
     ARCHIVE_TRANSITION_DAYS: int = 2
-
-
-@lru_cache
-def get_worker_settings() -> WorkerSettings:
-    return WorkerSettings()

@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Generator
 
-from .dto import TimestepDTO
+from .service_layer.external_dto import TimestepDTO
 
 
 def now() -> datetime:

@@ -3,8 +3,8 @@ from datetime import UTC
 
 from arq import ArqRedis
 
-from prince_archiver.dto import TimestepDTO
 from prince_archiver.models import Timestep
+from prince_archiver.service_layer.external_dto import TimestepDTO
 from prince_archiver.service_layer.messagebus import AbstractHandler
 from prince_archiver.service_layer.uow import AbstractUnitOfWork
 

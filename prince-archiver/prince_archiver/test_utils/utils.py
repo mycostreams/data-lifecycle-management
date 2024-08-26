@@ -5,7 +5,7 @@ from timeit import default_timer
 
 import httpx
 
-from prince_archiver.dto import TimestepMeta
+from prince_archiver.service_layer.external_dto import TimestepMeta
 
 DOWNLOAD_URL = "https://vu.data.surfsara.nl/index.php/s/ndI1UoMRwliVYGR/download"
 

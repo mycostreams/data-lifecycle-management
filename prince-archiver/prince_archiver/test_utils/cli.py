@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import typer
 
-from prince_archiver.dto import TimestepMeta
+from prince_archiver.service_layer.external_dto import TimestepMeta
 
 from .utils import make_timestep_directory as _make_timestep_directory
 

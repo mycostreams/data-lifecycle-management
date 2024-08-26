@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 
 from pydantic import AwareDatetime, BaseModel, Field, model_validator
 
-from .definitions import EventType
+from prince_archiver.definitions import EventType
 
 
 class TimestepMeta(BaseModel):
