@@ -1,19 +1,28 @@
 import logging
 import os
 from contextlib import AsyncExitStack
+from functools import partial
 
 from arq.connections import RedisSettings
 
-from prince_archiver.config import UploadWorkerSettings as _Settings
-from prince_archiver.definitions import EventType
+from prince_archiver.config import UploadWorkerSettings as Settings
 from prince_archiver.file import managed_file_system
 from prince_archiver.logging import configure_logging
-from prince_archiver.service_layer.external_dto import TimestepDTO
+from prince_archiver.models import init_mappers
+from prince_archiver.service_layer.handlers.exporter import (
+    Context,
+    ExportHandler,
+    initiate_imaging_event_export,
+    key_generator,
+    persist_imaging_event_export,
+)
 from prince_archiver.service_layer.messagebus import MessageBus, MessagebusFactoryT
+from prince_archiver.service_layer.messages import (
+    ExportedImagingEvent,
+    ExportImagingEvent,
+    InitiateExportEvent,
+)
 from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
-
-from .dto import UploadDTO
-from .handlers import UploadHandler, add_upload_to_db
 
 LOGGER = logging.getLogger(__name__)
 
@@ -23,42 +32,44 @@ async def workflow(
     input_data: dict,
 ):
     messagebus: MessageBus = ctx["messagebus"]
-    settings: _Settings = ctx["settings"]
 
-    data = TimestepDTO.model_validate(input_data)
-
-    base_path = "images" if data.event_type == EventType.STITCH else "videos"
-
-    message = UploadDTO(
-        timestep_id=data.timestep_id,
-        img_dir=settings.DATA_DIR / data.img_dir,
-        key=f"{settings.AWS_BUCKET_NAME}/{base_path}/{data.key}",
-    )
-    await messagebus.handle(message)
+    dto = InitiateExportEvent.model_validate(input_data)
+    await messagebus.handle(dto)
 
 
-async def startup(ctx):
+async def startup(ctx: dict):
     configure_logging()
+    init_mappers()
 
     LOGGER.info("Starting up worker")
 
     exit_stack = await AsyncExitStack().__aenter__()
 
-    settings = _Settings()
-
+    settings = Settings()
     s3 = await exit_stack.enter_async_context(managed_file_system(settings))
     sessionmaker = get_session_maker(str(settings.POSTGRES_DSN))
 
-    def _message_bus_factory():
-        return MessageBus(
-            handlers={
-                UploadDTO: [UploadHandler(s3=s3), add_upload_to_db],
-            },
-            uow=UnitOfWork(sessionmaker),
-        )
+    messagebus_factory = MessageBus.factory(
+        handlers={
+            InitiateExportEvent: [
+                partial(
+                    initiate_imaging_event_export,
+                    context=Context(
+                        base_path=settings.DATA_DIR,
+                        key_generator=partial(
+                            key_generator,
+                            settings.AWS_BUCKET_NAME,
+                        ),
+                    ),
+                )
+            ],
+            ExportImagingEvent: [ExportHandler(s3)],
+            ExportedImagingEvent: [persist_imaging_event_export],
+        },
+        uow=lambda: UnitOfWork(sessionmaker),
+    )
 
-    ctx["settings"] = settings
-    ctx["messagebus_factory"] = _message_bus_factory
+    ctx["messagebus_factory"] = messagebus_factory
     ctx["exit_stack"] = exit_stack
 
     LOGGER.info("Start up complete")
