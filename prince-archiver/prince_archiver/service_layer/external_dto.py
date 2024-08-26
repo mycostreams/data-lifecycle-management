@@ -43,6 +43,7 @@ class TimestepDTO(TimestepMeta):
 
 # Messages emitted from Surf Data Archive
 class Archive(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
     path: str
     src_keys: list[str]
 

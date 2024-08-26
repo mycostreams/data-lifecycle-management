@@ -16,7 +16,9 @@ from prince_archiver.adapters.messenger import Message, Messenger
 from prince_archiver.adapters.subscriber import ManagedSubscriber
 from prince_archiver.config import ArchiveWorkerSettings
 from prince_archiver.logging import configure_logging
+from prince_archiver.service_layer.handlers.archive import add_data_archive_entry
 from prince_archiver.service_layer.messagebus import MessageBus
+from prince_archiver.service_layer.messages import AddDataArchiveEntry
 from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
 
 from .external import SubscriberMessageHandler
@@ -72,7 +74,10 @@ async def startup(ctx: dict):
     )
 
     def _messagebus_factory() -> MessageBus:
-        return MessageBus(handlers={}, uow=uow_factory())
+        return MessageBus(
+            handlers={add_data_archive_entry: [AddDataArchiveEntry]},
+            uow=uow_factory(),
+        )
 
     ctx["exit_stack"] = exit_stack
     ctx["settings"] = settings
