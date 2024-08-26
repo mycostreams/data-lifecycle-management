@@ -1,6 +1,7 @@
 """Handlers used to import imaging event into system."""
 
 from dataclasses import dataclass
+import logging
 
 from arq import ArqRedis
 
@@ -10,10 +11,15 @@ from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.uow import AbstractUnitOfWork
 
 
+LOGGER = logging.getLogger(__name__)
+
+
 async def import_imaging_event(
     message: messages.ImportImagingEvent,
     uow: AbstractUnitOfWork,
 ):
+    LOGGER.info("[%s] Importing imaging event", message.ref_id)
+
     async with uow:
         if await uow.imaging_events.get_by_ref_id(message.ref_id):
             raise ServiceLayerException("Already imported.")
