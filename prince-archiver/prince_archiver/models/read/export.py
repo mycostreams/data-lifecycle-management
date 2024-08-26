@@ -2,15 +2,12 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import select
-from sqlalchemy.orm import DeclarativeBase, Mapped
+from sqlalchemy.orm import Mapped
 
 from prince_archiver.definitions import EventType
+from prince_archiver.models.v2 import ImagingEvent, ObjectStoreEntry
 
-from .v2 import ImagingEvent, ObjectStoreEntry
-
-
-class ReadBase(DeclarativeBase):
-    pass
+from .utils import ReadBase
 
 
 class Export(ReadBase):
