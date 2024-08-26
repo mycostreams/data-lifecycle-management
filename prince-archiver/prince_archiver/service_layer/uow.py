@@ -5,9 +5,11 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from prince_archiver.adapters.repository import (
+    AbstractDataArchiveEntryRepo,
     AbstractImagingEventRepo,
     AbstractReadRepo,
     AbstractTimestepRepo,
+    DataArchiveEntryRepo,
     ImagingEventRepo,
     ReadRepo,
     TimestepRepo,
@@ -27,6 +29,8 @@ class AbstractUnitOfWork(ABC):
     messages: list[BaseModel]
 
     timestamps: AbstractTimestepRepo
+
+    data_archive: AbstractDataArchiveEntryRepo
     imaging_events: AbstractImagingEventRepo
     read: AbstractReadRepo
 
@@ -54,6 +58,8 @@ class UnitOfWork(AbstractUnitOfWork):
     session: AsyncSession
 
     timestamps: TimestepRepo
+
+    data_archive: DataArchiveEntryRepo
     imaging_events: ImagingEventRepo
     read: ReadRepo
 
@@ -66,6 +72,8 @@ class UnitOfWork(AbstractUnitOfWork):
 
         # Initialize repos
         self.timestamps = TimestepRepo(self.session)
+
+        self.data_archive = DataArchiveEntryRepo(self.session)
         self.imaging_events = ImagingEventRepo(self.session)
         self.read = ReadRepo(self.session)
 
