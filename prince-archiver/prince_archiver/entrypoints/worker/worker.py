@@ -57,7 +57,7 @@ async def run_reporting(ctx: dict, *, _date: date | None = None):
                 await uow.read.get_daily_stats(start=report_date),
             )
             if daily_stats := next(stats, None):
-                await messenger.publish(Message.DAILY_REPORT, **daily_stats.__dict__)
+                await messenger.publish(Message.DAILY_STATS, **daily_stats.__dict__)
 
 
 async def startup(ctx: dict):
@@ -103,6 +103,7 @@ async def startup(ctx: dict):
 
     # Configure messenger
     if settings.WEBHOOK_URL:
+        LOGGER.info("Adding messenger")
         client = await exit_stack.enter_async_context(AsyncClient())
         ctx["messenger"] = Messenger(client, str(settings.WEBHOOK_URL))
 

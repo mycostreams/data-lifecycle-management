@@ -61,7 +61,7 @@ class ReadRepo(AbstractReadRepo):
     ) -> list[DailyStats]:
         stmt = select(DailyStats).where(
             DailyStats.date >= start,
-            DailyStats.date <= (end or now().date),
+            DailyStats.date <= (end or now().date()),
         )
         result = await self.session.stream_scalars(stmt)
         return [item async for item in result]
