@@ -75,7 +75,7 @@ async def startup(ctx: dict):
 
     def _messagebus_factory() -> MessageBus:
         return MessageBus(
-            handlers={add_data_archive_entry: [AddDataArchiveEntry]},
+            handlers={AddDataArchiveEntry: [add_data_archive_entry]},
             uow=uow_factory(),
         )
 
