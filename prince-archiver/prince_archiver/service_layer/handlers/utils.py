@@ -8,9 +8,12 @@ from prince_archiver.domain.models import ImagingEvent
 
 def get_target_key(imaging_event: ImagingEvent, bucket: str) -> str:
     event_type = "images" if imaging_event.type == EventType.STITCH else "videos"
-    base = imaging_event.timestamp.strftime("%Y%m%d/%H%M.tar")
+    date_folder = imaging_event.timestamp.strftime("%Y%m%d")
+    file_name = imaging_event.timestamp.strftime("%H%M%S.tar")
 
-    return f"{bucket}/{event_type}/{imaging_event.experiment_id}/{base}"
+    return "/".join(
+        (bucket, event_type, imaging_event.experiment_id, date_folder, file_name)
+    )
 
 
 def model_to_dict(

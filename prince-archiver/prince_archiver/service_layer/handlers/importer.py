@@ -1,7 +1,7 @@
 """Handlers used to import imaging event into system."""
 
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 
 from arq import ArqRedis
 
@@ -9,7 +9,6 @@ from prince_archiver.domain.models import ImagingEvent
 from prince_archiver.service_layer import messages
 from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.uow import AbstractUnitOfWork
-
 
 LOGGER = logging.getLogger(__name__)
 

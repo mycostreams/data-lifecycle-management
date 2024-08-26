@@ -13,9 +13,9 @@ from prince_archiver.service_layer.handlers.exporter import (
     Context,
     ExportHandler,
     initiate_imaging_event_export,
-    key_generator,
     persist_imaging_event_export,
 )
+from prince_archiver.service_layer.handlers.utils import get_target_key
 from prince_archiver.service_layer.messagebus import MessageBus, MessagebusFactoryT
 from prince_archiver.service_layer.messages import (
     ExportedImagingEvent,
@@ -57,8 +57,8 @@ async def startup(ctx: dict):
                     context=Context(
                         base_path=settings.DATA_DIR,
                         key_generator=partial(
-                            key_generator,
-                            settings.AWS_BUCKET_NAME,
+                            get_target_key,
+                            bucket=settings.AWS_BUCKET_NAME,
                         ),
                     ),
                 )
