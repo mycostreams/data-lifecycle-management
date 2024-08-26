@@ -11,7 +11,7 @@
                 "body":[
                     {
                         "type": "TextBlock",
-                        "text": "Daily stats: {{ date }}"
+                        "text": "Daily stats: {{ date.isoformat() }}"
                     },
                     {
                         "type": "FactSet",
@@ -26,11 +26,11 @@
                             },
                             {
                                 "title": "Archive Count",
-                                "value": {{ event_count }}
+                                "value": {{ archive_count }}
                             }
                         ]
                     }
-                ],
+                ]
             }
         }
     ]
