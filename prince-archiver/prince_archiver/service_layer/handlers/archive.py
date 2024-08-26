@@ -15,7 +15,7 @@ async def add_data_archive_entry(
     message: AddDataArchiveEntry,
     uow: AbstractUnitOfWork,
 ):
-    LOGGER.info("[%s] Updating archive entries", message.job_id)
+    LOGGER.info("[%s] Updating archive entries %s", message.job_id, message.path)
 
     async with uow:
         if await uow.data_archive.get_by_path(message.path):
