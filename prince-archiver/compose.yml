@@ -43,6 +43,35 @@ services:
       redis:
         condition: service_healthy
 
+  api:
+    image: prince-archiver
+    command: [
+      "uvicorn",
+      "--factory", 
+      "prince_archiver.entrypoints.api.app:create_app",
+      "--host",
+      "0.0.0.0"
+    ]
+    expose:
+      - 8000
+    environment:
+      POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fastapi.rule=Host(`fastapi.localhost`)"
+
+  traefik:
+    image: traefik:v2.10
+    ports:
+      - 80:80
+      - 8081:8080
+    volumes:
+      - "./config/traefik.toml:/etc/traefik/traefik.toml"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
   db-migrations:
     image: prince-archiver
     command: ["alembic", "upgrade", "head"]

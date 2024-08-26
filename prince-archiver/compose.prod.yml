@@ -50,6 +50,10 @@ services:
       restart_policy:
         condition: on-failure
 
+  api:
+    environment:
+      <<: *aws-env-variables
+
   alloy:
     image: grafana/alloy:latest
     command:
