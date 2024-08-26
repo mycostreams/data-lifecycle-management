@@ -8,6 +8,7 @@ from jinja2 import Environment, PackageLoader
 
 class Message(StrEnum):
     DAILY_REPORT = "daily-report.json.jinja"
+    DAILY_STATS = "daily-stats.json.jinja"
 
 
 class Messenger:
