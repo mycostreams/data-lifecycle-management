@@ -49,5 +49,5 @@ class SubscriberMessageHandler:
     def _get_member(key: str):
         return ArchiveMember(
             src_key=key,
-            memember=key.split("/")[-1],
+            member_key=key.split("/")[-1],
         )
