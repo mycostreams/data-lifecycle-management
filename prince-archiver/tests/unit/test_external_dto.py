@@ -5,7 +5,7 @@ from uuid import UUID
 
 import pytest
 
-from prince_archiver.dto import TimestepDTO, TimestepMeta
+from prince_archiver.service_layer.external_dto import TimestepDTO, TimestepMeta
 
 
 @dataclass

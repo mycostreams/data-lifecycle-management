@@ -5,11 +5,10 @@ from contextlib import AsyncExitStack
 from arq.connections import RedisSettings
 
 from prince_archiver.config import WorkerSettings as _Settings
-from prince_archiver.config import get_worker_settings
 from prince_archiver.definitions import EventType
-from prince_archiver.dto import TimestepDTO
 from prince_archiver.file import managed_file_system
 from prince_archiver.logging import configure_logging
+from prince_archiver.service_layer.external_dto import TimestepDTO
 from prince_archiver.service_layer.messagebus import MessageBus, MessagebusFactoryT
 from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
 
@@ -45,7 +44,7 @@ async def startup(ctx):
 
     exit_stack = await AsyncExitStack().__aenter__()
 
-    settings = get_worker_settings()
+    settings = _Settings()
 
     s3 = await exit_stack.enter_async_context(managed_file_system(settings))
     sessionmaker = get_session_maker(str(settings.POSTGRES_DSN))

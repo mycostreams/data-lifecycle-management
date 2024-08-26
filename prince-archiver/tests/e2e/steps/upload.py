@@ -10,7 +10,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from prince_archiver.definitions import EventType
-from prince_archiver.dto import TimestepMeta
+from prince_archiver.service_layer.external_dto import TimestepMeta
 from prince_archiver.test_utils.utils import Timer
 
 
