@@ -4,7 +4,7 @@ from contextlib import AsyncExitStack
 
 from arq.connections import RedisSettings
 
-from prince_archiver.config import UploadWorkerSettings as _Settings
+from prince_archiver.config import WorkerSettings as _Settings
 from prince_archiver.definitions import EventType
 from prince_archiver.file import managed_file_system
 from prince_archiver.logging import configure_logging
