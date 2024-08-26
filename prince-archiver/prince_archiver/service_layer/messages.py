@@ -1,28 +1,12 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Annotated, Literal
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
 from prince_archiver.definitions import EventType
-from prince_archiver.domain.value_objects import (
-    Checksum,
-    GridSize,
-)
+from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.utils import now
-
-
-class ImagingParams(BaseModel):
-    type: Literal[EventType.STITCH]
-    grid_size: GridSize
-
-
-class VideoParams(BaseModel):
-    type: Literal[EventType.VIDEO]
-
-
-ParamsT = Annotated[ImagingParams | VideoParams, Field(discriminator="type")]
 
 
 # For importing imaging events into system
@@ -58,3 +42,21 @@ class ExportedImagingEvent(BaseModel):
     size: int
     key: str
     timestamp: datetime = Field(default_factory=now)
+
+
+# Relating to data archive
+class ArchiveMember(BaseModel):
+    member_key: str
+    src_key: str
+
+
+class AddDataArchiveEntry(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
+    path: str
+    job_id: UUID | None
+    members: list[ArchiveMember]
+
+
+class ArchivedImagingEvent(BaseModel):
+    src_key: str
+    data_archive_entry_id: UUID
