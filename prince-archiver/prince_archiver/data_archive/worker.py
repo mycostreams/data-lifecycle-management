@@ -11,20 +11,20 @@ from arq.connections import RedisSettings
 from httpx import AsyncClient
 from zoneinfo import ZoneInfo
 
+from prince_archiver.adapters.archiver import AbstractArchiver, Settings, SurfArchiver
+from prince_archiver.adapters.subscriber import ManagedSubscriber
 from prince_archiver.config import ArchiveWorkerSettings
 from prince_archiver.file import managed_file_system
 from prince_archiver.logging import configure_logging
+from prince_archiver.service_layer.external_dto import UpdateArchiveEntries
 from prince_archiver.service_layer.messagebus import MessageBus
 from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
 
-from .archiver import AbstractArchiver, Settings, SurfArchiver
-from .dto import UpdateArchiveEntries
 from .handlers import (
     SubscriberMessageHandler,
     add_data_archive_entries,
 )
 from .reporter import Messenger, Reporter
-from .subscriber import ManagedSubscriber
 
 LOGGER = logging.getLogger(__name__)
 
