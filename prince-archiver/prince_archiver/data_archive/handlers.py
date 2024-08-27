@@ -7,10 +7,9 @@ from prince_archiver.models import (
     DataArchiveEntry,
     Timestep,
 )
+from prince_archiver.service_layer.external_dto import UpdateArchiveEntries
 from prince_archiver.service_layer.messagebus import MessageBus
 from prince_archiver.service_layer.uow import AbstractUnitOfWork
-
-from .dto import UpdateArchiveEntries
 
 LOGGER = logging.getLogger(__name__)
 

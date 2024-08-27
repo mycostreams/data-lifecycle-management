@@ -6,15 +6,12 @@ import pytest
 from aio_pika.abc import AbstractIncomingMessage
 
 from prince_archiver.adapters.repository import AbstractTimestepRepo
-from prince_archiver.data_archive.dto import (
-    Archive,
-    UpdateArchiveEntries,
-)
 from prince_archiver.data_archive.handlers import (
     SubscriberMessageHandler,
     add_data_archive_entries,
 )
 from prince_archiver.models import Timestep
+from prince_archiver.service_layer.external_dto import Archive, UpdateArchiveEntries
 from prince_archiver.service_layer.messagebus import MessageBus
 from prince_archiver.service_layer.uow import AbstractUnitOfWork
 

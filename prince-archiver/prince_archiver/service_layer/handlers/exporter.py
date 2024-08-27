@@ -10,7 +10,6 @@ from uuid import uuid4
 import s3fs
 
 from prince_archiver.adapters.file import ArchiveFileManager, SrcPath
-from prince_archiver.definitions import EventType
 from prince_archiver.domain.models import EventArchive, ImagingEvent, ObjectStoreEntry
 from prince_archiver.service_layer import messages
 from prince_archiver.service_layer.exceptions import ServiceLayerException
@@ -18,14 +17,6 @@ from prince_archiver.service_layer.messagebus import AbstractHandler
 from prince_archiver.service_layer.uow import AbstractUnitOfWork
 
 LOGGER = logging.getLogger(__name__)
-
-
-def key_generator(bucket: str, imaging_event: ImagingEvent) -> str:
-    date_folder = imaging_event.timestamp.strftime("%Y%m%d")
-    file_name = imaging_event.timestamp.strftime("%H%M%S.tar")
-    type_ = "images" if imaging_event.type == EventType.STITCH else "videos"
-
-    return f"{bucket}/{type_}{imaging_event.experiment_id}/{date_folder}/{file_name}"
 
 
 @dataclass
@@ -43,6 +34,9 @@ async def initiate_imaging_event_export(
     """
     Initiate the export of an image timestep.
     """
+
+    LOGGER.info("[%s] Initiating export", message.ref_id)
+
     async with uow:
         imaging_event = await uow.imaging_events.get_by_ref_id(message.ref_id)
         if not imaging_event or imaging_event.event_archive:
@@ -76,6 +70,8 @@ class ExportHandler(AbstractHandler[messages.ExportImagingEvent]):
         message: messages.ExportImagingEvent,
         uow: AbstractUnitOfWork,
     ):
+        LOGGER.info("[%s] Exporting", message.ref_id)
+
         async with uow:
             src_dir = SrcPath(message.local_path)
             async with (
@@ -117,6 +113,7 @@ async def persist_imaging_event_export(
     """
     Persist imaging event export.
     """
+    LOGGER.info("[%s] Persisting export", message.ref_id)
 
     async with uow:
         imaging_event = await uow.imaging_events.get_by_ref_id(message.ref_id)

@@ -2,15 +2,12 @@ import asyncio
 import json
 import logging
 from datetime import date, datetime, timedelta
-from enum import StrEnum
-from typing import Any
 from uuid import UUID
 
-import httpx
-from jinja2 import Environment, PackageLoader
 from pydantic import BaseModel, Field, HttpUrl
 from s3fs import S3FileSystem
 
+from prince_archiver.adapters.messenger import Message, Messenger
 from prince_archiver.definitions import EventType
 from prince_archiver.service_layer.uow import UnitOfWork
 
@@ -24,39 +21,6 @@ class Event(BaseModel):
     timestamp: datetime
     event_type: EventType = Field(default=EventType.STITCH)
     url: HttpUrl
-
-
-class Message(StrEnum):
-    DAILY_REPORT = "daily-report.json.jinja"
-
-
-class Messenger:
-    def __init__(
-        self,
-        client: httpx.AsyncClient,
-        url: str,
-        *,
-        _env: Environment | None = None,
-    ):
-        self.client = client
-        self.url = url
-
-        self.env = _env or Environment(
-            loader=PackageLoader("prince_archiver"),
-            enable_async=True,
-        )
-
-    async def _render_message(self, message: Message, **kwargs: Any):
-        template = self.env.get_template(message.value)
-        return await template.render_async(**kwargs)
-
-    async def publish(self, message: Message, **kwargs: Any):
-        await self.client.post(
-            self.url,
-            json=json.loads(
-                await self._render_message(message, **kwargs),
-            ),
-        )
 
 
 class Reporter:

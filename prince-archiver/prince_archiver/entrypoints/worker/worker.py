@@ -12,19 +12,16 @@ from httpx import AsyncClient
 from zoneinfo import ZoneInfo
 
 from prince_archiver.adapters.archiver import AbstractArchiver, Settings, SurfArchiver
+from prince_archiver.adapters.messenger import Message, Messenger
 from prince_archiver.adapters.subscriber import ManagedSubscriber
 from prince_archiver.config import ArchiveWorkerSettings
-from prince_archiver.file import managed_file_system
 from prince_archiver.logging import configure_logging
-from prince_archiver.service_layer.external_dto import UpdateArchiveEntries
+from prince_archiver.service_layer.handlers.archive import add_data_archive_entry
 from prince_archiver.service_layer.messagebus import MessageBus
+from prince_archiver.service_layer.messages import AddDataArchiveEntry
 from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
 
-from .handlers import (
-    SubscriberMessageHandler,
-    add_data_archive_entries,
-)
-from .reporter import Messenger, Reporter
+from .external import SubscriberMessageHandler
 
 LOGGER = logging.getLogger(__name__)
 
@@ -37,7 +34,7 @@ async def run_archiving(
 ):
     job_id = _job_id or uuid4()
     settings: ArchiveWorkerSettings = ctx["settings"]
-    archiver: AbstractArchiver | None = ctx["archiver"]
+    archiver: AbstractArchiver | None = ctx.get("archiver", None)
 
     delta = timedelta(days=settings.ARCHIVE_TRANSITION_DAYS)
     archive_files_from = _date or date.today() - delta
@@ -48,16 +45,19 @@ async def run_archiving(
 
 
 async def run_reporting(ctx: dict, *, _date: date | None = None):
-    settings: ArchiveWorkerSettings = ctx["settings"]
+    messenger: Messenger | None = ctx.get("messenger", None)
     uow_factory: Callable[[], UnitOfWork] = ctx["uow_factory"]
 
-    reporter: Reporter = ctx["reporter"]
     report_date = _date or date.today() - timedelta(days=1)
 
-    target = f"{settings.AWS_BUCKET_NAME}/daily-reports/{report_date.isoformat()}.json"
-
-    LOGGER.info("Generating daily report for %s", report_date.isoformat())
-    await reporter.generate_report(uow_factory(), date=report_date, target=target)
+    if messenger:
+        async with uow_factory() as uow:
+            stats = filter(
+                lambda stats: stats.date == report_date,
+                await uow.read.get_daily_stats(start=report_date),
+            )
+            if daily_stats := next(stats, None):
+                await messenger.publish(Message.DAILY_STATS, **daily_stats.__dict__)
 
 
 async def startup(ctx: dict):
@@ -75,7 +75,7 @@ async def startup(ctx: dict):
 
     def _messagebus_factory() -> MessageBus:
         return MessageBus(
-            handlers={UpdateArchiveEntries: [add_data_archive_entries]},
+            handlers={AddDataArchiveEntry: [add_data_archive_entry]},
             uow=uow_factory(),
         )
 
@@ -101,14 +101,11 @@ async def startup(ctx: dict):
             ),
         )
 
-    # Configure reporter
-    messenger: Messenger | None = None
+    # Configure messenger
     if settings.WEBHOOK_URL:
+        LOGGER.info("Adding messenger")
         client = await exit_stack.enter_async_context(AsyncClient())
-        messenger = Messenger(client, str(settings.WEBHOOK_URL))
-    s3 = await exit_stack.enter_async_context(managed_file_system(settings))
-
-    ctx["reporter"] = Reporter(s3, messenger=messenger)
+        ctx["messenger"] = Messenger(client, str(settings.WEBHOOK_URL))
 
     LOGGER.info("Start up complete")
 
