@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import Annotated
 from uuid import UUID, uuid4
 
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import ForeignKey, UniqueConstraint
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import Enum, Uuid
 
