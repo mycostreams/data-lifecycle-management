@@ -33,6 +33,10 @@ async def test_imaging_event_mappers(session: AsyncSession):
     assert event_archive.size == 3
     assert event_archive.checksum == Checksum(hex="test_hex")
 
+    assert (src_dir_info := imaging_event.src_dir_info)
+    assert src_dir_info.img_count == 10
+    assert src_dir_info.raw_metadata == {"test_key": "test_value"}
+
 
 @pytest.mark.usefixtures("seed_data")
 async def test_data_archive_mappers(session: AsyncSession):

@@ -124,18 +124,32 @@ def fixture_checksum(event_archive: data_models.EventArchive):
     )
 
 
+@pytest.fixture(name="src_dir_info")
+def fixture_src_dir_info(
+    imaging_event: data_models.ImagingEvent,
+) -> data_models.SrcDirInfo:
+    return data_models.SrcDirInfo(
+        id=uuid4(),
+        img_count=10,
+        raw_metadata={"test_key": "test_value"},
+        imaging_event_id=imaging_event.id,
+    )
+
+
 @pytest.fixture(name="seed_data")
 async def fixture_seed_data(
     data_archive_entry: data_models.DataArchiveEntry,
     imaging_event: data_models.ImagingEvent,
     data_archive_member: data_models.DataArchiveMember,
     object_store_entry: data_models.ObjectStoreEntry,
+    src_dir_info: data_models.SrcDirInfo,
     event_archive: data_models.EventArchive,
     checksum: data_models.ArchiveChecksum,
     session: AsyncSession,
 ):
     items = [
         imaging_event,
+        src_dir_info,
         event_archive,
         checksum,
         object_store_entry,

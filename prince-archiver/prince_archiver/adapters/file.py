@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import tarfile
 from concurrent.futures import Executor
@@ -9,6 +10,7 @@ from typing import AsyncGenerator, Awaitable, Callable, Protocol
 from uuid import uuid4
 
 import aiofiles.os
+import aiofiles.ospath
 from aiofiles.tempfile import TemporaryDirectory
 
 from prince_archiver.domain.value_objects import Algorithm, Checksum
@@ -72,14 +74,41 @@ class ArchiveFileManager:
     Class for managing archive files.
     """
 
+    METADATA_FILENAME = "metadata.json"
+
     def __init__(
         self,
         *,
+        base_path: Path | None = None,
         executor: Executor | None = None,
         checksum_factory: ChecksumFactoryT = _ChecksumFactory.get_checksum,
     ):
+        self.base_path = base_path
         self.executor = executor
         self.checksum_factory = checksum_factory
+
+    def get_src_path(self, path: Path) -> SrcPath:
+        if self.base_path:
+            return SrcPath(self.base_path / path)
+        raise ValueError()
+
+    async def exists(self, path: Path) -> bool:
+        return await aiofiles.ospath.exists(path, executor=self.executor)
+
+    async def get_raw_metadata(
+        self,
+        src_path: SrcPath,
+        *,
+        filename: str | None = None,
+    ) -> dict:
+        """
+        Get raw metadata from src directory.
+        """
+        metadata_path = src_path / (filename or self.METADATA_FILENAME)
+        if await self.exists(metadata_path):
+            async with aiofiles.open(metadata_path, executor=self.executor) as file:
+                return json.loads(await file.read())
+        return {}
 
     async def get_file_count(self, src_path: SrcPath) -> int:
         files = await aiofiles.os.listdir(src_path, executor=self.executor)

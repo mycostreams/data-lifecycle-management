@@ -6,17 +6,20 @@ from typing import AsyncGenerator
 from arq import create_pool
 from arq.connections import RedisSettings
 
+from prince_archiver.adapters.file import ArchiveFileManager
 from prince_archiver.config import WatcherSettings
 from prince_archiver.models import init_mappers
 from prince_archiver.service_layer.handlers.importer import (
-    Context as _Context,
-)
-from prince_archiver.service_layer.handlers.importer import (
+    PropagateContext,
+    SrcDirContext,
+    add_src_dir_info,
+    get_src_dir_info,
     import_imaging_event,
     propagate_new_imaging_event,
 )
 from prince_archiver.service_layer.messagebus import MessageBus
 from prince_archiver.service_layer.messages import (
+    AddSrcDirInfo,
     ImportedImagingEvent,
     ImportImagingEvent,
 )
@@ -47,10 +50,17 @@ async def managed_context(
             ImportImagingEvent: [import_imaging_event],
             ImportedImagingEvent: [
                 partial(
+                    get_src_dir_info,
+                    context=SrcDirContext(
+                        file_manager=ArchiveFileManager(base_path=settings.DATA_DIR),
+                    ),
+                ),
+                partial(
                     propagate_new_imaging_event,
-                    context=_Context(redis_client=redis),
-                )
+                    context=PropagateContext(redis_client=redis),
+                ),
             ],
+            AddSrcDirInfo: [add_src_dir_info],
         },
         uow=UnitOfWork(
             get_session_maker(str(settings.POSTGRES_DSN)),
@@ -58,4 +68,5 @@ async def managed_context(
     )
 
     yield Context(settings=settings, messagebus=messagebus)
+
     await redis.aclose()

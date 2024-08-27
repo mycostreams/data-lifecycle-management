@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 from uuid import UUID, uuid4
 
 from prince_archiver.definitions import EventType
 
+from .exceptions import DomainException
 from .value_objects import Checksum
 
 
@@ -29,8 +31,13 @@ class DataArchiveEntry:
 
 
 @dataclass
+class SrcDirInfo:
+    img_count: int
+    raw_metadata: dict[str, Any]
+
+
+@dataclass
 class EventArchive:
-    id: UUID
     size: int
     checksum: Checksum | None = None
 
@@ -51,6 +58,7 @@ class ImagingEvent:
         local_path: Path,
         timestamp: datetime,
         *,
+        src_dir_info: SrcDirInfo | None = None,
         event_archive: EventArchive | None = None,
         object_store_entry: ObjectStoreEntry | None = None,
     ):
@@ -62,17 +70,23 @@ class ImagingEvent:
         self.timestamp = timestamp
         self.experiment_id = experiment_id
 
+        self.src_dir_info = src_dir_info
         self.event_archive = event_archive
         self.object_store_entry = object_store_entry
 
+    def add_src_dir_info(self, src_dir_info: SrcDirInfo):
+        if self.src_dir_info:
+            raise DomainException("Already associated.")
+        self.src_dir_info = src_dir_info
+
     def add_event_archive(self, event_archive: EventArchive):
         if self.event_archive:
-            raise ValueError("error")
+            raise DomainException("Already associated")
         self.event_archive = event_archive
 
     def add_object_store_entry(self, object_store_entry: ObjectStoreEntry):
         if self.object_store_entry:
-            raise ValueError("error")
+            raise DomainException("Already associated")
         self.object_store_entry = object_store_entry
 
     @classmethod

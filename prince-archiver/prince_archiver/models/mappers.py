@@ -50,6 +50,18 @@ def init_mappers():
         exclude_properties=get_exclude_fields(data_models.ObjectStoreEntry),
     )
 
+    src_dir_mapper = mapper_registry.map_imperatively(
+        domain_models.SrcDirInfo,
+        data_models.SrcDirInfo.__table__,
+        properties={
+            "_imaging_event_id": (data_models.SrcDirInfo.imaging_event_id.expression,)
+        },
+        exclude_properties=[
+            data_models.SrcDirInfo.id,
+            *get_exclude_fields(data_models.SrcDirInfo),
+        ],
+    )
+
     archive_checksum_mapper = mapper_registry.map_imperatively(
         vo.Checksum,
         data_models.ArchiveChecksum.__table__,
@@ -73,13 +85,20 @@ def init_mappers():
                 uselist=False,
             ),
         },
-        exclude_properties=get_exclude_fields(data_models.EventArchive),
+        exclude_properties=[
+            data_models.EventArchive.id,
+            *get_exclude_fields(data_models.EventArchive),
+        ],
     )
 
     mapper_registry.map_imperatively(
         domain_models.ImagingEvent,
         data_models.ImagingEvent.__table__,
         properties={
+            "src_dir_info": relationship(
+                src_dir_mapper,
+                uselist=False,
+            ),
             "event_archive": relationship(
                 event_archive_mapper,
                 uselist=False,

@@ -1,3 +1,4 @@
+import json
 import tarfile
 from hashlib import sha256
 from pathlib import Path
@@ -84,3 +85,42 @@ async def test_get_size(
     size = await archive_file_manager.get_archive_size(ArchivePath(temp_file))
 
     assert size == temp_file.stat().st_size
+
+
+async def test_exists(
+    archive_file_manager: ArchiveFileManager,
+    temp_file: Path,
+):
+    # Test non existent file
+    assert not await archive_file_manager.exists(temp_file)
+
+    # # test existent file
+    temp_file.touch()
+    assert await archive_file_manager.exists(temp_file)
+
+
+async def test_get_raw_metadata_valid_json(
+    archive_file_manager: ArchiveFileManager,
+    temp_file: Path,
+):
+    src_data = {"key": "value"}
+    temp_file.write_text(json.dumps(src_data))
+
+    out_data = await archive_file_manager.get_raw_metadata(
+        SrcPath(temp_file.parent),
+        filename=temp_file.name,
+    )
+
+    assert src_data == out_data
+
+
+async def test_get_raw_metadata_file_missing(
+    archive_file_manager: ArchiveFileManager,
+    temp_file: Path,
+):
+    out_data = await archive_file_manager.get_raw_metadata(
+        SrcPath(temp_file.parent),
+        filename=temp_file.name,
+    )
+
+    assert out_data == {}
