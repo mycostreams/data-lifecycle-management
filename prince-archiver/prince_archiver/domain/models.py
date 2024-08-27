@@ -32,7 +32,6 @@ class DataArchiveEntry:
 class EventArchive:
     id: UUID
     size: int
-    img_count: int
     checksum: Checksum | None = None
 
 

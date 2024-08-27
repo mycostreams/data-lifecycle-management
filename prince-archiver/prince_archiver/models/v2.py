@@ -4,6 +4,7 @@ from typing import Annotated
 from uuid import UUID, uuid4
 
 from sqlalchemy import ForeignKey, UniqueConstraint
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import Enum, Uuid
 
@@ -66,12 +67,23 @@ class ArchiveChecksum(Base):
     )
 
 
+class SrcDirInfo(Base):
+    __tablename__ = "src_dir_info"
+
+    id: Mapped[uuid_pk]
+    img_count: Mapped[int]
+    raw_metadata: Mapped[dict] = mapped_column(JSONB)
+
+    imaging_event_id: Mapped[UUID] = mapped_column(
+        ForeignKey("imaging_events.id"),
+    )
+
+
 class EventArchive(Base):
     __tablename__ = "event_archives"
 
     id: Mapped[uuid_pk]
     size: Mapped[int]
-    img_count: Mapped[int]
 
     imaging_event_id: Mapped[UUID] = mapped_column(
         ForeignKey("imaging_events.id"),

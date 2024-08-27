@@ -36,7 +36,6 @@ def fixture_mock_file_manager() -> ArchiveFileManager:
 
     mock.get_archive_checksum.return_value = Checksum(hex="test")
     mock.get_archive_size.return_value = 1024
-    mock.get_file_count.return_value = 1
     mock.get_temp_archive.return_value.__aenter__ = AsyncMock(return_value=Path("test"))
 
     return mock
@@ -72,7 +71,6 @@ async def test_export_handler_successful(
     msg = next(uow.collect_messages())
 
     assert isinstance(msg, ExportedImagingEvent)
-    assert msg.img_count == 1
     assert msg.checksum == Checksum(hex="test")
     assert msg.size == 1024
     assert msg.key == "target/key"
@@ -134,7 +132,6 @@ async def test_persist_imaging_event_successful(
     msg = ExportedImagingEvent(
         ref_id=unexported_imaging_event.ref_id,
         checksum=Checksum("test"),
-        img_count=5,
         size=1024,
         key="target",
         timestamp=datetime(2000, 1, 1, tzinfo=UTC),
@@ -152,7 +149,6 @@ async def test_persist_imaging_event_non_existent_reference():
     msg = ExportedImagingEvent(
         ref_id=uuid4(),
         checksum=Checksum("test"),
-        img_count=5,
         size=1024,
         key="target",
         timestamp=datetime(2000, 1, 1, tzinfo=UTC),

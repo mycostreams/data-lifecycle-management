@@ -38,7 +38,6 @@ class ExportImagingEvent(BaseModel):
 class ExportedImagingEvent(BaseModel):
     ref_id: UUID
     checksum: Checksum
-    img_count: int
     size: int
     key: str
     timestamp: datetime = Field(default_factory=now)
