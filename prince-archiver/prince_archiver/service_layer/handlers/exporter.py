@@ -86,10 +86,6 @@ class ExportHandler(AbstractHandler[messages.ExportImagingEvent]):
                     self.file_manager.get_archive_checksum(archive_path),
                 )
 
-                file_count_task = tg.create_task(
-                    self.file_manager.get_file_count(src_dir),
-                )
-
                 size_task = tg.create_task(
                     self.file_manager.get_archive_size(archive_path),
                 )
@@ -102,7 +98,6 @@ class ExportHandler(AbstractHandler[messages.ExportImagingEvent]):
                 messages.ExportedImagingEvent(
                     ref_id=message.ref_id,
                     checksum=checksum_task.result(),
-                    img_count=file_count_task.result(),
                     size=size_task.result(),
                     key=message.target_key,
                 )
@@ -127,7 +122,6 @@ async def persist_imaging_event_export(
             EventArchive(
                 id=uuid4(),
                 size=message.size,
-                img_count=message.img_count,
                 checksum=message.checksum,
             )
         )

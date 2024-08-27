@@ -111,7 +111,6 @@ def fixture_event_archive(
     return data_models.EventArchive(
         id=uuid4(),
         size=3,
-        img_count=10,
         imaging_event_id=imaging_event.id,
     )
 

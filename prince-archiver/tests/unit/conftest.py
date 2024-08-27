@@ -50,7 +50,6 @@ def fixture_exported_imaging_event() -> ImagingEvent:
         EventArchive(
             id=uuid4(),
             size=10,
-            img_count=10,
             checksum=Checksum(hex="321"),
         )
     )

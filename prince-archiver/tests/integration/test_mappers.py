@@ -31,7 +31,6 @@ async def test_imaging_event_mappers(session: AsyncSession):
 
     assert (event_archive := imaging_event.event_archive)
     assert event_archive.size == 3
-    assert event_archive.img_count == 10
     assert event_archive.checksum == Checksum(hex="test_hex")
 
 
