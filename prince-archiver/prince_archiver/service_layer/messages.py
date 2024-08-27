@@ -22,6 +22,12 @@ class ImportedImagingEvent(ImportImagingEvent):
     id: UUID
 
 
+class AddSrcDirInfo(BaseModel):
+    ref_id: UUID
+    img_count: int
+    raw_metadata: dict
+
+
 # For Exporting events out
 class InitiateExportEvent(BaseModel):
     ref_id: UUID

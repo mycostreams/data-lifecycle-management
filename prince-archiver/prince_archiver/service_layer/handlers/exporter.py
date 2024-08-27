@@ -5,7 +5,6 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
-from uuid import uuid4
 
 import s3fs
 
@@ -117,7 +116,6 @@ async def persist_imaging_event_export(
 
         imaging_event.add_event_archive(
             EventArchive(
-                id=uuid4(),
                 size=message.size,
                 checksum=message.checksum,
             )

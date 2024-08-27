@@ -48,7 +48,6 @@ def fixture_exported_imaging_event() -> ImagingEvent:
 
     imaging_event.add_event_archive(
         EventArchive(
-            id=uuid4(),
             size=10,
             checksum=Checksum(hex="321"),
         )

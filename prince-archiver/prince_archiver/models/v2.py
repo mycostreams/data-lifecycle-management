@@ -104,6 +104,7 @@ class ImagingEvent(Base):
 
     # TODO: remove these if not needed.
     system: Mapped[System | None] = mapped_column(
-        Enum(System, native_enum=False), nullable=True
+        Enum(System, native_enum=False),
+        nullable=True,
     )
     system_position: Mapped[int | None]

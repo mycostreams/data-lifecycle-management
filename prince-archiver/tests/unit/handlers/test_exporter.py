@@ -30,17 +30,6 @@ from .utils import MockUnitOfWork
 HandlerT = Callable[[InitiateExportEvent, AbstractUnitOfWork], Awaitable[None]]
 
 
-@pytest.fixture(name="mock_file_manager")
-def fixture_mock_file_manager() -> ArchiveFileManager:
-    mock = AsyncMock(ArchiveFileManager)
-
-    mock.get_archive_checksum.return_value = Checksum(hex="test")
-    mock.get_archive_size.return_value = 1024
-    mock.get_temp_archive.return_value.__aenter__ = AsyncMock(return_value=Path("test"))
-
-    return mock
-
-
 @pytest.fixture(name="context_bound_handler")
 def fixture_context_bound_handler() -> HandlerT:
     context = Context(

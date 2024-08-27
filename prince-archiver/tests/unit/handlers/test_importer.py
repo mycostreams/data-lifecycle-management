@@ -6,15 +6,20 @@ from uuid import uuid4
 import pytest
 from arq import ArqRedis
 
+from prince_archiver.adapters.file import ArchiveFileManager
 from prince_archiver.definitions import EventType
-from prince_archiver.domain.models import ImagingEvent
+from prince_archiver.domain.models import ImagingEvent, SrcDirInfo
 from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.handlers.importer import (
-    Context,
+    PropagateContext,
+    SrcDirContext,
+    add_src_dir_info,
+    get_src_dir_info,
     import_imaging_event,
     propagate_new_imaging_event,
 )
 from prince_archiver.service_layer.messages import (
+    AddSrcDirInfo,
     ImportedImagingEvent,
     ImportImagingEvent,
 )
@@ -86,10 +91,53 @@ async def test_propagate_new_imaging_event(
     msg = ImportedImagingEvent(ref_id=ref_id, id=uuid4(), **msg_kwargs.__dict__)
 
     await propagate_new_imaging_event(
-        msg, MockUnitOfWork(), context=Context(redis_client=mock_redis)
+        msg,
+        MockUnitOfWork(),
+        context=PropagateContext(redis_client=mock_redis),
     )
 
     mock_redis.enqueue_job.assert_awaited_once_with(
         "workflow",
         {"ref_id": str(msg.ref_id), "type": EventType.STITCH},
     )
+
+
+async def test_get_src_dir_info_successful(
+    mock_file_manager: ArchiveFileManager,
+    msg_kwargs: _MsgKwargs,
+    uow: MockUnitOfWork,
+):
+    ref_id = uuid4()
+
+    msg = ImportImagingEvent(
+        ref_id=ref_id,
+        **msg_kwargs.__dict__,
+    )
+
+    context = SrcDirContext(file_manager=mock_file_manager)
+
+    await get_src_dir_info(msg, uow, context=context)
+
+    expected_msg = AddSrcDirInfo(
+        ref_id=ref_id, img_count=5, raw_metadata={"test_key": "test_value"}
+    )
+
+    assert next(uow.collect_messages(), None) == expected_msg
+
+
+async def test_add_src_dir_info_successful(
+    exported_imaging_event: ImagingEvent,
+    uow: MockUnitOfWork,
+):
+    msg = AddSrcDirInfo(
+        ref_id=exported_imaging_event.ref_id,
+        img_count=10,
+        raw_metadata={"test_key": "test_value"},
+    )
+
+    await add_src_dir_info(msg, uow)
+
+    # Ensure that source dir added to imaging event
+    expected = SrcDirInfo(img_count=10, raw_metadata={"test_key": "test_value"})
+
+    assert exported_imaging_event.src_dir_info == expected
