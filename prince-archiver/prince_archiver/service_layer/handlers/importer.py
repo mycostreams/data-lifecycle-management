@@ -52,9 +52,8 @@ async def propagate_new_imaging_event(
     context: PropagateContext,
 ):
     async with uow:
-        dto = messages.InitiateExportEvent(
-            ref_id=message.ref_id,
-            type=message.type,
+        dto = messages.ExportImagingEvent(
+            local_path=message.src_dir_info.local_path, **message.model_dump()
         )
 
         await context.redis_client.enqueue_job(

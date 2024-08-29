@@ -3,10 +3,10 @@ from typing import Any
 from pydantic import BaseModel
 
 from prince_archiver.definitions import EventType
-from prince_archiver.domain.models import ImagingEvent
+from prince_archiver.service_layer.messages import ExportImagingEvent
 
 
-def get_target_key(imaging_event: ImagingEvent, bucket: str) -> str:
+def get_target_key(imaging_event: ExportImagingEvent, bucket: str) -> str:
     event_type = "images" if imaging_event.type == EventType.STITCH else "videos"
     date_folder = imaging_event.timestamp.strftime("%Y%m%d")
     file_name = imaging_event.timestamp.strftime("%H%M%S.tar")

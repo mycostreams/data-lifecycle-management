@@ -105,5 +105,11 @@ async def test_propagate_new_imaging_event(
 
     mock_redis.enqueue_job.assert_awaited_once_with(
         "workflow",
-        {"ref_id": str(msg.ref_id), "type": EventType.STITCH},
+        {
+            "ref_id": str(msg.ref_id),
+            "experiment_id": "test_id",
+            "timestamp": "2000-01-01T00:00:00Z",
+            "local_path": "test/path",
+            "type": str(EventType.STITCH),
+        },
     )

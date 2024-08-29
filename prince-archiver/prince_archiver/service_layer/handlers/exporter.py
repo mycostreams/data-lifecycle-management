@@ -2,53 +2,18 @@
 
 import asyncio
 import logging
-from dataclasses import dataclass
-from pathlib import Path
 from typing import Callable
 
 import s3fs
 
-from prince_archiver.adapters.file import ArchiveFileManager, SrcPath
-from prince_archiver.domain.models import EventArchive, ImagingEvent, ObjectStoreEntry
+from prince_archiver.adapters.file import ArchiveFileManager
+from prince_archiver.domain.models import EventArchive, ObjectStoreEntry
 from prince_archiver.service_layer import messages
 from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.messagebus import AbstractHandler
 from prince_archiver.service_layer.uow import AbstractUnitOfWork
 
 LOGGER = logging.getLogger(__name__)
-
-
-@dataclass
-class Context:
-    base_path: Path
-    key_generator: Callable[[ImagingEvent], str]
-
-
-async def initiate_imaging_event_export(
-    message: messages.InitiateExportEvent,
-    uow: AbstractUnitOfWork,
-    *,
-    context: Context,
-):
-    """
-    Initiate the export of an image timestep.
-    """
-
-    LOGGER.info("[%s] Initiating export", message.ref_id)
-
-    async with uow:
-        imaging_event = await uow.imaging_events.get_by_ref_id(message.ref_id)
-        if not imaging_event or imaging_event.event_archive:
-            raise ServiceLayerException("Rejecting export")
-
-        uow.add_message(
-            messages.ExportImagingEvent(
-                ref_id=imaging_event.ref_id,
-                type=imaging_event.type,
-                local_path=context.base_path / imaging_event.src_dir_info.local_path,
-                target_key=context.key_generator(imaging_event),
-            )
-        )
 
 
 class ExportHandler(AbstractHandler[messages.ExportImagingEvent]):
@@ -59,10 +24,12 @@ class ExportHandler(AbstractHandler[messages.ExportImagingEvent]):
     def __init__(
         self,
         s3: s3fs.S3FileSystem,
+        key_generator: Callable[[messages.ExportImagingEvent], str],
         file_manager: ArchiveFileManager | None = None,
     ):
         self.s3 = s3
         self.file_manager = file_manager or ArchiveFileManager()
+        self.key_generator = key_generator
 
     async def __call__(
         self,
@@ -71,8 +38,9 @@ class ExportHandler(AbstractHandler[messages.ExportImagingEvent]):
     ):
         LOGGER.info("[%s] Exporting", message.ref_id)
 
+        key = self.key_generator(message)
         async with uow:
-            src_dir = SrcPath(message.local_path)
+            src_dir = self.file_manager.get_src_path(message.local_path)
             async with (
                 self.file_manager.get_temp_archive(src_dir) as archive_path,
                 asyncio.TaskGroup() as tg,
@@ -86,7 +54,7 @@ class ExportHandler(AbstractHandler[messages.ExportImagingEvent]):
                 )
 
                 tg.create_task(
-                    self.s3._put_file(archive_path, message.target_key),
+                    self.s3._put_file(archive_path, key),
                 )
 
             uow.add_message(
@@ -94,7 +62,7 @@ class ExportHandler(AbstractHandler[messages.ExportImagingEvent]):
                     ref_id=message.ref_id,
                     checksum=checksum_task.result(),
                     size=size_task.result(),
-                    key=message.target_key,
+                    key=key,
                 )
             )
             await uow.commit()
