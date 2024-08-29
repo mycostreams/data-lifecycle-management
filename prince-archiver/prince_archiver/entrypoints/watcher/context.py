@@ -26,7 +26,7 @@ from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
 class Context:
     settings: WatcherSettings
     messagebus: MessageBus
-    file_manager: ArchiveFileManager | None = None
+    file_manager: ArchiveFileManager
 
 
 @asynccontextmanager
