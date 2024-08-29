@@ -10,22 +10,22 @@ from prince_archiver.utils import now
 
 
 # For importing imaging events into system
+class SrcDirInfo(BaseModel):
+    local_path: Path
+    img_count: int
+    raw_metadata: dict
+
+
 class ImportImagingEvent(BaseModel):
     ref_id: UUID
     experiment_id: str
-    local_path: Path
     timestamp: datetime
-    type: EventType
+    type: EventType = Field(default=EventType.STITCH)
+    src_dir_info: SrcDirInfo
 
 
 class ImportedImagingEvent(ImportImagingEvent):
     id: UUID
-
-
-class AddSrcDirInfo(BaseModel):
-    ref_id: UUID
-    img_count: int
-    raw_metadata: dict
 
 
 # For Exporting events out

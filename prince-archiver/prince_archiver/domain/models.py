@@ -32,6 +32,7 @@ class DataArchiveEntry:
 
 @dataclass
 class SrcDirInfo:
+    local_path: Path
     img_count: int
     raw_metadata: dict[str, Any]
 
@@ -55,10 +56,9 @@ class ImagingEvent:
         ref_id: UUID,
         type: EventType,
         experiment_id: str,
-        local_path: Path,
         timestamp: datetime,
+        src_dir_info: SrcDirInfo,
         *,
-        src_dir_info: SrcDirInfo | None = None,
         event_archive: EventArchive | None = None,
         object_store_entry: ObjectStoreEntry | None = None,
     ):
@@ -66,18 +66,12 @@ class ImagingEvent:
         self.ref_id = ref_id
         self.type = type
 
-        self.local_path = local_path
         self.timestamp = timestamp
         self.experiment_id = experiment_id
 
         self.src_dir_info = src_dir_info
         self.event_archive = event_archive
         self.object_store_entry = object_store_entry
-
-    def add_src_dir_info(self, src_dir_info: SrcDirInfo):
-        if self.src_dir_info:
-            raise DomainException("Already associated.")
-        self.src_dir_info = src_dir_info
 
     def add_event_archive(self, event_archive: EventArchive):
         if self.event_archive:
@@ -95,8 +89,8 @@ class ImagingEvent:
         ref_id: UUID,
         type: EventType,
         experiment_id: str,
-        local_path: Path,
         timestamp: datetime,
+        src_dir_info: SrcDirInfo,
         *,
         _id: UUID | None = None,
     ):
@@ -105,6 +99,6 @@ class ImagingEvent:
             ref_id,
             type,
             experiment_id,
-            local_path,
             timestamp,
+            src_dir_info,
         )

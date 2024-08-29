@@ -45,7 +45,7 @@ async def initiate_imaging_event_export(
             messages.ExportImagingEvent(
                 ref_id=imaging_event.ref_id,
                 type=imaging_event.type,
-                local_path=context.base_path / imaging_event.local_path,
+                local_path=context.base_path / imaging_event.src_dir_info.local_path,
                 target_key=context.key_generator(imaging_event),
             )
         )

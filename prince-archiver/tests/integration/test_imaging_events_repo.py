@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from prince_archiver.adapters.repository import ImagingEventRepo
 from prince_archiver.definitions import EventType
-from prince_archiver.domain.models import ImagingEvent
+from prince_archiver.domain.models import ImagingEvent, SrcDirInfo
 
 pytestmark = pytest.mark.integration
 
@@ -22,9 +22,13 @@ async def test_add(repo: ImagingEventRepo):
     stitch_event = ImagingEvent.factory(
         ref_id=uuid4(),
         experiment_id="experiment_id",
-        local_path=Path("test/path/"),
         timestamp=datetime.now(),
         type=EventType.STITCH,
+        src_dir_info=SrcDirInfo(
+            local_path=Path("test/path"),
+            img_count=10,
+            raw_metadata={"key": "value"},
+        ),
     )
 
     cached_id = stitch_event.id
@@ -33,9 +37,13 @@ async def test_add(repo: ImagingEventRepo):
     await repo.session.commit()
 
     # Check that expected models are populated
-    stmt = text("SELECT * FROM imaging_events WHERE id=:id")
-    result = await repo.session.execute(stmt.bindparams(id=cached_id.hex))
-    assert len(result.all()) == 1
+    stmt = text("SELECT COUNT(*) FROM imaging_events WHERE id=:id")
+    result = await repo.session.scalar(stmt.bindparams(id=cached_id.hex))
+    assert result == 1
+
+    stmt = text("SELECT COUNT(*) FROM src_dir_info WHERE imaging_event_id=:id")
+    result = await repo.session.scalar(stmt.bindparams(id=cached_id.hex))
+    assert result == 1
 
 
 @pytest.mark.usefixtures("seed_data")
