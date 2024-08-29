@@ -9,36 +9,31 @@ from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.utils import now
 
 
-# For importing imaging events into system
-class ImportImagingEvent(BaseModel):
+class CommonImagingEvent(BaseModel):
     ref_id: UUID
     experiment_id: str
-    local_path: Path
     timestamp: datetime
-    type: EventType
+    type: EventType = Field(default=EventType.STITCH)
+
+
+# For importing imaging events into system
+class SrcDirInfo(BaseModel):
+    local_path: Path
+    img_count: int
+    raw_metadata: dict
+
+
+class ImportImagingEvent(CommonImagingEvent):
+    src_dir_info: SrcDirInfo
 
 
 class ImportedImagingEvent(ImportImagingEvent):
     id: UUID
 
 
-class AddSrcDirInfo(BaseModel):
-    ref_id: UUID
-    img_count: int
-    raw_metadata: dict
-
-
-# For Exporting events out
-class InitiateExportEvent(BaseModel):
-    ref_id: UUID
-    type: EventType
-
-
-class ExportImagingEvent(BaseModel):
-    ref_id: UUID
-    type: EventType
+# for exporting out
+class ExportImagingEvent(CommonImagingEvent):
     local_path: Path
-    target_key: str
 
 
 class ExportedImagingEvent(BaseModel):

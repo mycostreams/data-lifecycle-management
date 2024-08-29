@@ -71,6 +71,7 @@ class SrcDirInfo(Base):
     __tablename__ = "src_dir_info"
 
     id: Mapped[uuid_pk]
+    local_path: Mapped[Path]
     img_count: Mapped[int]
     raw_metadata: Mapped[dict] = mapped_column(JSONB)
 
@@ -99,7 +100,6 @@ class ImagingEvent(Base):
         Enum(EventType, native_enum=False),
     )
     experiment_id: Mapped[str]
-    local_path: Mapped[Path]
     timestamp: Mapped[datetime]
 
     # TODO: remove these if not needed.

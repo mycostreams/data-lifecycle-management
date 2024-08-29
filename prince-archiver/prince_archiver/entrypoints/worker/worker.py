@@ -73,11 +73,10 @@ async def startup(ctx: dict):
         get_session_maker(str(settings.POSTGRES_DSN)),
     )
 
-    def _messagebus_factory() -> MessageBus:
-        return MessageBus(
-            handlers={AddDataArchiveEntry: [add_data_archive_entry]},
-            uow=uow_factory(),
-        )
+    messagebus_factory = MessageBus.factory(
+        handlers={AddDataArchiveEntry: [add_data_archive_entry]},
+        uow=uow_factory,
+    )
 
     ctx["exit_stack"] = exit_stack
     ctx["settings"] = settings
@@ -86,7 +85,7 @@ async def startup(ctx: dict):
     # Configure archive subscriber
     subscriber = ManagedSubscriber(
         connection_url=settings.RABBITMQ_DSN,
-        message_handler=SubscriberMessageHandler(_messagebus_factory),
+        message_handler=SubscriberMessageHandler(messagebus_factory),
     )
     await exit_stack.enter_async_context(subscriber)
 

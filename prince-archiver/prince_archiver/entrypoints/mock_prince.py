@@ -1,21 +1,24 @@
 import asyncio
 import logging
-import os
 from datetime import date
 from pathlib import Path
 from uuid import uuid4
 
 import httpx
 from fastapi import FastAPI, Response
+from pydantic_settings import BaseSettings
 
 from prince_archiver.logging import configure_logging
 from prince_archiver.service_layer.external_dto import TimestepMeta
 from prince_archiver.test_utils.utils import make_timestep_directory
 from prince_archiver.utils import now
 
-BASE_DIR = Path(os.environ.get("DATA_DIR", "/app/data"))
-
 LOGGER = logging.getLogger(__name__)
+
+
+class Settings(BaseSettings):
+    INTERVAL: int = 30
+    DATA_DIR: Path
 
 
 def _create_meta() -> TimestepMeta:
@@ -28,13 +31,15 @@ def _create_meta() -> TimestepMeta:
     )
 
 
-def create_app() -> FastAPI:
+def create_app(*, settings: Settings | None = None) -> FastAPI:
     app = FastAPI()
+
+    settings = settings or Settings()
 
     @app.post("/timestep", status_code=200)
     def create_timestep(data: TimestepMeta) -> Response:
         logging.info("Added timestep")
-        make_timestep_directory(meta=data, base_dir=BASE_DIR)
+        make_timestep_directory(meta=data, base_dir=settings.DATA_DIR)
         return Response(status_code=200)
 
     return app
@@ -46,7 +51,9 @@ async def main():
 
     logging.info("Starting up mock prince")
 
-    transport = httpx.ASGITransport(app=create_app())
+    settings = Settings()
+
+    transport = httpx.ASGITransport(app=create_app(settings=settings))
 
     client = httpx.AsyncClient(transport=transport, base_url="http://mockprince")
     async with client:
@@ -56,7 +63,7 @@ async def main():
                 "/timestep",
                 json=meta.model_dump(mode="json", by_alias=True),
             )
-            await asyncio.sleep(60)
+            await asyncio.sleep(settings.INTERVAL)
 
 
 if __name__ == "__main__":

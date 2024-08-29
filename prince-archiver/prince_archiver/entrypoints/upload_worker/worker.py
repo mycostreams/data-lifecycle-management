@@ -5,14 +5,13 @@ from functools import partial
 
 from arq.connections import RedisSettings
 
+from prince_archiver.adapters.file import ArchiveFileManager
 from prince_archiver.config import UploadWorkerSettings as Settings
 from prince_archiver.file import managed_file_system
 from prince_archiver.logging import configure_logging
 from prince_archiver.models import init_mappers
 from prince_archiver.service_layer.handlers.exporter import (
-    Context,
     ExportHandler,
-    initiate_imaging_event_export,
     persist_imaging_event_export,
 )
 from prince_archiver.service_layer.handlers.utils import get_target_key
@@ -20,7 +19,6 @@ from prince_archiver.service_layer.messagebus import MessageBus, MessagebusFacto
 from prince_archiver.service_layer.messages import (
     ExportedImagingEvent,
     ExportImagingEvent,
-    InitiateExportEvent,
 )
 from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
 
@@ -33,7 +31,7 @@ async def workflow(
 ):
     messagebus: MessageBus = ctx["messagebus"]
 
-    dto = InitiateExportEvent.model_validate(input_data)
+    dto = ExportImagingEvent.model_validate(input_data)
     await messagebus.handle(dto)
 
 
@@ -51,19 +49,18 @@ async def startup(ctx: dict):
 
     messagebus_factory = MessageBus.factory(
         handlers={
-            InitiateExportEvent: [
-                partial(
-                    initiate_imaging_event_export,
-                    context=Context(
+            ExportImagingEvent: [
+                ExportHandler(
+                    s3=s3,
+                    file_manager=ArchiveFileManager(
                         base_path=settings.DATA_DIR,
-                        key_generator=partial(
-                            get_target_key,
-                            bucket=settings.AWS_BUCKET_NAME,
-                        ),
+                    ),
+                    key_generator=partial(
+                        get_target_key,
+                        bucket=settings.AWS_BUCKET_NAME,
                     ),
                 )
             ],
-            ExportImagingEvent: [ExportHandler(s3)],
             ExportedImagingEvent: [persist_imaging_event_export],
         },
         uow=lambda: UnitOfWork(sessionmaker),
