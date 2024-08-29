@@ -49,7 +49,7 @@ async def watch(context: Context):
     )
     async for changes in watcher:
         for _, _filepath in changes:
-            process(Path(_filepath), context=context)
+            await process(Path(_filepath), context=context)
 
 
 async def amain(*, _settings: WatcherSettings | None = None):

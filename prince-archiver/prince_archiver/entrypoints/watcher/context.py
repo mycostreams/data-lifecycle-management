@@ -57,6 +57,10 @@ async def managed_context(
         ),
     )
 
-    yield Context(settings=settings, messagebus=messagebus)
+    yield Context(
+        settings=settings,
+        file_manager=ArchiveFileManager(base_path=settings.DATA_DIR),
+        messagebus=messagebus,
+    )
 
     await redis.aclose()
