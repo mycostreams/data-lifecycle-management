@@ -17,24 +17,24 @@ yarl = "*"
 
 [[package]]
 name = "aiobotocore"
-version = "2.12.1"
+version = "2.14.0"
 description = "Async client for aws services using botocore and aiohttp"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "aiobotocore-2.12.1-py3-none-any.whl", hash = "sha256:6a9a3d646cf422f45fdc1e4256e78563ebffba64733bc9b8ca9123614e8ba9af"},
-    {file = "aiobotocore-2.12.1.tar.gz", hash = "sha256:8706b28f16f93c541f6ed50352115a79d8f3499539f8d0bb70aa0f7a5379c1fe"},
+    {file = "aiobotocore-2.14.0-py3-none-any.whl", hash = "sha256:721c52f5d1221daa4851cfa9ab5db14440477f33d763da9019691c4f67163873"},
+    {file = "aiobotocore-2.14.0.tar.gz", hash = "sha256:680dcbcde9cb0dcefbcddc180d273c2d048940f87f2bdb0eebe0f4c30c1e39b9"},
 ]
 
 [package.dependencies]
-aiohttp = ">=3.7.4.post0,<4.0.0"
+aiohttp = ">=3.9.2,<4.0.0"
 aioitertools = ">=0.5.1,<1.0.0"
-botocore = ">=1.34.41,<1.34.52"
+botocore = ">=1.35.0,<1.35.8"
 wrapt = ">=1.10.10,<2.0.0"
 
 [package.extras]
-awscli = ["awscli (>=1.32.41,<1.32.52)"]
-boto3 = ["boto3 (>=1.34.41,<1.34.52)"]
+awscli = ["awscli (>=1.34.0,<1.34.8)"]
+boto3 = ["boto3 (>=1.35.0,<1.35.8)"]
 
 [[package]]
 name = "aiofiles"
@@ -397,22 +397,22 @@ docs = ["sphinx (>=1.6)", "sphinx-bootstrap-theme (>=0.6)"]
 
 [[package]]
 name = "botocore"
-version = "1.34.51"
+version = "1.35.7"
 description = "Low-level, data-driven core of boto 3."
 optional = false
-python-versions = ">= 3.8"
+python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.34.51-py3-none-any.whl", hash = "sha256:01d5156247f991b3466a8404e3d7460a9ecbd9b214f9992d6ba797d9ddc6f120"},
-    {file = "botocore-1.34.51.tar.gz", hash = "sha256:5086217442e67dd9de36ec7e87a0c663f76b7790d5fb6a12de565af95e87e319"},
+    {file = "botocore-1.35.7-py3-none-any.whl", hash = "sha256:324e58518a92f2946bc6653e5e1272bc88d4b6313413f938bdc51cb90d34cbba"},
+    {file = "botocore-1.35.7.tar.gz", hash = "sha256:85e4b58f2c6e54dfbf52eaee72ebc9b70188fd1716d47f626874abadcee45512"},
 ]
 
 [package.dependencies]
 jmespath = ">=0.7.1,<2.0.0"
 python-dateutil = ">=2.1,<3.0.0"
-urllib3 = {version = ">=1.25.4,<2.1", markers = "python_version >= \"3.10\""}
+urllib3 = {version = ">=1.25.4,<2.2.0 || >2.2.0,<3", markers = "python_version >= \"3.10\""}
 
 [package.extras]
-crt = ["awscrt (==0.19.19)"]
+crt = ["awscrt (==0.21.2)"]
 
 [[package]]
 name = "certifi"
@@ -2281,4 +2281,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "8232dd90d1bb07480d3d32a92778788f11772c543b8dbba9eec3077deebe527a"
+content-hash = "057bd07de01208977118d5c108cb6f2462711a45003de02455aded04ec65d4bf"

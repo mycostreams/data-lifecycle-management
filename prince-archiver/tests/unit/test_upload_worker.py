@@ -1,13 +1,13 @@
 from unittest.mock import AsyncMock
 
-from arq import Retry
-from aiohttp.client_exceptions import ClientError
 import pytest
+from aiobotocore.httpsession import ConnectTimeoutError
+from arq import Retry
 
-from prince_archiver.service_layer.messages import ExportImagingEvent
-from prince_archiver.service_layer.messagebus import MessageBus
-from prince_archiver.entrypoints.upload_worker.worker import workflow
 from prince_archiver.definitions import EventType
+from prince_archiver.entrypoints.upload_worker.worker import workflow
+from prince_archiver.service_layer.messagebus import MessageBus
+from prince_archiver.service_layer.messages import ExportImagingEvent
 
 
 @pytest.fixture(name="workflow_payload")
@@ -34,16 +34,12 @@ async def test_workflow_succesful(
     mock_messagebus.handle.assert_awaited_once_with(expected_msg)
 
 
-@pytest.mark.parametrize("error_cls", (ClientError, OSError))
-async def test_workflow_with_retries(
-    workflow_payload: dict,
-    error_cls: Exception
-):
+@pytest.mark.parametrize("error_cls", (ConnectTimeoutError(endpoint_url="/"), OSError))
+async def test_workflow_with_retries(workflow_payload: dict, error_cls: Exception):
     mock_messagebus = AsyncMock(MessageBus)
     mock_messagebus.handle.side_effect = error_cls
-    
+
     ctx = {"messagebus": mock_messagebus}
 
     with pytest.raises(Retry):
         await workflow(ctx, workflow_payload)
-
