@@ -3,6 +3,8 @@ import os
 from contextlib import AsyncExitStack
 from functools import partial
 
+from arq import Retry
+from aiohttp.client_exceptions import ClientError
 from arq.connections import RedisSettings
 
 from prince_archiver.adapters.file import ArchiveFileManager
@@ -30,9 +32,13 @@ async def workflow(
     input_data: dict,
 ):
     messagebus: MessageBus = ctx["messagebus"]
-
     dto = ExportImagingEvent.model_validate(input_data)
-    await messagebus.handle(dto)
+
+    try:
+        await messagebus.handle(dto)
+    except (ClientError, OSError) as err:
+        job_try: int = ctx.get("job_try", 1)
+        raise Retry(defer=job_try * (3 * 60)) from err
 
 
 async def startup(ctx: dict):
@@ -89,7 +95,8 @@ class WorkerSettings:
     on_job_start = on_job_start
 
     keep_result = 0
-    max_jobs = 2
+    max_retries= 5
+    max_jobs = 5
 
     redis_settings = RedisSettings.from_dsn(
         os.getenv("REDIS_DSN", "redis://localhost:6379"),
