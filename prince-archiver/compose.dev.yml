@@ -11,6 +11,7 @@ services:
     image: prince-archiver
     command: ["python", "-m", "prince_archiver.entrypoints.mock_prince"]
     environment:
+      INTERVAL: ${INTERVAL:-30}
       DATA_DIR: /data/input
     volumes:
       - ./prince_archiver:/app/prince_archiver
