@@ -1,8 +1,8 @@
 from unittest.mock import AsyncMock
 
 import pytest
-from aiobotocore.httpsession import ConnectTimeoutError
 from arq import Retry
+from botocore.exceptions import ConnectTimeoutError
 
 from prince_archiver.definitions import EventType
 from prince_archiver.entrypoints.upload_worker.worker import workflow

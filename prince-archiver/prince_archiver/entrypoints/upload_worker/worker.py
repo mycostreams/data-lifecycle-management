@@ -3,9 +3,9 @@ import os
 from contextlib import AsyncExitStack
 from functools import partial
 
-from aiobotocore.httpsession import ConnectTimeoutError
 from arq import Retry
 from arq.connections import RedisSettings
+from botocore.exceptions import ConnectTimeoutError
 
 from prince_archiver.adapters.file import ArchiveFileManager
 from prince_archiver.config import UploadWorkerSettings as Settings
