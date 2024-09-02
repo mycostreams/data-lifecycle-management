@@ -46,7 +46,7 @@ class ManagedSubscriber:
             durable=True,
             exclusive=True,
         )
-    
+
         await queue.bind(exchange)
         await queue.consume(self.message_handler)
 
