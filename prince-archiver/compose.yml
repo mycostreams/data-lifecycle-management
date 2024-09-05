@@ -10,7 +10,7 @@ services:
     image: prince-archiver
     build:
       context: .
-    command: ["python", "-m", "prince_archiver.watcher.main"]
+    command: ["python", "-m", "prince_archiver.entrypoints.watcher.main"]
     environment: *env-variables
     depends_on:
       db:
@@ -20,7 +20,7 @@ services:
 
   upload-worker:
     image: prince-archiver
-    command: ["arq", "prince_archiver.upload_worker.WorkerSettings"]
+    command: ["arq", "prince_archiver.entrypoints.upload_worker.WorkerSettings"]
     environment: *env-variables
     depends_on:
       db:
@@ -30,7 +30,7 @@ services:
 
   cron-worker:
     image: prince-archiver
-    command: ["arq", "prince_archiver.data_archive.WorkerSettings"]
+    command: ["arq", "prince_archiver.entrypoints.worker.WorkerSettings"]
     environment:
       DATA_ARCHIVE_HOST: archive.surfsara.nl
       POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
