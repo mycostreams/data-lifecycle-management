@@ -47,4 +47,7 @@ async def managed_stream_ingester(state: State):
     yield
 
     task.cancel()
-    await task
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass

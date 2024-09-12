@@ -8,8 +8,8 @@ import s3fs
 from arq import ArqRedis
 
 from prince_archiver.adapters.file import ArchiveFileManager
-from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.domain.models import EventArchive, ObjectStoreEntry
+from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.service_layer import messages
 from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.uow import AbstractUnitOfWork
@@ -64,7 +64,7 @@ class ExportHandler:
         await self.redis.enqueue_job(
             "run_persist_export",
             msg.model_dump(mode="json"),
-            _queue_name="arq:queue-cron"
+            _queue_name="arq:queue-cron",
         )
 
 

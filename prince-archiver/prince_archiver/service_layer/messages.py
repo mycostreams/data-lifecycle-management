@@ -5,7 +5,6 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, Field
 
 from prince_archiver.definitions import Algorithm, EventType, System
-from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.utils import now
 
 
