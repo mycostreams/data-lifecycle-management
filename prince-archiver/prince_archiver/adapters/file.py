@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import shutil
 import tarfile
 from concurrent.futures import Executor
 from contextlib import asynccontextmanager
@@ -91,6 +92,17 @@ class ArchiveFileManager:
         if self.base_path:
             return SrcPath(self.base_path / path)
         raise ValueError()
+
+    async def copy_tree(self, src: Path, target: Path):
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(self.executor, shutil.copytree, src, target)
+
+    async def rm_tree(self, src: Path) -> None:
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(self.executor, shutil.rmtree, src)
+
+    async def rm(self, src: Path) -> None:
+        await aiofiles.os.remove(src, executor=self.executor)
 
     async def exists(self, path: Path) -> bool:
         return await aiofiles.ospath.exists(path, executor=self.executor)

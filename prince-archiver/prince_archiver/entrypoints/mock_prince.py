@@ -8,7 +8,7 @@ import httpx
 from fastapi import FastAPI, Response
 from pydantic_settings import BaseSettings
 
-from prince_archiver.logging import configure_logging
+from prince_archiver.log import configure_logging
 from prince_archiver.service_layer.external_dto import TimestepMeta
 from prince_archiver.test_utils.utils import make_timestep_directory
 from prince_archiver.utils import now

@@ -1,9 +1,6 @@
 """Handlers used to import imaging event into system."""
 
 import logging
-from dataclasses import dataclass
-
-from arq import ArqRedis
 
 from prince_archiver.domain.models import ImagingEvent, SrcDirInfo
 from prince_archiver.service_layer import messages
@@ -39,24 +36,4 @@ async def import_imaging_event(
 
         await uow.commit()
 
-
-@dataclass
-class PropagateContext:
-    redis_client: ArqRedis
-
-
-async def propagate_new_imaging_event(
-    message: messages.ImportedImagingEvent,
-    uow: AbstractUnitOfWork,
-    *,
-    context: PropagateContext,
-):
-    async with uow:
-        dto = messages.ExportImagingEvent(
-            local_path=message.src_dir_info.local_path, **message.model_dump()
-        )
-
-        await context.redis_client.enqueue_job(
-            "workflow",
-            dto.model_dump(mode="json"),
-        )
+    LOGGER.info("[%s] Imported imaging event", message.ref_id)

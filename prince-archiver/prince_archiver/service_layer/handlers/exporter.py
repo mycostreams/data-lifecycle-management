@@ -5,67 +5,62 @@ import logging
 from typing import Callable
 
 import s3fs
+from arq import ArqRedis
 
 from prince_archiver.adapters.file import ArchiveFileManager
 from prince_archiver.domain.models import EventArchive, ObjectStoreEntry
 from prince_archiver.service_layer import messages
 from prince_archiver.service_layer.exceptions import ServiceLayerException
-from prince_archiver.service_layer.messagebus import AbstractHandler
 from prince_archiver.service_layer.uow import AbstractUnitOfWork
 
 LOGGER = logging.getLogger(__name__)
 
 
-class ExportHandler(AbstractHandler[messages.ExportImagingEvent]):
+class ExportHandler:
     """
     Class handles export of local images to cloud.
     """
 
     def __init__(
         self,
+        redis: ArqRedis,
         s3: s3fs.S3FileSystem,
         key_generator: Callable[[messages.ExportImagingEvent], str],
         file_manager: ArchiveFileManager | None = None,
     ):
         self.s3 = s3
+        self.redis = redis
         self.file_manager = file_manager or ArchiveFileManager()
         self.key_generator = key_generator
 
     async def __call__(
         self,
         message: messages.ExportImagingEvent,
-        uow: AbstractUnitOfWork,
     ):
         LOGGER.info("[%s] Exporting", message.ref_id)
 
         key = self.key_generator(message)
-        async with uow:
-            src_dir = self.file_manager.get_src_path(message.local_path)
-            async with (
-                self.file_manager.get_temp_archive(src_dir) as archive_path,
-                asyncio.TaskGroup() as tg,
-            ):
-                checksum_task = tg.create_task(
-                    self.file_manager.get_archive_checksum(archive_path),
-                )
-
-                size_task = tg.create_task(
-                    self.file_manager.get_archive_size(archive_path),
-                )
-
-                tg.create_task(
-                    self.s3._put_file(archive_path, key),
-                )
-
-            uow.add_message(
-                messages.ExportedImagingEvent(
-                    ref_id=message.ref_id,
-                    checksum=checksum_task.result(),
-                    size=size_task.result(),
-                    key=key,
-                )
+        src_dir = self.file_manager.get_src_path(message.local_path)
+        async with (
+            self.file_manager.get_temp_archive(src_dir) as archive_path,
+            asyncio.TaskGroup() as tg,
+        ):
+            checksum_task = tg.create_task(
+                self.file_manager.get_archive_checksum(archive_path),
             )
-            await uow.commit()
+            size_task = tg.create_task(
+                self.file_manager.get_archive_size(archive_path),
+            )
+            tg.create_task(self.s3._put_file(archive_path, key))
+
+        msg = messages.ExportedImagingEvent(
+            ref_id=message.ref_id,
+            checksum=checksum_task.result(),
+            size=size_task.result(),
+            key=key,
+        )
+
+        await self.redis.enqueue_job("arq:queue-cron", msg.model_dump(mode="json"))
 
 
 async def persist_imaging_event_export(

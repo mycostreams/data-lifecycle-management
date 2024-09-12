@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
-from prince_archiver.definitions import EventType
+from prince_archiver.definitions import EventType, System
 from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.utils import now
 
@@ -14,10 +14,12 @@ class CommonImagingEvent(BaseModel):
     experiment_id: str
     timestamp: datetime
     type: EventType = Field(default=EventType.STITCH)
+    system: System = Field(System.PRINCE, exclude=True)
 
 
 # For importing imaging events into system
 class SrcDirInfo(BaseModel):
+    staging_path: Path | None = Field(None, exclude=True)
     local_path: Path
     img_count: int
     raw_metadata: dict
@@ -25,6 +27,10 @@ class SrcDirInfo(BaseModel):
 
 class ImportImagingEvent(CommonImagingEvent):
     src_dir_info: SrcDirInfo
+
+
+class ImagingEventStream(ImportImagingEvent):
+    pass
 
 
 class ImportedImagingEvent(ImportImagingEvent):
