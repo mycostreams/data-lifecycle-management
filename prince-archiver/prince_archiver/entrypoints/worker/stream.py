@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from typing import Protocol
 
 from prince_archiver.adapters.streams import ConsumerGroup, Group, Stream
+from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.messagebus import MessageBus
 from prince_archiver.service_layer.messages import ImportImagingEvent
 
@@ -28,7 +29,11 @@ async def stream_ingester(state: State):
         mapped_message = ImportImagingEvent(**msg.model_dump())
         messagebus = state.messagebus_factory()
 
-        await messagebus.handle(mapped_message)
+        try:
+            await messagebus.handle(mapped_message)
+        except ServiceLayerException:
+            pass
+
         await state.stream.ack(id, group=group)
 
 

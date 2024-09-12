@@ -33,10 +33,10 @@ async def startup(ctx: dict):
         ),
     )
 
+    await stack.enter_async_context(managed_watcher(state))
+
     ctx["state"] = state
     ctx["stack"] = stack
-
-    await stack.enter_async_context(managed_watcher(state))
 
 
 async def shutdown(ctx: dict):
