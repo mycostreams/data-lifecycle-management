@@ -8,6 +8,7 @@ import s3fs
 from arq import ArqRedis
 
 from prince_archiver.adapters.file import ArchiveFileManager
+from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.domain.models import EventArchive, ObjectStoreEntry
 from prince_archiver.service_layer import messages
 from prince_archiver.service_layer.exceptions import ServiceLayerException
@@ -60,7 +61,11 @@ class ExportHandler:
             key=key,
         )
 
-        await self.redis.enqueue_job("arq:queue-cron", msg.model_dump(mode="json"))
+        await self.redis.enqueue_job(
+            "run_persist_export",
+            msg.model_dump(mode="json"),
+            _queue_name="arq:queue-cron"
+        )
 
 
 async def persist_imaging_event_export(
@@ -80,7 +85,7 @@ async def persist_imaging_event_export(
         imaging_event.add_event_archive(
             EventArchive(
                 size=message.size,
-                checksum=message.checksum,
+                checksum=Checksum(**message.checksum.model_dump()),
             )
         )
 
