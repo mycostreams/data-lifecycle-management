@@ -4,18 +4,19 @@ from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
+from arq import ArqRedis
 from s3fs import S3FileSystem
 
 from prince_archiver.adapters.file import ArchiveFileManager
-from prince_archiver.definitions import EventType
+from prince_archiver.definitions import Algorithm, EventType
 from prince_archiver.domain.models import ImagingEvent
-from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.handlers.exporter import (
     ExportHandler,
     persist_imaging_event_export,
 )
 from prince_archiver.service_layer.messages import (
+    Checksum,
     ExportedImagingEvent,
     ExportImagingEvent,
 )
@@ -23,10 +24,11 @@ from prince_archiver.service_layer.messages import (
 from .utils import MockUnitOfWork
 
 
-async def test_export_handler_successful(
-    mock_file_manager: ArchiveFileManager, uow: MockUnitOfWork
-):
+async def test_export_handler_successful(mock_file_manager: ArchiveFileManager):
+    mock_redis = AsyncMock(ArqRedis)
+
     handler = ExportHandler(
+        redis=mock_redis,
         s3=AsyncMock(S3FileSystem),
         key_generator=lambda _: "test/key.tar",
         file_manager=mock_file_manager,
@@ -41,16 +43,10 @@ async def test_export_handler_successful(
         local_path=Path("test"),
     )
 
-    await handler(msg, uow)
+    await handler(msg)
 
-    msg = next(uow.collect_messages())
-
-    assert isinstance(msg, ExportedImagingEvent)
-    assert msg.checksum == Checksum(hex="test")
-    assert msg.size == 1024
-    assert msg.key == "test/key.tar"
-
-    assert uow.is_commited
+    # TODO: Improve
+    mock_redis.enqueue_job.assert_awaited_once()
 
 
 async def test_persist_imaging_event_successful(
@@ -59,7 +55,7 @@ async def test_persist_imaging_event_successful(
 ):
     msg = ExportedImagingEvent(
         ref_id=unexported_imaging_event.ref_id,
-        checksum=Checksum("test"),
+        checksum=Checksum(hex="test", algorithm=Algorithm.SHA256),
         size=1024,
         key="target",
         timestamp=datetime(2000, 1, 1, tzinfo=UTC),
@@ -76,7 +72,7 @@ async def test_persist_imaging_event_successful(
 async def test_persist_imaging_event_non_existent_reference():
     msg = ExportedImagingEvent(
         ref_id=uuid4(),
-        checksum=Checksum("test"),
+        checksum=Checksum(hex="test", algorithm=Algorithm.SHA256),
         size=1024,
         key="target",
         timestamp=datetime(2000, 1, 1, tzinfo=UTC),

@@ -1,20 +1,16 @@
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
-from arq import ArqRedis
 from pydantic import BaseModel
 
 from prince_archiver.definitions import EventType
 from prince_archiver.domain.models import ImagingEvent
 from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.handlers.importer import (
-    PropagateContext,
     import_imaging_event,
-    propagate_new_imaging_event,
 )
 from prince_archiver.service_layer.messages import (
     ImportedImagingEvent,
@@ -87,29 +83,3 @@ async def test_import_imaging_event_already_imported(
     )
     with pytest.raises(ServiceLayerException):
         await import_imaging_event(msg, uow)
-
-
-async def test_propagate_new_imaging_event(
-    msg_kwargs: _MsgKwargs,
-):
-    ref_id = uuid4()
-    mock_redis = AsyncMock(ArqRedis)
-
-    msg = ImportedImagingEvent(ref_id=ref_id, id=uuid4(), **msg_kwargs.model_dump())
-
-    await propagate_new_imaging_event(
-        msg,
-        MockUnitOfWork(),
-        context=PropagateContext(redis_client=mock_redis),
-    )
-
-    mock_redis.enqueue_job.assert_awaited_once_with(
-        "workflow",
-        {
-            "ref_id": str(msg.ref_id),
-            "experiment_id": "test_id",
-            "timestamp": "2000-01-01T00:00:00Z",
-            "local_path": "test/path",
-            "type": str(EventType.STITCH),
-        },
-    )

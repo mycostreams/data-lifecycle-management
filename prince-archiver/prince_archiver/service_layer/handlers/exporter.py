@@ -56,7 +56,7 @@ class ExportHandler:
 
         msg = messages.ExportedImagingEvent(
             ref_id=message.ref_id,
-            checksum=checksum_task.result(),
+            checksum=checksum_task.result().__dict__,
             size=size_task.result(),
             key=key,
         )
