@@ -3,6 +3,7 @@ import os
 
 import redis.asyncio as redis
 from redis import ResponseError
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from prince_archiver.adapters.streams import Group, Streams
 
@@ -19,10 +20,16 @@ async def create_group(redis: redis.Redis, stream: str, group_name: str):
         pass
 
 
+@retry(
+    stop=stop_after_attempt(5),
+    wait=wait_fixed(5),
+)
 async def main():
     client = redis.from_url(
         os.getenv("REDIS_DSN", "redis://localhost:6379"),
     )
+
+    await client.ping()
 
     stream = Streams.new_imaging_event
 
