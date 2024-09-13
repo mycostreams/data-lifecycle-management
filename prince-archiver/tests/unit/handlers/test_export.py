@@ -11,7 +11,7 @@ from prince_archiver.adapters.file import ArchiveFileManager
 from prince_archiver.definitions import Algorithm, EventType
 from prince_archiver.domain.models import ImagingEvent
 from prince_archiver.service_layer.exceptions import ServiceLayerException
-from prince_archiver.service_layer.handlers.exporter import (
+from prince_archiver.service_layer.handlers.export import (
     ExportHandler,
     persist_imaging_event_export,
 )

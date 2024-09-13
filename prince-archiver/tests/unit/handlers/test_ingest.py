@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from prince_archiver.definitions import EventType
 from prince_archiver.domain.models import ImagingEvent
 from prince_archiver.service_layer.exceptions import ServiceLayerException
-from prince_archiver.service_layer.handlers.importer import (
+from prince_archiver.service_layer.handlers.ingest import (
     import_imaging_event,
 )
 from prince_archiver.service_layer.messages import (

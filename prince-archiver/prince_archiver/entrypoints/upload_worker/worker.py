@@ -14,7 +14,7 @@ from prince_archiver.config import UploadWorkerSettings as Settings
 from prince_archiver.file import managed_file_system
 from prince_archiver.log import configure_logging
 from prince_archiver.models import init_mappers
-from prince_archiver.service_layer.handlers.exporter import ExportHandler
+from prince_archiver.service_layer.handlers.export import ExportHandler
 from prince_archiver.service_layer.handlers.utils import get_target_key
 from prince_archiver.service_layer.messages import ExportImagingEvent
 

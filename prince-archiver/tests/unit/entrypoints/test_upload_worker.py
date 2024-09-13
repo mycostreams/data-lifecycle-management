@@ -6,7 +6,7 @@ from botocore.exceptions import ConnectTimeoutError
 
 from prince_archiver.definitions import EventType, System
 from prince_archiver.entrypoints.upload_worker.worker import State, run_export
-from prince_archiver.service_layer.handlers.exporter import ExportHandler
+from prince_archiver.service_layer.handlers.export import ExportHandler
 from prince_archiver.service_layer.messages import ExportImagingEvent
 
 
