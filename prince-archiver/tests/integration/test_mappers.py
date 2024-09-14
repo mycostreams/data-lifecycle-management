@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from prince_archiver.definitions import EventType
+from prince_archiver.definitions import EventType, System
 from prince_archiver.domain import models as domain_model
 from prince_archiver.domain.value_objects import Checksum
 
@@ -21,6 +21,7 @@ async def test_imaging_event_mappers(session: AsyncSession):
 
     assert imaging_event
     assert imaging_event.timestamp == datetime(2000, 1, 1, tzinfo=UTC)
+    assert imaging_event.system == System.PRINCE
     assert imaging_event.type == EventType.STITCH
     assert imaging_event.experiment_id == "test_experiment_id"
 
@@ -33,6 +34,7 @@ async def test_imaging_event_mappers(session: AsyncSession):
     assert event_archive.checksum == Checksum(hex="test_hex")
 
     assert (src_dir_info := imaging_event.src_dir_info)
+    assert src_dir_info.staging_path is None
     assert src_dir_info.local_path == Path("test/path/")
     assert src_dir_info.img_count == 10
     assert src_dir_info.raw_metadata == {"test_key": "test_value"}

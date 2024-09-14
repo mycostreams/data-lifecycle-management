@@ -6,7 +6,7 @@ from uuid import uuid4
 import pytest
 from pydantic import BaseModel
 
-from prince_archiver.definitions import EventType
+from prince_archiver.definitions import EventType, System
 from prince_archiver.domain.models import ImagingEvent
 from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.handlers.ingest import (
@@ -22,12 +22,14 @@ from .utils import MockUnitOfWork
 
 @dataclass
 class _SrcDirInfo:
+    staging_path: Path | None
     local_path: Path
     img_count: int
     raw_metadata: dict
 
 
 class _MsgKwargs(BaseModel):
+    system: System
     experiment_id: str
     type: EventType
     timestamp: datetime
@@ -40,10 +42,12 @@ def msg_kwargs() -> _MsgKwargs:
     Kwargs which can be passed into `ImportImagingEvent` and `ImportedImagingEvent`.
     """
     return _MsgKwargs(
+        system=System.PRINCE,
         experiment_id="test_id",
         timestamp=datetime(2000, 1, 1, tzinfo=UTC),
         type=EventType.STITCH,
         src_dir_info=_SrcDirInfo(
+            staging_path=None,
             local_path="test/path",
             img_count=1,
             raw_metadata={"key": "value"},

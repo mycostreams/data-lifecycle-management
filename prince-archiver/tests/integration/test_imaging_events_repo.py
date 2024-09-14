@@ -7,7 +7,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from prince_archiver.adapters.repository import ImagingEventRepo
-from prince_archiver.definitions import EventType
+from prince_archiver.definitions import EventType, System
 from prince_archiver.domain.models import ImagingEvent, SrcDirInfo
 
 pytestmark = pytest.mark.integration
@@ -21,10 +21,12 @@ def repo(session: AsyncSession) -> ImagingEventRepo:
 async def test_add(repo: ImagingEventRepo):
     stitch_event = ImagingEvent.factory(
         ref_id=uuid4(),
+        system=System.PRINCE,
         experiment_id="experiment_id",
         timestamp=datetime.now(),
         type=EventType.STITCH,
         src_dir_info=SrcDirInfo(
+            staging_path=None,
             local_path=Path("test/path"),
             img_count=10,
             raw_metadata={"key": "value"},

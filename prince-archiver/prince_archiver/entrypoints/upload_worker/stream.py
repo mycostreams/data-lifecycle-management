@@ -27,6 +27,7 @@ async def stream_ingester(state: State):
     async for id, msg in state.stream.stream_group(group):
         mapped_msg = ExportImagingEvent(
             **msg.model_dump(),
+            staging_path=msg.src_dir_info.staging_path,
             local_path=msg.src_dir_info.local_path,
         )
 

@@ -71,6 +71,7 @@ class SrcDirInfo(Base):
     __tablename__ = "src_dir_info"
 
     id: Mapped[uuid_pk]
+    staging_path: Mapped[Path | None]
     local_path: Mapped[Path]
     img_count: Mapped[int]
     raw_metadata: Mapped[dict] = mapped_column(JSONB)

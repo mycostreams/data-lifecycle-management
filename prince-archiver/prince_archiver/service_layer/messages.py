@@ -13,12 +13,12 @@ class CommonImagingEvent(BaseModel):
     experiment_id: str
     timestamp: datetime
     type: EventType = Field(default=EventType.STITCH)
-    system: System = Field(System.PRINCE, exclude=True)
+    system: System = Field(default=System.PRINCE)
 
 
 # For importing imaging events into system
 class SrcDirInfo(BaseModel):
-    staging_path: Path | None = Field(None, exclude=True)
+    staging_path: Path | None
     local_path: Path
     img_count: int
     raw_metadata: dict
@@ -38,6 +38,7 @@ class ImportedImagingEvent(ImportImagingEvent):
 
 # for exporting out
 class ExportImagingEvent(CommonImagingEvent):
+    staging_path: Path | None = None
     local_path: Path
 
 

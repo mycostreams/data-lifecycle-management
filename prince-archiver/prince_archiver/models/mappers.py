@@ -54,7 +54,7 @@ def init_mappers():
         domain_models.SrcDirInfo,
         data_models.SrcDirInfo.__table__,
         properties={
-            "_imaging_event_id": (data_models.SrcDirInfo.imaging_event_id.expression,)
+            "_imaging_event_id": data_models.SrcDirInfo.imaging_event_id.expression
         },
         exclude_properties=[
             data_models.SrcDirInfo.id,
@@ -109,7 +109,6 @@ def init_mappers():
             ),
         },
         exclude_properties=[
-            data_models.ImagingEvent.system,
             data_models.ImagingEvent.system_position,
             *get_exclude_fields(data_models.ImagingEvent),
         ],

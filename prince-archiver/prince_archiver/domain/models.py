@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
 
-from prince_archiver.definitions import EventType
+from prince_archiver.definitions import EventType, System
 
 from .exceptions import DomainException
 from .value_objects import Checksum
@@ -32,6 +32,7 @@ class DataArchiveEntry:
 
 @dataclass
 class SrcDirInfo:
+    staging_path: Path | None
     local_path: Path
     img_count: int
     raw_metadata: dict[str, Any]
@@ -54,6 +55,7 @@ class ImagingEvent:
         self,
         id: UUID,
         ref_id: UUID,
+        system: System,
         type: EventType,
         experiment_id: str,
         timestamp: datetime,
@@ -65,11 +67,11 @@ class ImagingEvent:
         self.id = id
         self.ref_id = ref_id
         self.type = type
-
+        self.system = system
         self.timestamp = timestamp
         self.experiment_id = experiment_id
-
         self.src_dir_info = src_dir_info
+
         self.event_archive = event_archive
         self.object_store_entry = object_store_entry
 
@@ -87,6 +89,7 @@ class ImagingEvent:
     def factory(
         cls,
         ref_id: UUID,
+        system: System,
         type: EventType,
         experiment_id: str,
         timestamp: datetime,
@@ -97,6 +100,7 @@ class ImagingEvent:
         return cls(
             _id or uuid4(),
             ref_id,
+            system,
             type,
             experiment_id,
             timestamp,

@@ -38,7 +38,7 @@ def create_app(*, settings: Settings | None = None) -> FastAPI:
 
     @app.post("/timestep", status_code=200)
     def create_timestep(data: TimestepMeta) -> Response:
-        logging.info("Added timestep")
+        logging.info("[%s] Added timestep", data.timestep_id)
         make_timestep_directory(meta=data, base_dir=settings.DATA_DIR)
         return Response(status_code=200)
 
