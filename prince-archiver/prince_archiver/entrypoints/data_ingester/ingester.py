@@ -1,14 +1,10 @@
 import asyncio
 import logging
 from contextlib import asynccontextmanager
-from pathlib import Path
 from typing import Protocol
 
-from watchfiles import Change, awatch
-
-from prince_archiver.adapters.file import ArchiveFileManager, SrcPath
+from prince_archiver.adapters.ingester import EventFile, EventIngester
 from prince_archiver.adapters.streams import Stream
-from prince_archiver.service_layer.external_dto import TimestepDTO
 from prince_archiver.service_layer.messages import ImagingEventStream, SrcDirInfo
 
 from .settings import IngesterSettings
@@ -18,75 +14,56 @@ LOGGER = logging.getLogger(__name__)
 
 class State(Protocol):
     settings: IngesterSettings
-    file_system: ArchiveFileManager
     stream: Stream
-    event: asyncio.Event
 
 
-def added_filter(change: Change, path: str) -> bool:
-    return change == Change.added and Path(path).exists()
-
-
-async def process(filepath: Path, state: State):
+async def process(event_file: EventFile, *, state: State):
     """Process new imaging event.
 
     Copy to staging if necessary and add to stream.
 
     """
-    dto = TimestepDTO.model_validate_json(filepath.read_text())
+    async with event_file.process() as (dto, src_dir):
+        LOGGER.info("[%s] Adding to stream", dto.timestep_id)
 
-    LOGGER.info("[%s] Adding to stream", dto.timestep_id)
+        target_dir = f"{int(dto.timestamp.timestamp())}-{dto.timestep_id.hex[:6]}"
+        metadata = await src_dir.get_metadata()
 
-    src_dir = SrcPath(filepath.parent.parent / dto.img_dir)
-    raw_metadata = await state.file_system.get_raw_metadata(src_dir)
-
-    target_dir = f"{int(dto.timestamp.timestamp())}-{dto.timestep_id.hex[:6]}"
-    if state.settings.STAGING_DIR:
-        await state.file_system.copy_tree(
-            src_dir,
-            state.settings.STAGING_DIR / target_dir,
+        # Prep the export message export message
+        msg = ImagingEventStream(
+            ref_id=dto.timestep_id,
+            experiment_id=dto.experiment_id,
+            timestamp=dto.timestamp,
+            system=event_file.system_dir.system,
+            src_dir_info=SrcDirInfo(
+                staging_path=target_dir if state.settings.STAGING_DIR else None,
+                local_path=dto.img_dir,
+                raw_metadata=metadata,
+                img_count=dto.img_count,
+            ),
         )
 
-    # Export message
-    msg = ImagingEventStream(
-        ref_id=dto.timestep_id,
-        experiment_id=dto.experiment_id,
-        timestamp=dto.timestamp,
-        system=dto.system,
-        src_dir_info=SrcDirInfo(
-            staging_path=target_dir if state.settings.STAGING_DIR else None,
-            local_path=dto.img_dir,
-            raw_metadata=raw_metadata,
-            img_count=dto.img_count,
-        ),
-    )
-    await state.stream.add(msg)
+        # Copy to staging
+        if state.settings.STAGING_DIR:
+            await src_dir.copy(state.settings.STAGING_DIR / target_dir)
 
-    # Delete src json
-    await state.file_system.rm(filepath)
+        await state.stream.add(msg)
 
-    LOGGER.info("[%s] Added to stream", msg.ref_id)
-
-
-async def watch(state: State):
-    LOGGER.info("Starting watching")
-    watcher = awatch(
-        state.settings.PRINCE_DIR / "events",
-        stop_event=state.event,
-        watch_filter=added_filter,
-        recursive=False,
-    )
-    async for changes in watcher:
-        for _, _filepath in changes:
-            await process(Path(_filepath), state)
+    LOGGER.info("[%s] Added to stream", dto.timestep_id)
 
 
 @asynccontextmanager
-async def managed_watcher(state: State):
-    task = asyncio.create_task(watch(state))
+async def managed_ingester(
+    event_ingester: EventIngester,
+    *,
+    stop_event: asyncio.Event | None = None,
+):
+    stop_event = stop_event or asyncio.Event()
+
+    task = asyncio.create_task(event_ingester.ingest_latest(stop_event))
 
     yield
 
     LOGGER.info("Stopping watching")
-    state.event.set()
+    stop_event.set()
     await task

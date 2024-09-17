@@ -1,12 +1,10 @@
-import asyncio
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 
-from prince_archiver.adapters.file import ArchiveFileManager
+from prince_archiver.adapters.file import PathManager
 from prince_archiver.adapters.streams import ConsumerGroup, Group, Stream
-from prince_archiver.definitions import System
+from prince_archiver.definitions import SrcDirKey
 
 from .settings import IngesterSettings
 
@@ -17,8 +15,7 @@ LOGGER = logging.getLogger(__name__)
 class State:
     settings: IngesterSettings
     stream: Stream
-    file_system: ArchiveFileManager = field(default_factory=ArchiveFileManager)
-    event: asyncio.Event = field(default_factory=asyncio.Event)
+    path_manager: PathManager
 
 
 async def run_trim(ctx: dict):
@@ -42,20 +39,15 @@ async def delete_staging(ctx: dict):
             break
 
         LOGGER.info("[%s] Deleting staging directory", message.ref_id)
-        if state.settings.STAGING_DIR and message.src_dir_info.staging_path:
-            await state.file_system.rm_tree(
-                state.settings.STAGING_DIR / message.src_dir_info.staging_path
+
+        if message.src_dir_info.staging_path:
+            src_dir = state.path_manager.get_src_dir(
+                SrcDirKey.STAGING,
+                message.src_dir_info.staging_path,
             )
+            await src_dir.rm()
 
         await state.stream.ack(id, group=group)
-
-
-def get_src_dir(system: System, settings: IngesterSettings) -> Path:
-    match system:
-        case System.PRINCE:
-            return settings.PRINCE_DIR
-        case _:
-            raise ValueError
 
 
 async def delete_src(ctx: dict):
@@ -75,8 +67,9 @@ async def delete_src(ctx: dict):
 
         LOGGER.info("[%s] Deleting src directory", message.ref_id)
 
-        path = get_src_dir(message.system, state.settings)
-        await state.file_system.rm_tree(
-            path / message.src_dir_info.local_path,
+        src_dir = state.path_manager.get_src_dir(
+            message.system,
+            message.src_dir_info.local_path,
         )
+        await src_dir.rm()
         await state.stream.ack(id, group=group)

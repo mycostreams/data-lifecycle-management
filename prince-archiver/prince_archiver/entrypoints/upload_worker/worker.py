@@ -8,9 +8,8 @@ from arq import ArqRedis, Retry
 from arq.connections import RedisSettings
 from botocore.exceptions import ConnectTimeoutError
 
-from prince_archiver.adapters.file import ArchiveFileManager
+from prince_archiver.adapters.file import PathManager
 from prince_archiver.adapters.streams import Stream, Streams
-from prince_archiver.config import UploadWorkerSettings as Settings
 from prince_archiver.file import managed_file_system
 from prince_archiver.log import configure_logging
 from prince_archiver.models import init_mappers
@@ -18,6 +17,7 @@ from prince_archiver.service_layer.handlers.export import ExportHandler
 from prince_archiver.service_layer.handlers.utils import get_target_key
 from prince_archiver.service_layer.messages import ExportImagingEvent
 
+from .settings import UploadWorkerSettings
 from .stream import managed_stream_ingester
 
 LOGGER = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ async def startup(ctx: dict):
 
     exit_stack = await AsyncExitStack().__aenter__()
 
-    settings = Settings()
+    settings = UploadWorkerSettings()
 
     s3 = await exit_stack.enter_async_context(managed_file_system(settings))
     redis: ArqRedis = ctx["redis"]
@@ -70,9 +70,7 @@ async def startup(ctx: dict):
                 get_target_key,
                 bucket=settings.AWS_BUCKET_NAME,
             ),
-            file_manager=ArchiveFileManager(
-                base_path=settings.DATA_DIR,
-            ),
+            path_manager=PathManager.from_settings(settings),
         ),
     )
 
