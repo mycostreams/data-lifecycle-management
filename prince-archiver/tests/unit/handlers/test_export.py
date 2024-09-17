@@ -7,7 +7,7 @@ import pytest
 from arq import ArqRedis
 from s3fs import S3FileSystem
 
-from prince_archiver.adapters.file import ArchiveFileManager
+from prince_archiver.adapters.file import PathManager
 from prince_archiver.definitions import Algorithm, EventType
 from prince_archiver.domain.models import ImagingEvent
 from prince_archiver.service_layer.exceptions import ServiceLayerException
@@ -24,14 +24,14 @@ from prince_archiver.service_layer.messages import (
 from .utils import MockUnitOfWork
 
 
-async def test_export_handler_successful(mock_file_manager: ArchiveFileManager):
+async def test_export_handler_successful(mock_path_manager: PathManager):
     mock_redis = AsyncMock(ArqRedis)
 
     handler = ExportHandler(
         redis=mock_redis,
         s3=AsyncMock(S3FileSystem),
         key_generator=lambda _: "test/key.tar",
-        file_manager=mock_file_manager,
+        path_manager=mock_path_manager,
     )
 
     msg = ExportImagingEvent(
