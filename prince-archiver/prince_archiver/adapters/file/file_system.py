@@ -55,12 +55,12 @@ class AsyncFileSystem:
         return await aiofiles.ospath.exists(path, executor=self.executor)
 
     async def iter_bytes(self, path: Path, chunk_size: int | None):
-        async with aiofiles.open(path, executor=self.executor) as file:
+        async with aiofiles.open(path, "rb", executor=self.executor) as file:
             yield await file.read(chunk_size)
 
     async def list_dir(self, path: Path) -> list[Path]:
         entries = await aiofiles.os.listdir(path, executor=self.executor)
-        return [Path(item) for item in entries]
+        return [path / item for item in entries]
 
     async def get_size(self, path: Path) -> int:
         stat = await aiofiles.os.stat(path, executor=self.executor)
