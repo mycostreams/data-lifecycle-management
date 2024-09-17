@@ -121,7 +121,7 @@ class ArchiveFile:
     def __init__(
         self,
         path: Path,
-        file_system: "AsyncFileSystem",
+        file_system: AsyncFileSystem,
     ):
         self.path = path
         self.file_system = file_system
