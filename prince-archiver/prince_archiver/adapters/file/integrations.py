@@ -6,6 +6,7 @@ from typing import AsyncGenerator
 from pydantic import Json, TypeAdapter
 
 from prince_archiver.definitions import System
+from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.service_layer.external_dto import TimestepDTO
 
 from .file_system import AsyncFileSystem
@@ -29,7 +30,10 @@ class SystemDir:
         return self.path / "events"
 
     def get_src_dir(self, relative_path: Path) -> "SrcDir":
-        return SrcDir(path=self.path / relative_path, file_system=self.file_system)
+        return SrcDir(
+            path=self.path / relative_path,
+            file_system=self.file_system,
+        )
 
     async def iter_events(self) -> AsyncGenerator["EventFile", None]:
         for file in await self.file_system.list_dir(self.events_dir):
@@ -122,8 +126,8 @@ class ArchiveFile:
         self.path = path
         self.file_system = file_system
 
-    async def get_checksum(self, chunk_size: int = DEFAULT_CHUNK_SIZE):
-        await self.file_system.get_checksum(self.path, chunk_size)
+    async def get_checksum(self, chunk_size: int = DEFAULT_CHUNK_SIZE) -> Checksum:
+        return await self.file_system.get_checksum(self.path, chunk_size)
 
-    async def get_size(self):
-        await self.file_system.get_size(self.path)
+    async def get_size(self) -> int:
+        return await self.file_system.get_size(self.path)
