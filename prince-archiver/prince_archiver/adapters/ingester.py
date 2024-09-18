@@ -23,7 +23,7 @@ class EventIngester:
         file_system: AsyncFileSystem | None = None,
     ):
         self.system_dirs = system_dirs
-        self.ingester = handler
+        self.handler = handler
         self.file_system = file_system
 
     async def ingest_backlog(
@@ -39,19 +39,28 @@ class EventIngester:
         for sys_dir in self.system_dirs:
             async for file_info in sys_dir.iter_events():
                 if start < file_info.timestamp < end:
-                    await self.ingester(file_info)
+                    await self.handler(file_info)
 
-    async def ingest_latest(self, stop_event: asyncio.Event | None = None):
-        LOGGER.info("Ingesting latest")
+    async def ingest_latest(
+        self,
+        start_event: asyncio.Event | None = None,
+        stop_event: asyncio.Event | None = None,
+    ):
         watcher = awatch(
             *(sys_dir.events_dir for sys_dir in self.system_dirs),
+            force_polling=True,
             stop_event=stop_event,
             watch_filter=self._added_filter,
             recursive=False,
         )
+    
+        LOGGER.info("Ingesting latest")
+        if start_event:
+            start_event.set()
+    
         async for changes in watcher:
             for _, _filepath in changes:
-                await self.ingester(
+                await self.handler(
                     self._get_event_file_info(Path(_filepath)),
                 )
 

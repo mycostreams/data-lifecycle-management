@@ -91,7 +91,7 @@ class EventFile:
 
     @property
     def timestamp(self) -> datetime:
-        timestamp = int(self.path.name.split("-")[0])
+        timestamp = int(self.path.stem.split("-")[0])
         return datetime.fromtimestamp(timestamp, tz=UTC)
 
     async def read(self) -> TimestepDTO:
