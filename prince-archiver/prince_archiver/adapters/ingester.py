@@ -53,11 +53,11 @@ class EventIngester:
             watch_filter=self._added_filter,
             recursive=False,
         )
-    
+
         LOGGER.info("Ingesting latest")
         if start_event:
             start_event.set()
-    
+
         async for changes in watcher:
             for _, _filepath in changes:
                 await self.handler(
