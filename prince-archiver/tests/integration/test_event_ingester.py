@@ -10,6 +10,8 @@ from prince_archiver.adapters.file import AsyncFileSystem, EventFile, SystemDir
 from prince_archiver.adapters.ingester import EventIngester
 from prince_archiver.definitions import System
 
+pytestmark = pytest.mark.integration
+
 
 class MockHandler:
     def __init__(self, event: asyncio.Event | None = None):
