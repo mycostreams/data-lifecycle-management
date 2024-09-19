@@ -43,5 +43,5 @@ def make_timestep_directory(
     events_dir = base_dir / "events"
     events_dir.mkdir(parents=True, exist_ok=True)
 
-    event_file = events_dir / f"{meta.timestep_id}.json"
+    event_file = events_dir / f"{meta.timestamp.timestamp():.0f}.json"
     event_file.write_text(meta.model_dump_json(indent=4, by_alias=True))

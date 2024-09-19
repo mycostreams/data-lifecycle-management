@@ -61,10 +61,12 @@ async def managed_ingester(
 ):
     stop_event = stop_event or asyncio.Event()
 
-    task = asyncio.create_task(event_ingester.ingest_latest(stop_event))
+    task = asyncio.create_task(event_ingester.ingest_latest(stop_event=stop_event))
 
     yield
 
     LOGGER.info("Stopping watching")
     stop_event.set()
     await task
+
+    LOGGER.info("Stopped watching")

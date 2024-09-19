@@ -43,6 +43,7 @@ class EventIngester:
 
     async def ingest_latest(
         self,
+        *,
         start_event: asyncio.Event | None = None,
         stop_event: asyncio.Event | None = None,
     ):
@@ -85,7 +86,10 @@ async def worker(
 ):
     while True:
         event_file_info = await queue.get()
-        await handler(event_file_info)
+        try:
+            await handler(event_file_info)
+        except Exception as e:
+            print(e)
         queue.task_done()
 
 

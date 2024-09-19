@@ -21,7 +21,7 @@ class Message(AbstractMessage):
         self.data = data
 
     def fields(self) -> dict:
-        return {"data": self.data.model_dump(mode="json")}
+        return {"data": self.data.model_dump_json()}
 
 
 class IncomingMessage(AbstractIncomingMessage):
