@@ -28,13 +28,14 @@ uvicorn = "^0.30.0"
 
 [tool.poetry.group.dev.dependencies]
 behave = "^1.2.6"
+botocore-stubs = "^1.35.9"
 mypy = "^1.8.0"
 pytest = "^8.0.0"
 pytest-asyncio = "^0.23.7"
 ruff = "^0.4.8"
+testcontainers = {extras = ["postgres", "rabbitmq"], version = "^4.8.1"}
 types-aiofiles = "^23.2.0.20240331"
 types-pyyaml = "^6.0.12.12"
-botocore-stubs = "^1.35.9"
 
 
 [tool.poetry.scripts]

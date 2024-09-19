@@ -29,7 +29,7 @@ def fixture_mappers():
     clear_mappers()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def postgres():
     postgres = PostgresContainer(
         "postgres:16-alpine",
