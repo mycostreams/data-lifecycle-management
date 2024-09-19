@@ -3,8 +3,9 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
 from prince_archiver.adapters.file import PathManager
-from prince_archiver.adapters.streams import ConsumerGroup, Group, Stream
+from prince_archiver.adapters.streams import ConsumerGroup, Stream
 from prince_archiver.definitions import SrcDirKey
+from prince_archiver.service_layer.streams import Group, IncomingMessage
 
 from .settings import IngesterSettings
 
@@ -34,20 +35,20 @@ async def delete_staging(ctx: dict):
         group_name=Group.delete_staging,
     )
 
-    async for id, message in state.stream.stream_group(group):
-        if message.timestamp > ref:
+    async for message in state.stream.stream_group(group, msg_cls=IncomingMessage):
+        data = message.processed_data()
+        if data.timestamp > ref:
             break
 
         LOGGER.info("[%s] Deleting staging directory", message.ref_id)
 
-        if message.src_dir_info.staging_path:
+        if data.src_dir_info.staging_path:
             src_dir = state.path_manager.get_src_dir(
                 SrcDirKey.STAGING,
-                message.src_dir_info.staging_path,
+                data.src_dir_info.staging_path,
             )
+        async with message.process():
             await src_dir.rm()
-
-        await state.stream.ack(id, group=group)
 
 
 async def delete_src(ctx: dict):
@@ -61,15 +62,16 @@ async def delete_src(ctx: dict):
         group_name=Group.delete_src,
     )
 
-    async for id, message in state.stream.stream_group(group):
-        if message.timestamp > ref:
+    async for message in state.stream.stream_group(group, msg_cls=IncomingMessage):
+        data = message.processed_data()
+        if message.stream > ref:
             break
 
         LOGGER.info("[%s] Deleting src directory", message.ref_id)
 
         src_dir = state.path_manager.get_src_dir(
-            message.system,
-            message.src_dir_info.local_path,
+            data.system,
+            data.src_dir_info.local_path,
         )
-        await src_dir.rm()
-        await state.stream.ack(id, group=group)
+        async with message.process():
+            await src_dir.rm()

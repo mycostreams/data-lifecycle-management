@@ -7,7 +7,8 @@ from typing import Protocol
 
 from arq import ArqRedis
 
-from prince_archiver.adapters.streams import ConsumerGroup, Group, Stream
+from prince_archiver.adapters.streams import ConsumerGroup, Stream
+from prince_archiver.service_layer.streams import Group, IncomingMessage
 from prince_archiver.service_layer.messages import ExportImagingEvent
 
 LOGGER = logging.getLogger(__name__)
@@ -24,19 +25,20 @@ async def stream_ingester(state: State):
         group_name=Group.export_event,
         consumer_name=Group.export_event,
     )
-    async for id, msg in state.stream.stream_group(group):
-        mapped_msg = ExportImagingEvent(
-            **msg.model_dump(),
-            staging_path=msg.src_dir_info.staging_path,
-            local_path=msg.src_dir_info.local_path,
-        )
+    async for msg in state.stream.stream_group(group, msg_cls=IncomingMessage):
+        async with msg.process():
+            data = msg.processed_data()
+            mapped_msg = ExportImagingEvent(
+                **data.model_dump(),
+                staging_path=data.src_dir_info.staging_path,
+                local_path=data.src_dir_info.local_path,
+            )
 
-        LOGGER.info("[%s] Adding to queue", mapped_msg.ref_id)
-        await state.arq_redis.enqueue_job(
-            "run_export",
-            mapped_msg.model_dump(mode="json"),
-        )
-        await state.stream.ack(id, group)
+            LOGGER.info("[%s] Adding to queue", mapped_msg.ref_id)
+            await state.arq_redis.enqueue_job(
+                "run_export",
+                mapped_msg.model_dump(mode="json"),
+            )
 
 
 @asynccontextmanager

@@ -9,7 +9,8 @@ from arq.connections import RedisSettings
 from botocore.exceptions import ConnectTimeoutError
 
 from prince_archiver.adapters.file import PathManager
-from prince_archiver.adapters.streams import Stream, Streams
+from prince_archiver.service_layer.streams import Streams
+from prince_archiver.adapters.streams import Stream
 from prince_archiver.file import managed_file_system
 from prince_archiver.log import configure_logging
 from prince_archiver.models import init_mappers

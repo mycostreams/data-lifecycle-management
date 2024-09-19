@@ -3,10 +3,11 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Protocol
 
-from prince_archiver.adapters.streams import ConsumerGroup, Group, Stream
+from prince_archiver.adapters.streams import ConsumerGroup, Stream
 from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.messagebus import MessageBus
 from prince_archiver.service_layer.messages import ImportImagingEvent
+from prince_archiver.service_layer.streams import Group, IncomingMessage
 
 LOGGER = logging.getLogger(__name__)
 
@@ -25,16 +26,15 @@ async def stream_ingester(state: State):
         group_name=Group.import_event,
     )
 
-    async for id, msg in state.stream.stream_group(group):
-        mapped_message = ImportImagingEvent(**msg.model_dump())
+    async for message in state.stream.stream_group(group, msg_cls=IncomingMessage):
+        mapped_message = ImportImagingEvent(**message.processed_data())
         messagebus = state.messagebus_factory()
 
-        try:
-            await messagebus.handle(mapped_message)
-        except ServiceLayerException:
-            pass
-
-        await state.stream.ack(id, group=group)
+        async with message.process():
+            try:
+                await messagebus.handle(mapped_message)
+            except ServiceLayerException:
+                pass
 
 
 @asynccontextmanager

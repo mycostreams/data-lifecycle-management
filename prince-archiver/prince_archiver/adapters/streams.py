@@ -1,30 +1,54 @@
+from abc import ABC, abstractmethod
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime
-from enum import StrEnum, auto
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Type, TypeVar
 
 from redis.asyncio import Redis
 
-from prince_archiver.service_layer.messages import ImagingEventStream
-
 ReadGroupResponseT = list[tuple[str, list[tuple[str, dict[bytes, bytes]]]]]
-
-
-class Streams(StrEnum):
-    new_imaging_event = "data-ingester:new-imaging-event"
-
-
-class Group(StrEnum):
-    delete_src = auto()
-    delete_staging = auto()
-    export_event = auto()
-    import_event = auto()
 
 
 @dataclass
 class ConsumerGroup:
     group_name: str
     consumer_name: str
+
+
+class AbstractMessage(ABC):
+
+    @abstractmethod
+    def fields(self) -> dict: ...
+
+
+class AbstractIncomingMessage:
+    def __init__(
+        self,
+        id: str,
+        raw_data: dict,
+        *,
+        stream: "Stream",
+        group_name: str,
+    ):
+        self.id = id
+        self.raw_data = raw_data
+        self.stream = stream
+        self.group_name: group_name
+
+    @asynccontextmanager
+    async def process(self):
+        try:
+            yield
+        except Exception as e:
+            raise e
+        else:
+            await self.stream.ack(self.id, self.group_name)
+
+
+AbstractIncomingMessageT = TypeVar(
+    "AbstractIncomingMessageT",
+    bound=AbstractIncomingMessage,
+)
 
 
 class Stream:
@@ -35,7 +59,9 @@ class Stream:
     async def stream_group(
         self,
         group: ConsumerGroup,
-    ) -> AsyncGenerator[tuple[str, ImagingEventStream], None]:
+        *,
+        msg_cls: Type[AbstractIncomingMessageT] = AbstractIncomingMessage,
+    ) -> AsyncGenerator[AbstractIncomingMessageT, None]:
         stream_id: int | str = 0
         while True:
             value: ReadGroupResponseT = await self.redis.xreadgroup(
@@ -54,14 +80,18 @@ class Stream:
                 stream_id = ">"
 
             for id, raw_payload in msgs:
-                payload = ImagingEventStream.model_validate_json(raw_payload[b"data"])
-                yield id, payload
+                yield msg_cls(
+                    id=id,
+                    raw_data=raw_payload,
+                    stream=self,
+                    group=group.group_name,
+                )
 
-    async def add(self, msg: ImagingEventStream):
-        await self.redis.xadd(self.stream, {"data": msg.model_dump_json()})
+    async def add(self, msg: AbstractMessage):
+        await self.redis.xadd(self.stream, msg.fields())
 
     async def trim(self, datetime: datetime):
         await self.redis.xtrim(self.stream, minid=int(datetime.timestamp()))
 
-    async def ack(self, id: str, group: ConsumerGroup):
-        await self.redis.xack(self.stream, group.group_name, id)
+    async def ack(self, id: str, group_name: str):
+        await self.redis.xack(self.stream, group_name, id)

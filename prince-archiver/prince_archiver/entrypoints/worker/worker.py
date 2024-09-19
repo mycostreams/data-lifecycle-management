@@ -12,7 +12,7 @@ from zoneinfo import ZoneInfo
 
 from prince_archiver.adapters.archiver import Settings, SurfArchiver
 from prince_archiver.adapters.messenger import Messenger
-from prince_archiver.adapters.streams import Stream, Streams
+from prince_archiver.adapters.streams import Stream
 from prince_archiver.config import ArchiveWorkerSettings
 from prince_archiver.log import configure_logging
 from prince_archiver.models import init_mappers
@@ -25,6 +25,7 @@ from prince_archiver.service_layer.messages import (
     ExportedImagingEvent,
     ImportImagingEvent,
 )
+from prince_archiver.service_layer.streams import Streams
 from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
 
 from .functions import State, run_archiving, run_persist_export, run_reporting
