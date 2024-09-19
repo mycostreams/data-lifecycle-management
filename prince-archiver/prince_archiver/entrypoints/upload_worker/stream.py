@@ -8,8 +8,8 @@ from typing import Protocol
 from arq import ArqRedis
 
 from prince_archiver.adapters.streams import ConsumerGroup, Stream
-from prince_archiver.service_layer.streams import Group, IncomingMessage
 from prince_archiver.service_layer.messages import ExportImagingEvent
+from prince_archiver.service_layer.streams import Group, IncomingMessage
 
 LOGGER = logging.getLogger(__name__)
 

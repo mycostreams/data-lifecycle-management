@@ -16,7 +16,6 @@ class ConsumerGroup:
 
 
 class AbstractMessage(ABC):
-
     @abstractmethod
     def fields(self) -> dict: ...
 
