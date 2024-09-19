@@ -5,7 +5,7 @@ import redis.asyncio as redis
 from redis import ResponseError
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from prince_archiver.adapters.streams import Group, Streams
+from prince_archiver.service_layer.streams import Group, Streams
 
 
 async def create_group(redis: redis.Redis, stream: str, group_name: str):

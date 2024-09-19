@@ -27,7 +27,9 @@ async def stream_ingester(state: State):
     )
 
     async for message in state.stream.stream_group(group, msg_cls=IncomingMessage):
-        mapped_message = ImportImagingEvent(**message.processed_data())
+        mapped_message = ImportImagingEvent(
+            **message.processed_data().model_dump(),
+        )
         messagebus = state.messagebus_factory()
 
         async with message.process():

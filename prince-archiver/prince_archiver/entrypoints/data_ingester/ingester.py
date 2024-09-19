@@ -5,6 +5,7 @@ from typing import Protocol
 
 from prince_archiver.adapters.ingester import EventFile, EventIngester
 from prince_archiver.adapters.streams import Stream
+from prince_archiver.service_layer.streams import Message
 from prince_archiver.service_layer.messages import ImagingEventStream, SrcDirInfo
 
 from .settings import IngesterSettings
@@ -47,7 +48,7 @@ async def process(event_file: EventFile, *, state: State):
         if state.settings.STAGING_DIR:
             await src_dir.copy(state.settings.STAGING_DIR / target_dir)
 
-        await state.stream.add(msg)
+        await state.stream.add(Message(msg))
 
     LOGGER.info("[%s] Added to stream", dto.timestep_id)
 

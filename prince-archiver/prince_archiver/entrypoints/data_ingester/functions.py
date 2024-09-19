@@ -40,7 +40,7 @@ async def delete_staging(ctx: dict):
         if data.timestamp > ref:
             break
 
-        LOGGER.info("[%s] Deleting staging directory", message.ref_id)
+        LOGGER.info("[%s] Deleting staging directory", data.ref_id)
 
         if data.src_dir_info.staging_path:
             src_dir = state.path_manager.get_src_dir(
@@ -64,10 +64,10 @@ async def delete_src(ctx: dict):
 
     async for message in state.stream.stream_group(group, msg_cls=IncomingMessage):
         data = message.processed_data()
-        if message.stream > ref:
+        if data.timestamp > ref:
             break
 
-        LOGGER.info("[%s] Deleting src directory", message.ref_id)
+        LOGGER.info("[%s] Deleting src directory", data.ref_id)
 
         src_dir = state.path_manager.get_src_dir(
             data.system,

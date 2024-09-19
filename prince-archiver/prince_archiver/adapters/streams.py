@@ -32,7 +32,7 @@ class AbstractIncomingMessage:
         self.id = id
         self.raw_data = raw_data
         self.stream = stream
-        self.group_name: group_name
+        self.group_name = group_name
 
     @asynccontextmanager
     async def process(self):
@@ -59,7 +59,7 @@ class Stream:
         self,
         group: ConsumerGroup,
         *,
-        msg_cls: Type[AbstractIncomingMessageT] = AbstractIncomingMessage,
+        msg_cls: Type[AbstractIncomingMessageT],
     ) -> AsyncGenerator[AbstractIncomingMessageT, None]:
         stream_id: int | str = 0
         while True:
@@ -83,7 +83,7 @@ class Stream:
                     id=id,
                     raw_data=raw_payload,
                     stream=self,
-                    group=group.group_name,
+                    group_name=group.group_name,
                 )
 
     async def add(self, msg: AbstractMessage):

@@ -56,6 +56,7 @@ class AsyncFileSystem:
 
     async def iter_bytes(self, path: Path, chunk_size: int | None):
         async with aiofiles.open(path, "rb", executor=self.executor) as file:
+            chunk_size = chunk_size if isinstance(chunk_size, int) else -1
             yield await file.read(chunk_size)
 
     async def list_dir(self, path: Path) -> list[Path]:

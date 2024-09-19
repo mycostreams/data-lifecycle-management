@@ -12,7 +12,8 @@ from prince_archiver.adapters.ingester import (
     EventIngester,
     managed_event_queue,
 )
-from prince_archiver.adapters.streams import Stream, Streams
+from prince_archiver.service_layer.streams import Streams
+from prince_archiver.adapters.streams import Stream
 from prince_archiver.log import configure_logging
 
 from .functions import State, delete_src, run_trim
