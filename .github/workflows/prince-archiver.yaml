@@ -37,7 +37,7 @@ jobs:
       - name: Typing
         run: poetry run mypy .
   
-  unit-tests:
+  tests:
     name: Unit tests
     needs: static-analysis
     strategy:
@@ -59,26 +59,11 @@ jobs:
           poetry install
       - name: Unit tests
         run: poetry run pytest tests/unit
+      - name: Integration tests
+        run: poetry run pytest tests/integration
+          
 
-  integration-tests:
-    name: Integration tests
-    needs: unit-tests
-    strategy:
-      fail-fast: false
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: poetry
-      - name: Install dependencies
-        run: poetry install
-      - name: Run
-        run: ./scripts/run-integration-tests.sh
-  
+
   # e2e-tests:
   #   name: E2E tests
   #   needs: integration-tests

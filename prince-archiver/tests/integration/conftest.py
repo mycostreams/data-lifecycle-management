@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import clear_mappers
+from testcontainers.postgres import PostgresContainer
 
 from prince_archiver.definitions import Algorithm, EventType, System
 from prince_archiver.models import v2 as data_models
@@ -28,10 +29,27 @@ def fixture_mappers():
     clear_mappers()
 
 
+@pytest.fixture(scope="module")
+def postgres():
+    postgres = PostgresContainer(
+        "postgres:16-alpine",
+        driver="asyncpg",
+    )
+    postgres.start()
+
+    yield postgres
+
+    postgres.stop()
+
+
 @pytest.fixture(name="conn")
-async def fixture_conn() -> AsyncGenerator[AsyncConnection, None]:
-    engine = create_async_engine(CONNECTION_URL)
+async def fixture_conn(
+    postgres: PostgresContainer,
+) -> AsyncGenerator[AsyncConnection, None]:
+    engine = create_async_engine(postgres.get_connection_url())
     async with engine.connect() as conn:
+        await conn.run_sync(data_models.Base.metadata.create_all)
+
         yield conn
 
 
@@ -39,7 +57,7 @@ async def fixture_conn() -> AsyncGenerator[AsyncConnection, None]:
 async def fixture_sessionmaker(
     conn: AsyncConnection,
 ) -> AsyncGenerator[async_sessionmaker[AsyncSession], None]:
-    async with conn.begin() as trans:
+    async with conn.begin_nested() as trans:
         sessionmaker = async_sessionmaker(
             autocommit=False,
             autoflush=False,
