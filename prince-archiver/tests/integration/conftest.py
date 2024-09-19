@@ -17,8 +17,6 @@ from prince_archiver.definitions import Algorithm, EventType, System
 from prince_archiver.models import v2 as data_models
 from prince_archiver.models.mappers import init_mappers
 
-CONNECTION_URL = "postgresql+asyncpg://postgres:postgres@localhost:5431/postgres"
-
 
 @pytest.fixture(name="mappers", scope="session", autouse=True)
 def fixture_mappers():
