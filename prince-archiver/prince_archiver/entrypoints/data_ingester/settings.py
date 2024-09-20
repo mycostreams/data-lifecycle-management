@@ -4,7 +4,7 @@ from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class IngesterSettings(BaseSettings):
+class Settings(BaseSettings):
     PRINCE_SRC_DIR: Path
     STAGING_DIR: Path | None = None
 

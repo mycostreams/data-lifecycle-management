@@ -18,7 +18,7 @@ from prince_archiver.service_layer.handlers.utils import get_target_key
 from prince_archiver.service_layer.messages import ExportImagingEvent
 from prince_archiver.service_layer.streams import Streams
 
-from .settings import UploadWorkerSettings
+from .settings import Settings
 from .stream import managed_stream_ingester
 
 LOGGER = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ async def startup(ctx: dict):
 
     exit_stack = await AsyncExitStack().__aenter__()
 
-    settings = UploadWorkerSettings()
+    settings = Settings()
 
     s3 = await exit_stack.enter_async_context(managed_file_system(settings))
     redis: ArqRedis = ctx["redis"]

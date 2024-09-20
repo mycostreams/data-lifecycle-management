@@ -18,7 +18,7 @@ from prince_archiver.service_layer.streams import Streams
 
 from .functions import State, delete_src, run_trim
 from .ingester import managed_ingester, process
-from .settings import IngesterSettings
+from .settings import Settings
 
 LOGGER = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ async def startup(ctx: dict):
     redis: ArqRedis = ctx["redis"]
 
     stack = await AsyncExitStack().__aenter__()
-    settings = IngesterSettings()
+    settings = Settings()
 
     stack = AsyncExitStack()
 

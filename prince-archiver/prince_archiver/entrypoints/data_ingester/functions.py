@@ -7,14 +7,14 @@ from prince_archiver.adapters.streams import Stream
 from prince_archiver.definitions import SrcDirKey
 from prince_archiver.service_layer.streams import IncomingMessage
 
-from .settings import IngesterSettings
+from .settings import Settings
 
 LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
 class State:
-    settings: IngesterSettings
+    settings: Settings
     stream: Stream
     path_manager: PathManager
 
