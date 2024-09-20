@@ -1,4 +1,6 @@
+import asyncio
 from contextlib import asynccontextmanager
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import AsyncGenerator
@@ -118,6 +120,12 @@ class EventFile:
             await self.rm()
 
 
+@dataclass
+class ArchiveInfo:
+    checksum: Checksum
+    size: int
+
+
 class ArchiveFile:
     DEFAULT_CHUNK_SIZE = 10 * 1024
 
@@ -134,3 +142,13 @@ class ArchiveFile:
 
     async def get_size(self) -> int:
         return await self.file_system.get_size(self.path)
+
+    async def get_info(self) -> ArchiveInfo:
+        async with asyncio.TaskGroup() as tg:
+            t1 = tg.create_task(self.get_checksum())
+            t2 = tg.create_task(self.get_size())
+
+        return ArchiveInfo(
+            checksum=t1.result(),
+            size=t2.result(),
+        )

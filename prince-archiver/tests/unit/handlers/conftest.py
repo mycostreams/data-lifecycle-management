@@ -1,8 +1,9 @@
+from pathlib import Path
 from unittest.mock import AsyncMock
 
 import pytest
 
-from prince_archiver.adapters.file import ArchiveFile, PathManager, SrcDir
+from prince_archiver.adapters.file import ArchiveFile, ArchiveInfo, PathManager, SrcDir
 from prince_archiver.domain.models import ImagingEvent
 from prince_archiver.domain.value_objects import Checksum
 
@@ -23,9 +24,11 @@ def fixture_uow(
 
 @pytest.fixture()
 def mock_path_manager() -> PathManager:
-    mock_archive_file = AsyncMock(ArchiveFile)
-    mock_archive_file.get_checksum.return_value = Checksum(hex="test")
-    mock_archive_file.get_size.return_value = 1024
+    mock_archive_file = AsyncMock(ArchiveFile, path=Path("/test"))
+    mock_archive_file.get_info.return_value = ArchiveInfo(
+        checksum=Checksum(hex="test"),
+        size=1024,
+    )
 
     mock_src_dir = AsyncMock(SrcDir)
     mock_src_dir.get_temp_archive.return_value.__aenter__.return_value = (

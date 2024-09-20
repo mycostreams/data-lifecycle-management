@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+from dataclasses import asdict
 from typing import Callable
 
 import s3fs
@@ -48,19 +49,16 @@ class ExportHandler:
             message.staging_path or message.local_path,
         )
         async with (
-            src_dir.get_temp_archive() as archive_path,
+            src_dir.get_temp_archive() as archive_file,
             asyncio.TaskGroup() as tg,
         ):
-            checksum_task = tg.create_task(archive_path.get_checksum())
-            size_task = tg.create_task(archive_path.get_size())
-
-            tg.create_task(self.s3._put_file(archive_path, key))
+            t1 = tg.create_task(archive_file.get_info())
+            tg.create_task(self.s3._put_file(archive_file.path, key))
 
         msg = messages.ExportedImagingEvent(
             ref_id=message.ref_id,
-            checksum=checksum_task.result().__dict__,
-            size=size_task.result(),
             key=key,
+            **asdict(t1.result()),
         )
 
         await self.redis.enqueue_job(
