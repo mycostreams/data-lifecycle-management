@@ -33,9 +33,8 @@ class MessageBus:
         messages: list[BaseModel] = [message]
         while messages:
             message = messages.pop()
-            for handler in self.handlers[message.__class__]:
+            for handler in self.handlers.get(message.__class__, []):
                 await handler(message, self.uow)
-
                 for message in self.uow.collect_messages():
                     messages.append(message)
 

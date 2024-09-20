@@ -1,71 +1,47 @@
 import logging
 import os
 from contextlib import AsyncExitStack
-from datetime import date, timedelta
+from datetime import timedelta
 from functools import partial
-from typing import Callable
-from uuid import UUID, uuid4
+from typing import Any
 
-from arq import cron
+from arq import ArqRedis, cron
 from arq.connections import RedisSettings
 from httpx import AsyncClient
 from zoneinfo import ZoneInfo
 
-from prince_archiver.adapters.archiver import AbstractArchiver, Settings, SurfArchiver
-from prince_archiver.adapters.messenger import Message, Messenger
-from prince_archiver.adapters.subscriber import ManagedSubscriber
+from prince_archiver.adapters.archiver import Settings, SurfArchiver
+from prince_archiver.adapters.messenger import Messenger
+from prince_archiver.adapters.streams import Stream
 from prince_archiver.config import ArchiveWorkerSettings
-from prince_archiver.logging import configure_logging
+from prince_archiver.log import configure_logging
+from prince_archiver.models import init_mappers
 from prince_archiver.service_layer.handlers.archive import add_data_archive_entry
+from prince_archiver.service_layer.handlers.export import persist_imaging_event_export
+from prince_archiver.service_layer.handlers.ingest import import_imaging_event
 from prince_archiver.service_layer.messagebus import MessageBus
-from prince_archiver.service_layer.messages import AddDataArchiveEntry
+from prince_archiver.service_layer.messages import (
+    AddDataArchiveEntry,
+    ExportedImagingEvent,
+    ImportImagingEvent,
+)
+from prince_archiver.service_layer.streams import Streams
 from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
 
-from .external import SubscriberMessageHandler
+from .functions import State, run_archiving, run_persist_export, run_reporting
+from .stream import managed_stream_ingester
 
 LOGGER = logging.getLogger(__name__)
 
 
-async def run_archiving(
-    ctx: dict,
-    *,
-    _date: date | None = None,
-    _job_id: UUID | None = None,
-):
-    job_id = _job_id or uuid4()
-    settings: ArchiveWorkerSettings = ctx["settings"]
-    archiver: AbstractArchiver | None = ctx.get("archiver", None)
-
-    delta = timedelta(days=settings.ARCHIVE_TRANSITION_DAYS)
-    archive_files_from = _date or date.today() - delta
-
-    if archiver:
-        LOGGER.info("[%s] Initiating archiving for %s", job_id, archive_files_from)
-        await archiver.archive(archive_files_from)
-
-
-async def run_reporting(ctx: dict, *, _date: date | None = None):
-    messenger: Messenger | None = ctx.get("messenger", None)
-    uow_factory: Callable[[], UnitOfWork] = ctx["uow_factory"]
-
-    report_date = _date or date.today() - timedelta(days=1)
-
-    if messenger:
-        async with uow_factory() as uow:
-            stats = filter(
-                lambda stats: stats.date == report_date,
-                await uow.read.get_daily_stats(start=report_date),
-            )
-            if daily_stats := next(stats, None):
-                await messenger.publish(Message.DAILY_STATS, **daily_stats.__dict__)
-
-
 async def startup(ctx: dict):
     configure_logging()
+    init_mappers()
 
     LOGGER.info("Starting up")
 
     exit_stack = await AsyncExitStack().__aenter__()
+
     settings = ArchiveWorkerSettings()
 
     uow_factory = partial(
@@ -74,25 +50,23 @@ async def startup(ctx: dict):
     )
 
     messagebus_factory = MessageBus.factory(
-        handlers={AddDataArchiveEntry: [add_data_archive_entry]},
+        handlers={
+            ImportImagingEvent: [import_imaging_event],
+            ExportedImagingEvent: [persist_imaging_event_export],
+            AddDataArchiveEntry: [add_data_archive_entry],
+        },
         uow=uow_factory,
     )
 
-    ctx["exit_stack"] = exit_stack
-    ctx["settings"] = settings
-    ctx["uow_factory"] = uow_factory
+    redis: ArqRedis = ctx["redis"]
+    stream = Stream(redis=redis, stream=Streams.new_imaging_event)
 
-    # Configure archive subscriber
-    subscriber = ManagedSubscriber(
-        connection_url=settings.RABBITMQ_DSN,
-        message_handler=SubscriberMessageHandler(messagebus_factory),
-    )
-    await exit_stack.enter_async_context(subscriber)
+    # Configure optional state
+    optional_state: dict[str, Any] = {}
 
-    # Configure archiver
     if settings.SURF_USERNAME and settings.SURF_PASSWORD:
         LOGGER.info("Adding archiver")
-        ctx["archiver"] = SurfArchiver(
+        optional_state["archiver"] = SurfArchiver(
             settings=Settings(
                 username=settings.SURF_USERNAME,
                 password=settings.SURF_PASSWORD,
@@ -104,7 +78,28 @@ async def startup(ctx: dict):
     if settings.WEBHOOK_URL:
         LOGGER.info("Adding messenger")
         client = await exit_stack.enter_async_context(AsyncClient())
-        ctx["messenger"] = Messenger(client, str(settings.WEBHOOK_URL))
+        optional_state["messenger"] = Messenger(client, str(settings.WEBHOOK_URL))
+
+    state = State(
+        stream=stream,
+        settings=settings,
+        messagebus_factory=messagebus_factory,
+        uow_factory=uow_factory,
+        **optional_state,
+    )
+
+    # Configure stream ingester
+    await exit_stack.enter_async_context(managed_stream_ingester(state))
+
+    # Configure archive subscriber
+    # subscriber = ManagedSubscriber(
+    #     connection_url=settings.RABBITMQ_DSN,
+    #     message_handler=SubscriberMessageHandler(messagebus_factory),
+    # )
+    # await exit_stack.enter_async_context(subscriber)
+
+    ctx["state"] = state
+    ctx["exit_stack"] = exit_stack
 
     LOGGER.info("Start up complete")
 
@@ -116,6 +111,8 @@ async def shutdown(ctx: dict):
 
 class WorkerSettings:
     queue_name = "arq:queue-cron"
+
+    functions = [run_persist_export]
 
     cron_jobs = [
         cron(run_reporting, hour={7}, minute={0}),

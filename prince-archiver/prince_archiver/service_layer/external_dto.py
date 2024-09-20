@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 
 from pydantic import AwareDatetime, BaseModel, Field, model_validator
 
-from prince_archiver.definitions import EventType
+from prince_archiver.definitions import EventType, System
 
 
 class TimestepMeta(BaseModel):
@@ -17,6 +17,7 @@ class TimestepMeta(BaseModel):
     position: int
     timestamp: AwareDatetime
     event_type: EventType = Field(EventType.STITCH)
+    system: System = System.PRINCE
 
     img_count: int = Field(150, alias="image_count")
     img_dir: Path = Field(..., alias="path")

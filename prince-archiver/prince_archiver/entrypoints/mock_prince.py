@@ -8,7 +8,7 @@ import httpx
 from fastapi import FastAPI, Response
 from pydantic_settings import BaseSettings
 
-from prince_archiver.logging import configure_logging
+from prince_archiver.log import configure_logging
 from prince_archiver.service_layer.external_dto import TimestepMeta
 from prince_archiver.test_utils.utils import make_timestep_directory
 from prince_archiver.utils import now
@@ -38,7 +38,7 @@ def create_app(*, settings: Settings | None = None) -> FastAPI:
 
     @app.post("/timestep", status_code=200)
     def create_timestep(data: TimestepMeta) -> Response:
-        logging.info("Added timestep")
+        logging.info("[%s] Added timestep", data.timestep_id)
         make_timestep_directory(meta=data, base_dir=settings.DATA_DIR)
         return Response(status_code=200)
 

@@ -5,7 +5,7 @@ from pathlib import Path
 from watchfiles import Change, awatch
 
 from prince_archiver.config import WatcherSettings
-from prince_archiver.logging import configure_logging
+from prince_archiver.log import configure_logging
 from prince_archiver.utils import parse_timestep_dir
 
 from .context import Context, managed_context
