@@ -42,7 +42,11 @@ class ManagedSubscriber:
             self.exchange_config.type,
         )
 
-        queue = await channel.declare_queue(exclusive=True)
+        queue = await channel.declare_queue(
+            durable=True,
+            exclusive=True,
+        )
+
         await queue.bind(exchange)
         await queue.consume(self.message_handler)
 
