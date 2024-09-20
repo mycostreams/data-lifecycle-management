@@ -13,7 +13,7 @@ x-log-labels: &log-labels
 
 
 services:
-  watcher:
+  data-ingester:
     environment:
       SENTRY_DSN: ${SENTRY_DSN}
       WATCHFILES_FORCE_POLLING: "true"
@@ -23,20 +23,8 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-  
-  upload-worker:
-    environment:
-      <<: *aws-env-variables
-      SENTRY_DSN: ${SENTRY_DSN}
-    volumes:
-      - cifs_mount:/data/input/:ro
-    labels: *log-labels
-    deploy:
-      replicas: 2
-      restart_policy:
-        condition: on-failure
 
-  cron-worker:
+  worker:
     environment:
       <<: *aws-env-variables
       ARCHIVE_TRANSITION_DAYS: ${ARCHIVE_TRANSITION_DAYS:-2}
@@ -45,6 +33,17 @@ services:
       SURF_USERNAME: ${SURF_USERNAME}
       SURF_PASSWORD: ${SURF_PASSWORD}
       WEBHOOK_URL: ${WEBHOOK_URL}
+    labels: *log-labels
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  upload-worker:
+    environment:
+      <<: *aws-env-variables
+      SENTRY_DSN: ${SENTRY_DSN}
+    volumes:
+      - cifs_mount:/data/input/:ro
     labels: *log-labels
     deploy:
       restart_policy:
