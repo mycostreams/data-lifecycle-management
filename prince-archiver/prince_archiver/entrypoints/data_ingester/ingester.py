@@ -5,8 +5,8 @@ from typing import Protocol
 
 from prince_archiver.adapters.ingester import EventFile, EventIngester
 from prince_archiver.adapters.streams import Stream
-from prince_archiver.service_layer.streams import Message
 from prince_archiver.service_layer.messages import ImagingEventStream, SrcDirInfo
+from prince_archiver.service_layer.streams import Message
 
 from .settings import IngesterSettings
 

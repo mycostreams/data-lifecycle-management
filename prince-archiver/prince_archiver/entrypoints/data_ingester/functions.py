@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
 from prince_archiver.adapters.file import PathManager
-from prince_archiver.adapters.streams import ConsumerGroup, Stream
+from prince_archiver.adapters.streams import Stream
 from prince_archiver.definitions import SrcDirKey
-from prince_archiver.service_layer.streams import Group, IncomingMessage
+from prince_archiver.service_layer.streams import IncomingMessage
 
 from .settings import IngesterSettings
 
@@ -27,45 +27,33 @@ async def run_trim(ctx: dict):
 
 async def delete_staging(ctx: dict):
     LOGGER.info("Deleting staging files")
+
     state: State = ctx["state"]
-    ref = datetime.now(tz=UTC) - state.settings.STAGING_LIFESPAN
+    end = datetime.now(tz=UTC) - state.settings.STAGING_LIFESPAN
+    start = end - timedelta(hours=3)
 
-    group = ConsumerGroup(
-        consumer_name=Group.delete_staging,
-        group_name=Group.delete_staging,
-    )
-
-    async for message in state.stream.stream_group(group, msg_cls=IncomingMessage):
+    async for message in state.stream.range(start, end, msg_cls=IncomingMessage):
         data = message.processed_data()
-        if data.timestamp > ref:
-            break
-
-        LOGGER.info("[%s] Deleting staging directory", data.ref_id)
-
         if data.src_dir_info.staging_path:
             src_dir = state.path_manager.get_src_dir(
                 SrcDirKey.STAGING,
                 data.src_dir_info.staging_path,
             )
-        async with message.process():
-            await src_dir.rm()
+
+            if src_dir.exists():
+                LOGGER.info("[%s] Deleting staging directory", data.ref_id)
+                await src_dir.rm()
 
 
 async def delete_src(ctx: dict):
     LOGGER.info("Deleting src files")
 
     state: State = ctx["state"]
-    ref = datetime.now(tz=UTC) - state.settings.SRC_LIFESPAN
+    end = datetime.now(tz=UTC) - state.settings.STAGING_LIFESPAN
+    start = end - timedelta(hours=3)
 
-    group = ConsumerGroup(
-        consumer_name=Group.delete_src,
-        group_name=Group.delete_src,
-    )
-
-    async for message in state.stream.stream_group(group, msg_cls=IncomingMessage):
+    async for message in state.stream.range(start, end, msg_cls=IncomingMessage):
         data = message.processed_data()
-        if data.timestamp > ref:
-            break
 
         LOGGER.info("[%s] Deleting src directory", data.ref_id)
 
@@ -73,5 +61,7 @@ async def delete_src(ctx: dict):
             data.system,
             data.src_dir_info.local_path,
         )
-        async with message.process():
+
+        if src_dir.exists():
+            LOGGER.info("[%s] Deleting staging directory", data.ref_id)
             await src_dir.rm()

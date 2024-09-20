@@ -10,8 +10,6 @@ class Streams(StrEnum):
 
 
 class Group(StrEnum):
-    delete_src = auto()
-    delete_staging = auto()
     export_event = auto()
     import_event = auto()
 

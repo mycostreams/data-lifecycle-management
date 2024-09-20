@@ -12,9 +12,9 @@ from prince_archiver.adapters.ingester import (
     EventIngester,
     managed_event_queue,
 )
-from prince_archiver.service_layer.streams import Streams
 from prince_archiver.adapters.streams import Stream
 from prince_archiver.log import configure_logging
+from prince_archiver.service_layer.streams import Streams
 
 from .functions import State, delete_src, run_trim
 from .ingester import managed_ingester, process
@@ -68,7 +68,7 @@ class WorkerSettings:
     queue_name = "arq:queue-data-ingester"
 
     cron_jobs = [
-        cron(delete_src, hour={0, 12}),
+        cron(delete_src, hour={*range(0, 24, 2)}, minute={0}),
         # cron(delete_staging, second={0, 15, 30, 45}),
         cron(run_trim, hour={3, 15}, minute={0}),
     ]

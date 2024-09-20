@@ -6,7 +6,11 @@ from typing import AsyncGenerator, Type, TypeVar
 
 from redis.asyncio import Redis
 
-ReadGroupResponseT = list[tuple[str, list[tuple[str, dict[bytes, bytes]]]]]
+ResponseT = list[tuple[str, list[tuple[bytes, dict[bytes, bytes]]]]]
+
+
+def get_id(dt: datetime) -> int:
+    return int(dt.timestamp())
 
 
 @dataclass
@@ -23,11 +27,11 @@ class AbstractMessage(ABC):
 class AbstractIncomingMessage:
     def __init__(
         self,
-        id: str,
-        raw_data: dict,
+        id: bytes,
+        raw_data: dict[bytes, bytes],
         *,
         stream: "Stream",
-        group_name: str,
+        group_name: str | None = None,
     ):
         self.id = id
         self.raw_data = raw_data
@@ -41,7 +45,8 @@ class AbstractIncomingMessage:
         except Exception as e:
             raise e
         else:
-            await self.stream.ack(self.id, self.group_name)
+            if self.group_name:
+                await self.stream.ack(self.id, self.group_name)
 
 
 AbstractIncomingMessageT = TypeVar(
@@ -55,6 +60,25 @@ class Stream:
         self.redis = redis
         self.stream = stream
 
+    async def range(
+        self,
+        start: datetime,
+        end: datetime,
+        *,
+        msg_cls: Type[AbstractIncomingMessageT],
+    ) -> AsyncGenerator[AbstractIncomingMessageT, None]:
+        response: list[tuple[bytes, dict[bytes, bytes]]] = await self.redis.xrange(
+            name=self.stream,
+            min=get_id(start),
+            max=get_id(end),
+        )
+        for id, raw_payload in response:
+            yield msg_cls(
+                id=id,
+                raw_data=raw_payload,
+                stream=self,
+            )
+
     async def stream_group(
         self,
         group: ConsumerGroup,
@@ -63,18 +87,19 @@ class Stream:
     ) -> AsyncGenerator[AbstractIncomingMessageT, None]:
         stream_id: int | str = 0
         while True:
-            value: ReadGroupResponseT = await self.redis.xreadgroup(
+            response: ResponseT = await self.redis.xreadgroup(
                 groupname=group.group_name,
                 consumername=group.consumer_name,
                 streams={self.stream: stream_id},
+                count=1,
             )
 
             # Occurs when there are no latest messages (e.g >)
-            if not value:
+            if not response:
                 continue
 
             # Occurs when backlog fully processed
-            _, msgs = value[0]
+            _, msgs = response[0]
             if not msgs:
                 stream_id = ">"
 
@@ -90,7 +115,11 @@ class Stream:
         await self.redis.xadd(self.stream, msg.fields())
 
     async def trim(self, datetime: datetime):
-        await self.redis.xtrim(self.stream, minid=int(datetime.timestamp()))
+        await self.redis.xtrim(
+            self.stream,
+            approximate=False,
+            minid=get_id(datetime),
+        )
 
     async def ack(self, id: str, group_name: str):
         await self.redis.xack(self.stream, group_name, id)

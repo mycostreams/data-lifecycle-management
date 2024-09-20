@@ -66,6 +66,9 @@ class SrcDir:
             )
         return {}
 
+    async def exists(self) -> bool:
+        return await self.file_system.exists(self.path)
+
     async def copy(self, target_dir: Path):
         await self.file_system.copy_tree(self.path, target_dir)
 
@@ -73,7 +76,7 @@ class SrcDir:
         await self.file_system.rm_tree(self.path)
 
     @asynccontextmanager
-    async def get_temp_archive(self):
+    async def get_temp_archive(self) -> AsyncGenerator["ArchiveFile", None]:
         async with self.file_system.get_temp_archive(self.path) as path:
             yield ArchiveFile(path, self.file_system)
 
