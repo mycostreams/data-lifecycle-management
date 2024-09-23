@@ -85,7 +85,7 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - "./prestart.sh:/app/prestart.sh"
+      - "./scripts/prestart.sh:/app/prestart.sh"
     profiles:
       - tools
 
