@@ -10,10 +10,10 @@ from arq.connections import RedisSettings
 from httpx import AsyncClient
 from zoneinfo import ZoneInfo
 
-from prince_archiver.adapters.archiver import Settings, SurfArchiver
+from prince_archiver.adapters.archiver import Settings as ArchiverSettings
+from prince_archiver.adapters.archiver import SurfArchiver
 from prince_archiver.adapters.messenger import Messenger
 from prince_archiver.adapters.streams import Stream
-from prince_archiver.config import ArchiveWorkerSettings
 from prince_archiver.log import configure_logging
 from prince_archiver.models import init_mappers
 from prince_archiver.service_layer.handlers.archive import add_data_archive_entry
@@ -29,6 +29,7 @@ from prince_archiver.service_layer.streams import Streams
 from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
 
 from .functions import State, run_archiving, run_persist_export, run_reporting
+from .settings import Settings
 from .stream import managed_stream_ingester
 
 LOGGER = logging.getLogger(__name__)
@@ -42,7 +43,7 @@ async def startup(ctx: dict):
 
     exit_stack = await AsyncExitStack().__aenter__()
 
-    settings = ArchiveWorkerSettings()
+    settings = Settings()
 
     uow_factory = partial(
         UnitOfWork,
@@ -67,7 +68,7 @@ async def startup(ctx: dict):
     if settings.SURF_USERNAME and settings.SURF_PASSWORD:
         LOGGER.info("Adding archiver")
         optional_state["archiver"] = SurfArchiver(
-            settings=Settings(
+            settings=ArchiverSettings(
                 username=settings.SURF_USERNAME,
                 password=settings.SURF_PASSWORD,
                 host=settings.DATA_ARCHIVE_HOST,

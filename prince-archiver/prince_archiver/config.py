@@ -1,8 +1,7 @@
 import os
-from pathlib import Path
 
 import sentry_sdk
-from pydantic import Field, HttpUrl, PostgresDsn, RedisDsn, model_validator
+from pydantic import RedisDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 sentry_sdk.init(
@@ -11,13 +10,8 @@ sentry_sdk.init(
 )
 
 
-class _SentinelPath(Path):
-    """Sentinel value for `pathlib.Path` objects."""
-
-
 class CommonSettings(BaseSettings):
     REDIS_DSN: RedisDsn
-    POSTGRES_DSN: PostgresDsn
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -35,34 +29,3 @@ class AWSSettings(BaseSettings):
     AWS_BUCKET_NAME: str
 
     UPLOAD_MAX_CONCURRENCY: int = 5
-
-
-class WatcherSettings(CommonSettings):
-    DATA_DIR: Path
-
-    EVENTS_DIR: Path = Field(default_factory=_SentinelPath)
-
-    WATCHFILES_FORCE_POLLING: bool | None = None
-
-    @model_validator(mode="after")
-    def set_events_dir(self) -> "WatcherSettings":
-        if isinstance(self.EVENTS_DIR, _SentinelPath):
-            self.EVENTS_DIR = self.DATA_DIR / "events"
-        return self
-
-
-class UploadWorkerSettings(AWSSettings, CommonSettings):
-    DATA_DIR: Path
-
-
-class ArchiveWorkerSettings(AWSSettings, CommonSettings):
-    RABBITMQ_DSN: str
-
-    SURF_USERNAME: str
-    SURF_PASSWORD: str
-
-    DATA_ARCHIVE_HOST: str = "archive.surfsara.nl"
-
-    WEBHOOK_URL: HttpUrl | None = None
-
-    ARCHIVE_TRANSITION_DAYS: int = 2

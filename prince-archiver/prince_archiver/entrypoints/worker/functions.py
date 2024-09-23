@@ -7,7 +7,6 @@ from uuid import UUID, uuid4
 from prince_archiver.adapters.archiver import AbstractArchiver
 from prince_archiver.adapters.messenger import Message, Messenger
 from prince_archiver.adapters.streams import Stream
-from prince_archiver.config import ArchiveWorkerSettings
 from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.messagebus import MessagebusFactoryT
 from prince_archiver.service_layer.messages import (
@@ -15,12 +14,14 @@ from prince_archiver.service_layer.messages import (
 )
 from prince_archiver.service_layer.uow import UnitOfWork
 
+from .settings import Settings
+
 LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
 class State:
-    settings: ArchiveWorkerSettings
+    settings: Settings
     stream: Stream
     uow_factory: Callable[[], UnitOfWork]
     messagebus_factory: MessagebusFactoryT

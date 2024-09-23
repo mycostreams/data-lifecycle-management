@@ -8,13 +8,13 @@ from prince_archiver.adapters.streams import Stream
 from prince_archiver.service_layer.messages import ImagingEventStream, SrcDirInfo
 from prince_archiver.service_layer.streams import Message
 
-from .settings import IngesterSettings
+from .settings import Settings
 
 LOGGER = logging.getLogger(__name__)
 
 
 class State(Protocol):
-    settings: IngesterSettings
+    settings: Settings
     stream: Stream
 
 
