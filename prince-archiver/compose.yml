@@ -6,31 +6,23 @@ x-env-variables: &env-variables
 
 
 services:
-  watcher:
+  data-ingester:
     image: prince-archiver
     build:
       context: .
-    command: ["python", "-m", "prince_archiver.watcher.main"]
-    environment: *env-variables
+    command: ["arq", "prince_archiver.entrypoints.data_ingester.WorkerSettings"]
+    environment: 
+      <<: *env-variables
+      PRINCE_SRC_DIR: /data/input
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
 
-  upload-worker:
+  worker:
     image: prince-archiver
-    command: ["arq", "prince_archiver.upload_worker.WorkerSettings"]
-    environment: *env-variables
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
-  cron-worker:
-    image: prince-archiver
-    command: ["arq", "prince_archiver.data_archive.WorkerSettings"]
+    command: ["arq", "prince_archiver.entrypoints.worker.WorkerSettings"]
     environment:
       DATA_ARCHIVE_HOST: archive.surfsara.nl
       POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
@@ -43,14 +35,25 @@ services:
       redis:
         condition: service_healthy
 
+  upload-worker:
+    image: prince-archiver
+    command: ["arq", "prince_archiver.entrypoints.upload_worker.WorkerSettings"]
+    environment: 
+      <<: *env-variables
+      PRINCE_SRC_DIR: /data/input
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   api:
     image: prince-archiver
     command: [
       "uvicorn",
-      "--factory", 
+      "--factory",
       "prince_archiver.entrypoints.api.app:create_app",
-      "--host",
-      "0.0.0.0"
+      "--host=0.0.0.0"
     ]
     expose:
       - 8000

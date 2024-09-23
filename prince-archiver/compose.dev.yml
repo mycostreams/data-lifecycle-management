@@ -18,24 +18,13 @@ services:
       - ./alembic/:/app/alembic
       - input_data:/data/input
 
-  watcher:
+  data-ingester:
     volumes:
       - ./prince_archiver:/app/prince_archiver
       - ./alembic:/app/alembic
       - input_data:/data/input
 
-  upload-worker:
-    environment:
-      <<: *aws-env-variables
-    volumes:
-      - ./prince_archiver:/app/prince_archiver
-      - ./alembic/:/app/alembic
-      - input_data:/data/input
-    depends_on:
-      s3:
-        condition: service_healthy
-
-  cron-worker:
+  worker:
     environment:
       <<: *aws-env-variables
       RABBITMQ_DSN: amqp://guest:guest@rabbitmq:5672
@@ -48,6 +37,17 @@ services:
       s3:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+
+  upload-worker:
+    environment:
+      <<: *aws-env-variables
+    volumes:
+      - ./prince_archiver:/app/prince_archiver
+      - ./alembic/:/app/alembic
+      - input_data:/data/input
+    depends_on:
+      s3:
         condition: service_healthy
 
   api:
