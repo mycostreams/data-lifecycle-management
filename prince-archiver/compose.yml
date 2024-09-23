@@ -1,6 +1,5 @@
 ---
 x-env-variables: &env-variables
-  DATA_DIR: /data/input/
   REDIS_DSN: redis://redis:6379
   POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
 
@@ -77,12 +76,16 @@ services:
 
   db-migrations:
     image: prince-archiver
-    command: ["alembic", "upgrade", "head"]
-    environment: 
-      POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
+    command: ["./prestart.sh"]
+    environment:
+      <<: *env-variables
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - "./prestart.sh:/app/prestart.sh"
     profiles:
       - tools
 
