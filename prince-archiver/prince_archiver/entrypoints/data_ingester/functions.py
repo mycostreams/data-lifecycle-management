@@ -49,7 +49,7 @@ async def delete_src(ctx: dict):
     LOGGER.info("Deleting src files")
 
     state: State = ctx["state"]
-    end = datetime.now(tz=UTC) - state.settings.STAGING_LIFESPAN
+    end = datetime.now(tz=UTC) - state.settings.SRC_LIFESPAN
     start = end - timedelta(hours=3)
 
     async for message in state.stream.range(start, end, msg_cls=IncomingMessage):
