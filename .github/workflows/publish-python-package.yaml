@@ -1,0 +1,27 @@
+name: Release
+on:
+  push:
+    tags:
+        - "surf-archiver/*"
+
+defaults:
+  run:
+    working-directory: ./surf-archiver
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+          cache: poetry
+      - name: publish
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          poetry config pypi-token.pypi $PYPI_TOKEN
+          poetry publish --build

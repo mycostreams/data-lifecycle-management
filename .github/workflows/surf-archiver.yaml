@@ -1,0 +1,56 @@
+name: surf-archiver
+on:
+  pull_request:
+    paths: 
+      - 'surf-archiver/**'
+      - '.github/workflows/surf-archiver.yaml'
+  push:
+    branches:
+      - main
+    paths: 
+      - 'surf-archiver/**'
+      - '.github/workflows/surf-archiver.yaml'
+
+defaults:
+  run:
+    working-directory: ./surf-archiver
+
+jobs:
+  static-analysis:
+    name: Static analysis
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+          cache: poetry
+      - name: Install dependencies
+        run: poetry install
+      - name: Formatting
+        run: poetry run ruff format --check
+      - name: Linting
+        run: poetry run ruff check
+      - name: Typing
+        run: poetry run mypy .
+
+  tests:
+    name: Tests
+    needs: static-analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+          cache: poetry
+      - name: Install dependencies
+        run: poetry install
+      - name: Run tests
+        run: ./scripts/run-tests.sh
