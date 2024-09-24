@@ -14,6 +14,7 @@ from prince_archiver.adapters.archiver import Settings as ArchiverSettings
 from prince_archiver.adapters.archiver import SurfArchiver
 from prince_archiver.adapters.messenger import Messenger
 from prince_archiver.adapters.streams import Stream
+from prince_archiver.adapters.subscriber import ManagedSubscriber
 from prince_archiver.log import configure_logging
 from prince_archiver.models import init_mappers
 from prince_archiver.service_layer.handlers.archive import add_data_archive_entry
@@ -28,6 +29,7 @@ from prince_archiver.service_layer.messages import (
 from prince_archiver.service_layer.streams import Streams
 from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
 
+from .external import SubscriberMessageHandler
 from .functions import State, run_archiving, run_persist_export, run_reporting
 from .settings import Settings
 from .stream import managed_stream_ingester
@@ -93,11 +95,11 @@ async def startup(ctx: dict):
     await exit_stack.enter_async_context(managed_stream_ingester(state))
 
     # Configure archive subscriber
-    # subscriber = ManagedSubscriber(
-    #     connection_url=settings.RABBITMQ_DSN,
-    #     message_handler=SubscriberMessageHandler(messagebus_factory),
-    # )
-    # await exit_stack.enter_async_context(subscriber)
+    subscriber = ManagedSubscriber(
+        connection_url=settings.RABBITMQ_DSN,
+        message_handler=SubscriberMessageHandler(messagebus_factory),
+    )
+    await exit_stack.enter_async_context(subscriber)
 
     ctx["state"] = state
     ctx["exit_stack"] = exit_stack
