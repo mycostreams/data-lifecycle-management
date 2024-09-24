@@ -1,0 +1,31 @@
+---
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-alpine
+    ports:
+      - 5671:5672
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    networks:
+      - surf-archiver-test
+
+  s3:
+    image: adobe/s3mock:3.10.0
+    ports:
+      - 9091:9090
+    environment:
+      validKmsKeys: arn:aws:kms:eu-central-1:1234567890:key/aws-access-key-id
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - surf-archiver-test
+
+networks:
+  surf-archiver-test:
