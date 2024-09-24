@@ -10,11 +10,11 @@ from arq.connections import RedisSettings
 from httpx import AsyncClient
 from zoneinfo import ZoneInfo
 
-from prince_archiver.adapters.subscriber import ManagedSubscriber
 from prince_archiver.adapters.archiver import Settings as ArchiverSettings
 from prince_archiver.adapters.archiver import SurfArchiver
 from prince_archiver.adapters.messenger import Messenger
 from prince_archiver.adapters.streams import Stream
+from prince_archiver.adapters.subscriber import ManagedSubscriber
 from prince_archiver.log import configure_logging
 from prince_archiver.models import init_mappers
 from prince_archiver.service_layer.handlers.archive import add_data_archive_entry
