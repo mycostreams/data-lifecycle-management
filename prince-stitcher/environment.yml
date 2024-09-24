@@ -1,6 +1,0 @@
-name: image-stitcher-dev
-channels:
-  - conda-forge
-dependencies:
-  - openjdk=11
-  - maven
