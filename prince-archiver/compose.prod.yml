@@ -16,7 +16,6 @@ services:
   data-ingester:
     environment:
       SENTRY_DSN: ${SENTRY_DSN}
-      WATCHFILES_FORCE_POLLING: "true"
     volumes:
       - cifs_mount:/data/input/
     labels: *log-labels
@@ -26,10 +25,9 @@ services:
 
   worker:
     environment:
-      <<: *aws-env-variables
       ARCHIVE_TRANSITION_DAYS: ${ARCHIVE_TRANSITION_DAYS:-2}
-      SENTRY_DSN: ${SENTRY_DSN}
       RABBITMQ_DSN: ${RABBITMQ_DSN}
+      SENTRY_DSN: ${SENTRY_DSN}
       SURF_USERNAME: ${SURF_USERNAME}
       SURF_PASSWORD: ${SURF_PASSWORD}
       WEBHOOK_URL: ${WEBHOOK_URL}
@@ -52,6 +50,7 @@ services:
   api:
     environment:
       <<: *aws-env-variables
+      SENTRY_DSN: ${SENTRY_DSN}
 
   alloy:
     image: grafana/alloy:latest
