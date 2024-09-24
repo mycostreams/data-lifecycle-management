@@ -177,5 +177,6 @@ pyrightconfig.json
 !.env.example
 .vscode
 scratch/
+backups/
 
 # End of https://www.toptal.com/developers/gitignore/api/python

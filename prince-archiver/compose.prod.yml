@@ -52,6 +52,17 @@ services:
       <<: *aws-env-variables
       SENTRY_DSN: ${SENTRY_DSN}
 
+  aws-cli:
+    image: amazon/aws-cli
+    environment:
+      <<: *aws-env-variables
+      AWS_DEFAULT_REGION: default
+    volumes:
+      - ${POSTGRES_BACKUP_DIR:-${PWD}/backups}:/aws/postgres
+      - redis_data:/aws/redis
+    profiles:
+      - tools
+
   alloy:
     image: grafana/alloy:latest
     command:

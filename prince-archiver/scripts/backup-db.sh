@@ -2,14 +2,16 @@
 
 cd "$(dirname $(dirname $0))"
 
-
-TEMP_DIR="$(mktemp -d)"
+TARGET_DIR=$PWD/backups
 FILENAME="$(date +%s).bak"
+TARGET_PATH=$TARGET_DIR/$FILENAME
 
-trap "rm -rf $TEMP_DIR" EXIT
+mkdir -p $TARGET_DIR
+trap "rm -f $TARGET_PATH" EXIT
 
-TARGET_PATH=$TEMP_DIR/$FILENAME
+
 
 docker compose exec db pg_dump --username postgres postgres > $TARGET_PATH
 
-rclone copy $TARGET_PATH ceph-s3:backups/db
+docker compose -f compose.yml -f compose.prod.yml run --rm \
+    aws-cli s3 cp postgres/$FILENAME s3://backups/db/$FILENAME
