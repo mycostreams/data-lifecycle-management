@@ -8,8 +8,12 @@ on:
     branches:
       - main
     paths: 
-      - 'prince-archiver/**'
+      - 'surf-archiver/**'
       - '.github/workflows/surf-archiver.yaml'
+
+defaults:
+  run:
+    working-directory: ./surf-archiver
 
 jobs:
   static-analysis:

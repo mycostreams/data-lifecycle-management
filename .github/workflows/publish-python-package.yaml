@@ -4,6 +4,10 @@ on:
     tags:
         - "surf-archiver/*"
 
+defaults:
+  run:
+    working-directory: ./surf-archiver
+
 jobs:
   publish:
     runs-on: ubuntu-latest
