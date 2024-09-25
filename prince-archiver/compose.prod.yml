@@ -13,7 +13,7 @@ x-log-labels: &log-labels
 
 
 services:
-  data-ingester:
+  event-ingester:
     environment:
       SENTRY_DSN: ${SENTRY_DSN}
     volumes:
@@ -23,7 +23,7 @@ services:
       restart_policy:
         condition: on-failure
 
-  worker:
+  state-manager:
     environment:
       ARCHIVE_TRANSITION_DAYS: ${ARCHIVE_TRANSITION_DAYS:-2}
       RABBITMQ_DSN: ${RABBITMQ_DSN}

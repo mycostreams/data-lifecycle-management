@@ -65,7 +65,7 @@ async def shutdown(ctx: dict):
 
 
 class WorkerSettings:
-    queue_name = "arq:queue-data-ingester"
+    queue_name = "arq:queue-event-ingester"
 
     cron_jobs = [
         # cron(delete_src, hour={*range(0, 24, 2)}, minute={0}),

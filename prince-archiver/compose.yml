@@ -9,11 +9,11 @@ x-redis-env-variable: &redis-env-variable
 
 
 services:
-  data-ingester:
+  event-ingester:
     image: prince-archiver
     build:
       context: .
-    command: ["arq", "prince_archiver.entrypoints.data_ingester.WorkerSettings"]
+    command: ["arq", "prince_archiver.entrypoints.event_ingester.WorkerSettings"]
     environment: 
       <<: *redis-env-variable
       SRC_DIR: /data

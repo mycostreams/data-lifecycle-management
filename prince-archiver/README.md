@@ -4,7 +4,7 @@ This project provides a mechanism for moving local image data to an s3 supported
 object storage backend as soon as a timestep is available. 
 
 It consists of the following entrypoints:
-- `data-ingester`
+- `event-ingester`
 - `worker`
 - `upload-worker`
 - `api`

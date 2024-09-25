@@ -28,7 +28,7 @@ services:
       DATA_DIR: /data
     <<: *code-and-data-volumes
 
-  data-ingester:
+  event-ingester:
     <<: *code-and-data-volumes
 
   worker:
