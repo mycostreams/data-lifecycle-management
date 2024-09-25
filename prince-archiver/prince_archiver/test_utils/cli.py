@@ -24,7 +24,7 @@ def populate_data_dir(data_dir: DataDirT):
 
 
 @app.command()
-def make_timestep_directory(
+def make_timestep_dir(
     data_dir: DataDirT,
     timestamp: Annotated[datetime, typer.Option(default_factory=now)],
 ):
@@ -37,7 +37,3 @@ def make_timestep_directory(
     )
 
     _make_timestep_directory(meta, data_dir)
-
-
-if __name__ == "__main__":
-    typer.run(make_timestep_directory)

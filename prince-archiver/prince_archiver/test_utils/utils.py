@@ -40,7 +40,7 @@ def make_timestep_directory(
     else:
         img.write_bytes(_get_image())
 
-    events_dir = base_dir / "events"
+    events_dir = base_dir / meta.system / "events"
     events_dir.mkdir(parents=True, exist_ok=True)
 
     event_file = events_dir / f"{meta.timestamp.timestamp():.0f}.json"
