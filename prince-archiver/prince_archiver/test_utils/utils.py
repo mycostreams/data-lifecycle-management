@@ -31,7 +31,7 @@ def make_timestep_directory(
     src_img: Path | None = None,
 ) -> None:
     """Construct a new timestep directory."""
-    img_dir = base_dir / meta.img_dir
+    img_dir = base_dir / meta.system / meta.img_dir
     img_dir.mkdir(parents=True, exist_ok=True)
 
     img = img_dir / "Img_r10_c15.tif"

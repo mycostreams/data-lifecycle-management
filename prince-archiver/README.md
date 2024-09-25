@@ -36,11 +36,12 @@ It is assumed that the directory structure of the source systems has the followi
 stucture. The data ingestion 
 
 ```
-|- events:
-|   |-- *.json
-|-- <img-dir>
-|   |-- Img
-|   |   |-- *.tif
+|-- <system>
+|   |-- events:
+|   |   |-- *.json
+|   |-- <img-dir>
+|   |   |-- Img
+|   |   |   |-- *.tif
 ```
 
 The `*.json` files contain metadata relating to an imaging event and has the form:
@@ -62,17 +63,25 @@ Where `img_dir` is the relative path to directory containing the images.
 
 # Running via docker compose
 
-First ensure that database migrations are run and necessary redis groups
-are created. To do this run:
+As a preliminary step, we must ensure that the database migrations are run, the redis
+groups are created and data directories are created. To do this run:
 
 ```bash
-docker compose run --rm db-migrations
+docker compose -f compose.yml -f compose.dev.yml run --rm db-migrations
+docker compose -f compose.yml -f compose.dev.yml run --rm prince /
+    test_tools populate-data-dir
 ```
 
 Now you can get all services started with:
 
 ```bash
 docker compose -f compose.yml -f compose.dev.yml up -d
+```
+
+Follow the logs of the relevant containers with:
+
+```bash
+docker compose -f compose.yml -f compose.dev.yml logs -f data-ingester worker upload-worker
 ```
 
 To view data via the api navigate to `http://fastapi.localhost/docs`. Alternatively 
