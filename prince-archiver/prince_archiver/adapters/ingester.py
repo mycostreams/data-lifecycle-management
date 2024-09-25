@@ -89,7 +89,7 @@ async def worker(
         try:
             await handler(event_file_info)
         except Exception as e:
-            print(e)
+            LOGGER.exception(e)
         queue.task_done()
 
 

@@ -3,6 +3,7 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Protocol
 
+from prince_archiver.adapters.file import PathManager
 from prince_archiver.adapters.ingester import EventFile, EventIngester
 from prince_archiver.adapters.streams import Stream
 from prince_archiver.service_layer.messages import ImagingEventStream, SrcDirInfo
@@ -16,6 +17,7 @@ LOGGER = logging.getLogger(__name__)
 class State(Protocol):
     settings: Settings
     stream: Stream
+    path_manager: PathManager
 
 
 async def process(event_file: EventFile, *, state: State):
@@ -37,7 +39,7 @@ async def process(event_file: EventFile, *, state: State):
             timestamp=dto.timestamp,
             system=event_file.system_dir.system,
             src_dir_info=SrcDirInfo(
-                staging_path=target_dir if state.settings.STAGING_DIR else None,
+                staging_path=target_dir if state.settings.COPY_TO_STAGING else None,
                 local_path=dto.img_dir,
                 raw_metadata=metadata,
                 img_count=dto.img_count,
@@ -45,8 +47,8 @@ async def process(event_file: EventFile, *, state: State):
         )
 
         # Copy to staging
-        if state.settings.STAGING_DIR:
-            await src_dir.copy(state.settings.STAGING_DIR / target_dir)
+        if state.settings.COPY_TO_STAGING:
+            await src_dir.copy(state.path_manager.get_staging_path() / target_dir)
 
         await state.stream.add(Message(msg))
 

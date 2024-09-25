@@ -16,7 +16,7 @@ x-code-and-data-volumes: &code-and-data-volumes
   volumes:
     - ./prince_archiver:/app/prince_archiver
     - ./alembic/:/app/alembic
-    - input_data:/data/input
+    - input_data:/data/prince
 
 
 services:
@@ -25,7 +25,7 @@ services:
     command: ["python", "-m", "prince_archiver.entrypoints.mock_prince"]
     environment:
       INTERVAL: ${INTERVAL:-30}
-      DATA_DIR: /data/input
+      DATA_DIR: /data/prince
     <<: *code-and-data-volumes
 
   data-ingester:

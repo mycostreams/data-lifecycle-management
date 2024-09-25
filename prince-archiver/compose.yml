@@ -16,7 +16,7 @@ services:
     command: ["arq", "prince_archiver.entrypoints.data_ingester.WorkerSettings"]
     environment: 
       <<: *redis-env-variable
-      PRINCE_SRC_DIR: /data/input
+      SRC_DIR: /data
     depends_on:
       redis:
         condition: service_healthy
@@ -40,7 +40,7 @@ services:
     command: ["arq", "prince_archiver.entrypoints.upload_worker.WorkerSettings"]
     environment: 
       <<: *redis-env-variable
-      PRINCE_SRC_DIR: /data/input
+      SRC_DIR: /data
     depends_on:
       redis:
         condition: service_healthy

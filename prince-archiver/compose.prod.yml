@@ -17,7 +17,7 @@ services:
     environment:
       SENTRY_DSN: ${SENTRY_DSN}
     volumes:
-      - cifs_mount:/data/input/
+      - cifs_mount:/data/prince
     labels: *log-labels
     deploy:
       restart_policy:
@@ -41,7 +41,7 @@ services:
       <<: *aws-env-variables
       SENTRY_DSN: ${SENTRY_DSN}
     volumes:
-      - cifs_mount:/data/input/:ro
+      - cifs_mount:/data/system/prince:ro
     labels: *log-labels
     deploy:
       restart_policy:

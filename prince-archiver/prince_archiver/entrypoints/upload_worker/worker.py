@@ -71,7 +71,7 @@ async def startup(ctx: dict):
                 get_target_key,
                 bucket=settings.AWS_BUCKET_NAME,
             ),
-            path_manager=PathManager.from_settings(settings),
+            path_manager=PathManager(settings.SRC_DIR),
         ),
     )
 

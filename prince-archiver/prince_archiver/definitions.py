@@ -5,8 +5,7 @@ class System(StrEnum):
     PRINCE = auto()
 
 
-class SrcDirKey(StrEnum):
-    PRINCE = auto()
+class StorageSystem(StrEnum):
     STAGING = auto()
 
 
