@@ -113,7 +113,7 @@ async def shutdown(ctx: dict):
 
 
 class WorkerSettings:
-    queue_name = "arq:queue-cron"
+    queue_name = "arq:queue-state-manager"
 
     functions = [run_persist_export]
 

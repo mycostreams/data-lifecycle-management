@@ -21,7 +21,7 @@ services:
       redis:
         condition: service_healthy
 
-  worker:
+  state-manager:
     image: prince-archiver
     command: ["arq", "prince_archiver.entrypoints.worker.WorkerSettings"]
     environment:

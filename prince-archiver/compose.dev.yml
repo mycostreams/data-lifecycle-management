@@ -31,7 +31,7 @@ services:
   event-ingester:
     <<: *code-and-data-volumes
 
-  worker:
+  state-manager:
     environment:
       <<: *aws-env-variables
       RABBITMQ_DSN: amqp://guest:guest@rabbitmq:5672

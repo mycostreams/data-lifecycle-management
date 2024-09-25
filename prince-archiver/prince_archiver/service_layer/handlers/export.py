@@ -60,7 +60,7 @@ class ExportHandler:
         await self.redis.enqueue_job(
             "run_persist_export",
             msg.model_dump(mode="json"),
-            _queue_name="arq:queue-cron",
+            _queue_name="arq:queue-state-manager",
         )
 
     def _get_src_dir(self, message: messages.ExportImagingEvent) -> SrcDir:
