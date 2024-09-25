@@ -22,7 +22,7 @@ x-code-and-data-volumes: &code-and-data-volumes
 services:
   prince:
     image: prince-archiver
-    command: ["python", "-m", "prince_archiver.entrypoints.mock_prince"]
+    command: ["python", "-m", "prince_archiver.entrypoints.mock_prince.main"]
     environment:
       INTERVAL: ${INTERVAL:-30}
       DATA_DIR: /data

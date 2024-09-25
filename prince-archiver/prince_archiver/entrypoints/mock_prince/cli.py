@@ -7,9 +7,8 @@ import typer
 
 from prince_archiver.definitions import System
 from prince_archiver.service_layer.external_dto import TimestepMeta
+from prince_archiver.test_utils.utils import make_timestep_directory
 from prince_archiver.utils import now
-
-from .utils import make_timestep_directory as _make_timestep_directory
 
 app = typer.Typer()
 
@@ -36,4 +35,4 @@ def make_timestep_dir(
         path=Path(uuid4().hex[:6]),
     )
 
-    _make_timestep_directory(meta, data_dir)
+    make_timestep_directory(meta, data_dir)

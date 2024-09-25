@@ -69,7 +69,7 @@ groups are created and data directories are created. To do this run:
 ```bash
 docker compose -f compose.yml -f compose.dev.yml run --rm db-migrations
 docker compose -f compose.yml -f compose.dev.yml run --rm prince /
-    test_tools populate-data-dir
+    prince-cli populate-data-dir
 ```
 
 Now you can get all services started with:
