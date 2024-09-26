@@ -2,8 +2,8 @@
 x-aws-env-variables: &aws-env-variables
   AWS_ACCESS_KEY_ID: aws-access-key-id
   AWS_SECRET_ACCESS_KEY: aws-access-key-id
-  AWS_ENDPOINT_URL: http://s3:9090
-  AWS_BUCKET_NAME: mycostreams
+  AWS_ENDPOINT_URL: http://localhost.localstack.cloud:4566
+  AWS_BUCKET_NAME: mycostreams-raw-data
 
 
 x-code-volumes: &code-volumes
@@ -61,18 +61,19 @@ services:
     <<: *code-volumes
 
   s3:
-    image: adobe/s3mock:3.10.0
+    image: localstack/localstack:latest
+    hostname: localhost.localstack.cloud
     ports:
-      - 9090:9090
-      - 9191:9191
+      - 127.0.0.1:4566:4566
     environment:
-      initialBuckets: mycostreams
-      validKmsKeys: arn:aws:kms:eu-central-1:1234567890:key/aws-access-key-id
+      SERVICES: "s3"
+    volumes:
+      - "./scripts/init-localstack.sh:/etc/localstack/init/ready.d/init-localstack.sh"
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090"]
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 3
 
   rabbitmq:
     image: rabbitmq:3.13-management
