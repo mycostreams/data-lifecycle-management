@@ -5,10 +5,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    PRINCE_SRC_DIR: Path
-    STAGING_DIR: Path | None = None
+    SRC_DIR: Path
+    COPY_TO_STAGING: bool = False
 
-    WATCHFILES_FORCE_POLLING: bool = True
     SRC_LIFESPAN: timedelta = timedelta(hours=8)
     STAGING_LIFESPAN: timedelta = timedelta(days=24)
 

@@ -1,13 +1,5 @@
-import os
-
-import sentry_sdk
 from pydantic import RedisDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-sentry_sdk.init(
-    dsn=os.getenv("SENTRY_DSN"),
-    enable_tracing=True,
-)
 
 
 class CommonSettings(BaseSettings):

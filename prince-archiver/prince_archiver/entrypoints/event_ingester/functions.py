@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 
 from prince_archiver.adapters.file import PathManager
 from prince_archiver.adapters.streams import Stream
-from prince_archiver.definitions import SrcDirKey
+from prince_archiver.definitions import StorageSystem
 from prince_archiver.service_layer.streams import IncomingMessage
 
 from .settings import Settings
@@ -34,10 +34,10 @@ async def delete_staging(ctx: dict):
 
     async for message in state.stream.range(start, end, msg_cls=IncomingMessage):
         data = message.processed_data()
-        if data.src_dir_info.staging_path:
+        if staging_path := data.src_dir_info.staging_path:
             src_dir = state.path_manager.get_src_dir(
-                SrcDirKey.STAGING,
-                data.src_dir_info.staging_path,
+                StorageSystem.STAGING,
+                staging_path,
             )
 
             if src_dir.exists():

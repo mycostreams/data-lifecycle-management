@@ -5,7 +5,7 @@ from uuid import UUID
 import pytest
 from aio_pika.abc import AbstractIncomingMessage
 
-from prince_archiver.entrypoints.worker.external import (
+from prince_archiver.entrypoints.state_manager.external import (
     SubscriberMessageHandler,
 )
 from prince_archiver.service_layer.external_dto import Archive, UpdateArchiveEntries

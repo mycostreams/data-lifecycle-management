@@ -6,7 +6,7 @@ from prince_archiver.config import AWSSettings
 
 
 class Settings(AWSSettings, BaseSettings):
-    PRINCE_SRC_DIR: Path
+    SRC_DIR: Path
     STAGING_DIR: Path | None = None
 
     model_config = SettingsConfigDict(

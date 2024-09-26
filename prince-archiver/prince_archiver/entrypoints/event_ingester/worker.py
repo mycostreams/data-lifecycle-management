@@ -16,7 +16,7 @@ from prince_archiver.adapters.streams import Stream
 from prince_archiver.log import configure_logging
 from prince_archiver.service_layer.streams import Streams
 
-from .functions import State, delete_src, run_trim
+from .functions import State, run_trim
 from .ingester import managed_ingester, process
 from .settings import Settings
 
@@ -40,7 +40,7 @@ async def startup(ctx: dict):
             redis=redis,
             stream=Streams.new_imaging_event,
         ),
-        path_manager=PathManager.from_settings(settings),
+        path_manager=PathManager(settings.SRC_DIR),
     )
 
     # Setup data ingester
@@ -65,10 +65,10 @@ async def shutdown(ctx: dict):
 
 
 class WorkerSettings:
-    queue_name = "arq:queue-data-ingester"
+    queue_name = "arq:queue-event-ingester"
 
     cron_jobs = [
-        cron(delete_src, hour={*range(0, 24, 2)}, minute={0}),
+        # cron(delete_src, hour={*range(0, 24, 2)}, minute={0}),
         # cron(delete_staging, second={0, 15, 30, 45}),
         cron(run_trim, hour={3, 15}, minute={0}),
     ]

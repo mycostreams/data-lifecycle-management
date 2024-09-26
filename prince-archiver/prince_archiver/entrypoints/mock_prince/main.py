@@ -59,11 +59,15 @@ async def main():
     async with client:
         while True:
             meta = _create_meta()
-            await client.post(
-                "/timestep",
-                json=meta.model_dump(mode="json", by_alias=True),
-            )
-            await asyncio.sleep(settings.INTERVAL)
+            async with asyncio.TaskGroup() as tg:
+                tg.create_task(asyncio.sleep(settings.INTERVAL))
+
+                tg.create_task(
+                    client.post(
+                        "/timestep",
+                        json=meta.model_dump(mode="json", by_alias=True),
+                    )
+                )
 
 
 if __name__ == "__main__":

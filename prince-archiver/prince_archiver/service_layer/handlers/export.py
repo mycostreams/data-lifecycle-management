@@ -8,8 +8,8 @@ from typing import Callable
 import s3fs
 from arq import ArqRedis
 
-from prince_archiver.adapters.file import PathManager
-from prince_archiver.definitions import SrcDirKey
+from prince_archiver.adapters.file import PathManager, SrcDir
+from prince_archiver.definitions import StorageSystem
 from prince_archiver.domain.models import EventArchive, ObjectStoreEntry
 from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.service_layer import messages
@@ -43,11 +43,7 @@ class ExportHandler:
         LOGGER.info("[%s] Exporting", message.ref_id)
 
         key = self.key_generator(message)
-
-        src_dir = self.path_manager.get_src_dir(
-            SrcDirKey.STAGING if message.staging_path else message.system,
-            message.staging_path or message.local_path,
-        )
+        src_dir = self._get_src_dir(message)
         async with (
             src_dir.get_temp_archive() as archive_file,
             asyncio.TaskGroup() as tg,
@@ -64,8 +60,13 @@ class ExportHandler:
         await self.redis.enqueue_job(
             "run_persist_export",
             msg.model_dump(mode="json"),
-            _queue_name="arq:queue-cron",
+            _queue_name="arq:queue-state-manager",
         )
+
+    def _get_src_dir(self, message: messages.ExportImagingEvent) -> SrcDir:
+        if staging_path := message.staging_path:
+            return self.path_manager.get_src_dir(StorageSystem.STAGING, staging_path)
+        return self.path_manager.get_src_dir(message.system, message.local_path)
 
 
 async def persist_imaging_event_export(

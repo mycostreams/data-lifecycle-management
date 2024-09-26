@@ -4,6 +4,8 @@ from datetime import date, timedelta
 from typing import Callable
 from uuid import UUID, uuid4
 
+from arq import Retry
+
 from prince_archiver.adapters.archiver import AbstractArchiver
 from prince_archiver.adapters.messenger import Message, Messenger
 from prince_archiver.adapters.streams import Stream
@@ -40,8 +42,9 @@ async def run_persist_export(
 
     try:
         await messagebus.handle(dto)
-    except ServiceLayerException:
-        pass
+    except ServiceLayerException as exc:
+        job_try: int = ctx["job_try"]
+        raise Retry(defer=job_try) from exc
 
 
 async def run_archiving(
