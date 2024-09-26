@@ -67,9 +67,7 @@ As a preliminary step, we must ensure that the database migrations are run, the 
 groups are created and data directories are created. To do this run:
 
 ```bash
-docker compose -f compose.yml -f compose.dev.yml run --rm db-migrations
-docker compose -f compose.yml -f compose.dev.yml run --rm prince /
-    prince-cli populate-data-dir
+./scripts/init-dev.sh
 ```
 
 Now you can get all services started with:
@@ -81,7 +79,7 @@ docker compose -f compose.yml -f compose.dev.yml up -d
 Follow the logs of the relevant containers with:
 
 ```bash
-docker compose -f compose.yml -f compose.dev.yml logs -f data-ingester worker upload-worker
+docker compose -f compose.yml -f compose.dev.yml logs -f event-ingester state-manager upload-worker
 ```
 
 To view data via the api navigate to `http://fastapi.localhost/docs`. Alternatively 
