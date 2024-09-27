@@ -63,31 +63,6 @@ services:
     profiles:
       - tools
 
-  alloy:
-    image: grafana/alloy:latest
-    command:
-      - "run"
-      - "/etc/alloy/config.alloy"
-      - "--server.http.listen-addr=0.0.0.0:12345"
-      - "--storage.path=/var/lib/alloy/data"
-    environment:
-      PROM_USERNAME: ${PROM_USERNAME}
-      LOKI_USERNAME: ${LOKI_USERNAME}
-      GRAFANA_API_TOKEN: ${GRAFANA_API_TOKEN}
-    volumes:
-      - ./config/config.alloy:/etc/alloy/config.alloy
-      - /:/rootfs:ro
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run:/var/run:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    privileged: true
-    ports:
-      - 12345:12345
-    networks:
-      - monitoring
-
 volumes:
   cifs_mount: 
     driver_opts:
