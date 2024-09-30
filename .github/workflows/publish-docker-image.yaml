@@ -4,11 +4,11 @@ name: Publish Docker image
 on:
   push:
     tags:
-      - "data-exporter/*"
+      - "prince-archiver/*"
 
 
 env:
-  IMAGE_NAME: data-exporter
+  IMAGE_NAME: prince-archiver
   REGISTRY: index.docker.io
 
 
@@ -37,7 +37,7 @@ jobs:
         with:
           images: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=match,pattern=data-exporter/(v.*),group=1
+            type=match,pattern=prince-archiver/(v.*),group=1
 
       - name: Build and push Docker image
         id: push
