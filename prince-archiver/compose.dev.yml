@@ -57,7 +57,7 @@ services:
       <<: *aws-env-variables
     <<: *code-volumes
 
-  db-migrations:
+  prestart:
     <<: *code-volumes
 
   s3:

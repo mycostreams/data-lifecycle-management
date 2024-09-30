@@ -20,6 +20,8 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+      prestart:
+        condition: service_completed_successfully
 
   state-manager:
     image: prince-archiver
@@ -34,6 +36,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      prestart:
+        condition: service_completed_successfully
 
   upload-worker:
     image: prince-archiver
@@ -44,7 +48,9 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-
+      prestart:
+        condition: service_completed_successfully
+  
   api:
     image: prince-archiver
     command: [
@@ -60,6 +66,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      prestart:
+        condition: service_completed_successfully
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.fastapi.rule=Host(`fastapi.localhost`)"
@@ -73,7 +81,7 @@ services:
       - "./config/traefik.toml:/etc/traefik/traefik.toml"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
-  db-migrations:
+  prestart:
     image: prince-archiver
     command: ["./prestart.sh"]
     environment:
@@ -85,8 +93,6 @@ services:
         condition: service_healthy
     volumes:
       - "./scripts/prestart.sh:/app/prestart.sh"
-    profiles:
-      - tools
 
   redis:
     image: redis:7.2.4
