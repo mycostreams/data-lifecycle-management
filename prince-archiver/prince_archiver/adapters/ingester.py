@@ -33,7 +33,7 @@ class EventIngester:
         end: datetime | None = None,
     ):
         end = now()
-        start = start or (end - timedelta(hours=12))
+        start = start or (end - timedelta(hours=1))
 
         LOGGER.info("Ingesting backlog")
         for sys_dir in self.system_dirs:

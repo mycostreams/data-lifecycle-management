@@ -1,23 +1,18 @@
 import logging
 import os
 from contextlib import AsyncExitStack
-from functools import partial
 
 from arq import ArqRedis, cron
 from arq.connections import RedisSettings
 from zoneinfo import ZoneInfo
 
 from prince_archiver.adapters.file import PathManager
-from prince_archiver.adapters.ingester import (
-    EventIngester,
-    managed_event_queue,
-)
 from prince_archiver.adapters.streams import Stream
 from prince_archiver.log import configure_logging
 from prince_archiver.service_layer.streams import Streams
 
 from .functions import State, run_trim
-from .ingester import managed_ingester, process
+from .ingester import managed_background_event_ingester, managed_event_ingester
 from .settings import Settings
 
 LOGGER = logging.getLogger(__name__)
@@ -44,16 +39,8 @@ async def startup(ctx: dict):
     )
 
     # Setup data ingester
-    event_queue = await stack.enter_async_context(
-        managed_event_queue(partial(process, state=state)),
-    )
-
-    event_ingester = EventIngester(
-        state.path_manager.get_system_dirs(),
-        handler=event_queue.add,
-    )
-
-    await stack.enter_async_context(managed_ingester(event_ingester))
+    event_ingester = await stack.enter_async_context(managed_event_ingester(state))
+    await stack.enter_async_context(managed_background_event_ingester(event_ingester))
 
     ctx["state"] = state
     ctx["stack"] = stack

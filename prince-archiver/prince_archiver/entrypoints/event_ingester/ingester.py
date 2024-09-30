@@ -1,10 +1,15 @@
 import asyncio
 import logging
 from contextlib import asynccontextmanager
-from typing import Protocol
+from functools import partial
+from typing import AsyncGenerator, Protocol
 
 from prince_archiver.adapters.file import PathManager
-from prince_archiver.adapters.ingester import EventFile, EventIngester
+from prince_archiver.adapters.ingester import (
+    EventFile,
+    EventIngester,
+    managed_event_queue,
+)
 from prince_archiver.adapters.streams import Stream
 from prince_archiver.service_layer.messages import ImagingEventStream, SrcDirInfo
 from prince_archiver.service_layer.streams import Message
@@ -56,19 +61,31 @@ async def process(event_file: EventFile, *, state: State):
 
 
 @asynccontextmanager
-async def managed_ingester(
+async def managed_event_ingester(state: State) -> AsyncGenerator[EventIngester, None]:
+    handler = partial(process, state=state)
+    async with managed_event_queue(handler) as event_queue:
+        yield EventIngester(
+            state.path_manager.get_system_dirs(),
+            handler=event_queue.add,
+        )
+
+
+@asynccontextmanager
+async def managed_background_event_ingester(
     event_ingester: EventIngester,
     *,
     stop_event: asyncio.Event | None = None,
-):
+) -> AsyncGenerator[None, None]:
     stop_event = stop_event or asyncio.Event()
 
+    backlog_task = asyncio.create_task(event_ingester.ingest_backlog())
     task = asyncio.create_task(event_ingester.ingest_latest(stop_event=stop_event))
 
     yield
 
     LOGGER.info("Stopping watching")
+
     stop_event.set()
-    await task
+    await asyncio.gather(backlog_task, task, return_exceptions=True)
 
     LOGGER.info("Stopped watching")
