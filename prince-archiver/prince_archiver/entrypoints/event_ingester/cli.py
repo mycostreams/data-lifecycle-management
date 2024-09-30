@@ -25,20 +25,18 @@ async def managed_state(
     copy_to_staging: bool,
 ) -> AsyncGenerator[State, None]:
     redis_client = redis.from_url(redis_dsn)
-
-    yield State(
-        settings=Settings(
-            SRC_DIR=src_dir,
-            COPY_TO_STAGING=copy_to_staging,
-        ),
-        stream=Stream(
-            redis=redis_client,
-            stream=Streams.new_imaging_event,
-        ),
-        path_manager=PathManager(src_dir),
-    )
-
-    await redis_client.aclose()
+    async with redis_client:
+        yield State(
+            settings=Settings(
+                SRC_DIR=src_dir,
+                COPY_TO_STAGING=copy_to_staging,
+            ),
+            stream=Stream(
+                redis=redis_client,
+                stream=Streams.new_imaging_event,
+            ),
+            path_manager=PathManager(src_dir),
+        )
 
 
 async def aingest_backlog(

@@ -29,11 +29,11 @@ async def main():
         os.getenv("REDIS_DSN", "redis://localhost:6379"),
     )
 
-    await client.ping()
-
     stream = Streams.new_imaging_event
 
     async with client:
+        await client.ping()
+
         await asyncio.gather(
             *(create_group(client, stream, group) for group in Group),
         )
