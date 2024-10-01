@@ -41,6 +41,7 @@ async def run_export(
     try:
         await state.export_handler(dto)
     except (ConnectTimeoutError, OSError) as err:
+        LOGGER.exception(err, exc_info=True)
         job_try: int = ctx.get("job_try", 1)
         raise Retry(defer=job_try * (3 * 60)) from err
 

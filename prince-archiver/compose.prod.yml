@@ -43,11 +43,12 @@ services:
       SENTRY_DSN: ${SENTRY_DSN}
     volumes:
       - cifs_mount:/data/system/prince:ro
+      - ./prince_archiver:/app/prince_archiver
     labels: *log-labels
     deploy:
       restart_policy:
         condition: on-failure
-
+    
   api:
     environment:
       <<: *aws-env-variables
