@@ -73,5 +73,3 @@ volumes:
       device: //prince.amolf.nl/Data/Prince2/Images/
       o: username=${AMOLF_USERNAME},password=${AMOLF_PASSWORD}
 
-networks:
-  monitoring: 
