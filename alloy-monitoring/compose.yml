@@ -23,5 +23,3 @@ services:
     privileged: true
     ports:
       - 12345:12345
-    networks:
-      - monitoring
