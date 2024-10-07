@@ -1,10 +1,7 @@
 import asyncio
-import pytest
-
 from unittest.mock import AsyncMock
 
 from prince_archiver.adapters.ingester import EventIngester
-
 from prince_archiver.entrypoints.event_ingester.ingester import (
     managed_background_event_ingester,
 )
