@@ -40,7 +40,7 @@ class EventIngester:
         for sys_dir in self.system_dirs:
             async for file_info in sys_dir.iter_events():
                 if start < file_info.timestamp < end:
-                    await self.handle(file_info)
+                    await self.handler(file_info)
 
         LOGGER.info("Ingested backlog")
 
