@@ -8,11 +8,9 @@ from prince_archiver.adapters.repository import (
     AbstractDataArchiveEntryRepo,
     AbstractImagingEventRepo,
     AbstractReadRepo,
-    AbstractTimestepRepo,
     DataArchiveEntryRepo,
     ImagingEventRepo,
     ReadRepo,
-    TimestepRepo,
 )
 
 
@@ -27,8 +25,6 @@ def get_session_maker(url: str) -> async_sessionmaker[AsyncSession]:
 
 class AbstractUnitOfWork(ABC):
     messages: list[BaseModel]
-
-    timestamps: AbstractTimestepRepo
 
     data_archive: AbstractDataArchiveEntryRepo
     imaging_events: AbstractImagingEventRepo
@@ -57,8 +53,6 @@ class AbstractUnitOfWork(ABC):
 class UnitOfWork(AbstractUnitOfWork):
     session: AsyncSession
 
-    timestamps: TimestepRepo
-
     data_archive: DataArchiveEntryRepo
     imaging_events: ImagingEventRepo
     read: ReadRepo
@@ -71,8 +65,6 @@ class UnitOfWork(AbstractUnitOfWork):
         self.session = await self.session_maker().__aenter__()
 
         # Initialize repos
-        self.timestamps = TimestepRepo(self.session)
-
         self.data_archive = DataArchiveEntryRepo(self.session)
         self.imaging_events = ImagingEventRepo(self.session)
         self.read = ReadRepo(self.session)
