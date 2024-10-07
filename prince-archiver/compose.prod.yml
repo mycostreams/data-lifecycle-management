@@ -42,7 +42,7 @@ services:
       <<: *aws-env-variables
       SENTRY_DSN: ${SENTRY_DSN}
     volumes:
-      - cifs_mount:/data/system/prince:ro
+      - cifs_mount:/data/prince:ro
     labels: *log-labels
     deploy:
       restart_policy:
@@ -52,6 +52,7 @@ services:
     environment:
       <<: *aws-env-variables
       SENTRY_DSN: ${SENTRY_DSN}
+    labels: *log-labels
 
   aws-cli:
     image: amazon/aws-cli
@@ -61,6 +62,7 @@ services:
     volumes:
       - ${POSTGRES_BACKUP_DIR:-${PWD}/backups}:/aws/postgres
       - redis_data:/aws/redis
+    labels: *log-labels
     profiles:
       - tools
 
@@ -71,5 +73,3 @@ volumes:
       device: //prince.amolf.nl/Data/Prince2/Images/
       o: username=${AMOLF_USERNAME},password=${AMOLF_PASSWORD}
 
-networks:
-  monitoring: 
