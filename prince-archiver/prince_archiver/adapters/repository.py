@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.sql import Select
 
+from prince_archiver.definitions import EventType
 from prince_archiver.domain.models import DataArchiveEntry, ImagingEvent
 from prince_archiver.models import Timestep
 from prince_archiver.models import v2 as data_models
@@ -23,7 +24,8 @@ class AbstractReadRepo(ABC):
     async def get_exports(
         self,
         start: datetime,
-        end: datetime | None = None,
+        end: datetime,
+        event_type: EventType,
     ) -> list[Export]: ...
 
     @abstractmethod
@@ -45,12 +47,15 @@ class ReadRepo(AbstractReadRepo):
     async def get_exports(
         self,
         start: datetime,
-        end: datetime | None = None,
+        end: datetime,
+        event_type: EventType,
     ) -> list[Export]:
-        stmt = select(Export).where(
+        filter_params = [
+            Export.type == event_type,
             Export.uploaded_at > start,
-            Export.uploaded_at < (end or now()),
-        )
+            Export.uploaded_at < end,
+        ]
+        stmt = select(Export).where(*filter_params)
         result = await self.session.stream_scalars(stmt)
         return [item async for item in result]
 
