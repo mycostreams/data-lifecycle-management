@@ -33,7 +33,7 @@ class EventIngester:
         end: datetime | None = None,
     ):
         LOGGER.info("Ingesting backlog")
-        
+
         end = now()
         start = start or (end - timedelta(hours=1))
 
