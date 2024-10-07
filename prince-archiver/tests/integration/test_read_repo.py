@@ -3,8 +3,8 @@ from datetime import datetime
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from prince_archiver.definitions import EventType
 from prince_archiver.adapters.repository import ReadRepo
+from prince_archiver.definitions import EventType
 
 pytestmark = pytest.mark.integration
 
@@ -20,14 +20,14 @@ def repo(session: AsyncSession) -> ReadRepo:
 )
 @pytest.mark.usefixtures("seed_data")
 async def test_export_filters_by_time_range(
-    repo: ReadRepo, 
-    start: datetime, 
+    repo: ReadRepo,
+    start: datetime,
     expected_count: int,
 ):
     result = await repo.get_exports(
         start=start,
         end=datetime(2100, 1, 1),
-        event_type=EventType.STITCH
+        event_type=EventType.STITCH,
     )
     assert len(result) == expected_count
 
@@ -38,9 +38,9 @@ async def test_export_filters_by_time_range(
 )
 @pytest.mark.usefixtures("seed_data")
 async def test_export_filters_on_event_type(
-    repo: ReadRepo, 
-    event_type: EventType, 
-    expected_count:int
+    repo: ReadRepo,
+    event_type: EventType,
+    expected_count: int,
 ):
     result = await repo.get_exports(
         start=datetime(1900, 1, 1),

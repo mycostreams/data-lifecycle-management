@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
-from uuid import UUID
 from typing import Self
+from uuid import UUID
 
-from pydantic import AwareDatetime, BaseModel, HttpUrl, model_validator, Field
-
+from pydantic import AwareDatetime, BaseModel, Field, HttpUrl, model_validator
 
 from prince_archiver.definitions import EventType
 from prince_archiver.utils import now
@@ -16,8 +15,9 @@ class FilterParams(BaseModel):
 
     @model_validator(mode="after")
     def validate_time_range(self) -> Self:
-        if (self.end - self.start) > timedelta(hours=36):
-            raise ValueError("")
+        max_delta = timedelta(hours=36)
+        if (self.end - self.start) > max_delta:
+            raise ValueError(f"Time range must be less than {max_delta}")
         return self
 
 
