@@ -42,7 +42,7 @@ class ExperimentFileSystem:
         date_prefix = date.strftime("%Y%m%d")
 
         files = await self.s3._glob(
-            f"{self.bucket_name}/{mode}/*/{date_prefix}*.tar",
+            f"{self.bucket_name}/{mode}/*/{date_prefix}/*.tar",
         )
         return self._group_files(files)
 
@@ -67,7 +67,7 @@ class ExperimentFileSystem:
     def _group_files(files: list[str]) -> dict[str, list[str]]:
         data: dict[str, list[str]] = defaultdict(list)
         for file_obj, file in zip(map(Path, files), files):
-            data[file_obj.parent.name].append(file)
+            data[file_obj.parent.parent.name].append(file)
         return data
 
 

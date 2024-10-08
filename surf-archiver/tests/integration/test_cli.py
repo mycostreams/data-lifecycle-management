@@ -13,7 +13,7 @@ from surf_archiver.test_utils import MessageWaiter
 @pytest.fixture(name="object_store_data")
 def fixture_object_store_data(random_str: str):
     bucket_url = f"http://localhost:9091/{random_str}"
-    file_url = f"{bucket_url}/images/test-id/20000101_0000.tar"
+    file_url = f"{bucket_url}/images/test-id/20000101/0000.tar"
 
     with Client() as client:
         client.put(bucket_url)

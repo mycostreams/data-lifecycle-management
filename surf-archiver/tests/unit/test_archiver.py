@@ -13,7 +13,7 @@ from surf_archiver.file import ArchiveFileSystem, ExperimentFileSystem
 def fixture_experiment_file_system() -> ExperimentFileSystem:
     file_system = AsyncMock(ExperimentFileSystem)
     file_system.list_files_by_date.return_value = {
-        "test-id": ["test-bucket/images/test-id/20000101_0000.tar"],
+        "test-id": ["test-bucket/images/test-id/20000101/0000.tar"],
     }
     return file_system
 
@@ -38,7 +38,7 @@ async def test_new_files_are_archived(
     expected = [
         ArchiveEntry(
             path="images/test-id/2000-01-01.tar",
-            src_keys=["test-bucket/images/test-id/20000101_0000.tar"],
+            src_keys=["test-bucket/images/test-id/20000101/0000.tar"],
         )
     ]
 
