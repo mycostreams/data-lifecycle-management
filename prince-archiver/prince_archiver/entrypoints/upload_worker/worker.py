@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 from contextlib import AsyncExitStack
@@ -34,15 +35,24 @@ class State:
 async def run_export(
     ctx: dict,
     input_data: dict,
+    *,
+    _timeout: int = 180,
 ):
     dto = ExportImagingEvent.model_validate(input_data)
     state: State = ctx["state"]
 
+    job_try: int = ctx.get("job_try", 1)
+    retry = Retry(defer=job_try * (3 * 60))
+
     try:
-        await state.export_handler(dto)
-    except (ConnectTimeoutError, OSError) as err:
-        job_try: int = ctx.get("job_try", 1)
-        raise Retry(defer=job_try * (3 * 60)) from err
+        async with asyncio.timeout(_timeout):
+            await state.export_handler(dto)
+    except* OSError as exc:
+        raise retry from exc
+    except* ConnectTimeoutError as exc:
+        raise retry from exc
+    except* TimeoutError as exc:
+        raise retry from exc
 
 
 async def startup(ctx: dict):
