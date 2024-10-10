@@ -35,7 +35,7 @@ class SurfArchiver(AbstractArchiver):
 
         LOGGER.info("[%s] Archiving %s", job_id, date_)
 
-        cmd = self._build_command(date=date_.isoformat(), job_id=job_id.hex())
+        cmd = self._build_command(date=date_.isoformat(), job_id=job_id.hex)
         async with self._managed_conn() as conn:
             await conn.run(cmd, check=True, timeout=self.settings.timeout)
 
