@@ -91,7 +91,8 @@ class Stream:
                 groupname=group.group_name,
                 consumername=group.consumer_name,
                 streams={self.stream: stream_id},
-                count=1,
+                count=5,
+                block=2000,
             )
 
             # Occurs when there are no latest messages (e.g >)
