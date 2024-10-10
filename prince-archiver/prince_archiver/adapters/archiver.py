@@ -25,7 +25,7 @@ class AbstractArchiver(ABC):
 
 
 class SurfArchiver(AbstractArchiver):
-    COMMAND = "nohup surf-archiver archive {date} {job_id} > /dev/null 2>&1 &"
+    COMMAND = "nohup surf-archiver archive {date} --job-id={job_id} > /dev/null 2>&1 &"
 
     def __init__(self, settings: Settings):
         self.settings = settings
@@ -35,7 +35,7 @@ class SurfArchiver(AbstractArchiver):
 
         LOGGER.info("[%s] Archiving %s", job_id, date_)
 
-        cmd = self._build_command(date=date_.isoformat(), job_id=job_id)
+        cmd = self._build_command(date=date_.isoformat(), job_id=job_id.hex)
         async with self._managed_conn() as conn:
             await conn.run(cmd, check=True, timeout=self.settings.timeout)
 
