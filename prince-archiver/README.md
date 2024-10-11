@@ -14,7 +14,7 @@ Prince), copying them to a staging area if necessary. It then appends this infor
 to a redis stream which can be read by other (sub)systems. It is also responsible for 
 deleting source and staging files after a predefined amount of elapsed time.
 
-The `state-manaher` is responsible for persisting state relating to imaging events, 
+The `state-manager` is responsible for persisting state relating to imaging events, 
 storing it in a local database. It pulls messages from the `event-ingester` stream and 
 also recieves notifications from the `upload-worker` and external `surf-archiver` systems.
 The former notifies the worker that image data has been uploaded to object storage. The 
@@ -33,7 +33,7 @@ imaging events.
 In order to successfully ingest imaging events, the file system of the external systems 
 (e.g. Prince, Aretha) need to be mounted into the `event-ingester` container. 
 It is assumed that the directory structure of the source systems has the following 
-stucture. The data ingestion 
+stucture.
 
 ```
 |-- <system>
@@ -63,8 +63,8 @@ Where `img_dir` is the relative path to directory containing the images.
 
 # Running via docker compose
 
-As a preliminary step, we must ensure that the database migrations are run, the redis
-groups are created and data directories are created. To do this run:
+As a preliminary step, we must ensure that the source directories are correctly set up
+in the development environment, to do this run:
 
 ```bash
 ./scripts/init-dev.sh
@@ -86,5 +86,5 @@ To view data via the api navigate to `http://fastapi.localhost/docs`. Alternativ
 to access programmitically run:
 
 ```bash
-curl --headers Host:fastapi.localhost localhost:80/api/1/exports
+curl --header Host:fastapi.localhost localhost:80/api/1/exports
 ```
