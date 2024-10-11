@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 from contextlib import AsyncExitStack
@@ -6,7 +7,6 @@ from functools import partial
 
 from arq import ArqRedis, Retry
 from arq.connections import RedisSettings
-from botocore.exceptions import ConnectTimeoutError
 
 from prince_archiver.adapters.file import PathManager
 from prince_archiver.adapters.streams import Stream
@@ -34,15 +34,18 @@ class State:
 async def run_export(
     ctx: dict,
     input_data: dict,
+    *,
+    _timeout: int = 180,
 ):
     dto = ExportImagingEvent.model_validate(input_data)
     state: State = ctx["state"]
 
     try:
-        await state.export_handler(dto)
-    except (ConnectTimeoutError, OSError) as err:
+        async with asyncio.timeout(_timeout):
+            await state.export_handler(dto)
+    except* (OSError, TimeoutError) as exc:
         job_try: int = ctx.get("job_try", 1)
-        raise Retry(defer=job_try * (3 * 60)) from err
+        raise Retry(defer=job_try * (3 * 60)) from exc
 
 
 async def startup(ctx: dict):
@@ -95,8 +98,8 @@ class WorkerSettings:
     on_shutdown = shutdown
 
     keep_result = 0
-    max_retries = 1
-    max_jobs = 5
+    max_retries = 5
+    max_jobs = 3
 
     redis_settings = RedisSettings.from_dsn(
         os.getenv("REDIS_DSN", "redis://localhost:6379"),

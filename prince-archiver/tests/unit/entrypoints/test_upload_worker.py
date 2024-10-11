@@ -2,7 +2,6 @@ from unittest.mock import AsyncMock
 
 import pytest
 from arq import Retry
-from botocore.exceptions import ConnectTimeoutError
 
 from prince_archiver.definitions import EventType, System
 from prince_archiver.entrypoints.upload_worker.worker import State, run_export
@@ -37,7 +36,14 @@ async def test_run_export_successful(
     export_handler.assert_awaited_once_with(expected_msg)
 
 
-@pytest.mark.parametrize("error_cls", (ConnectTimeoutError(endpoint_url="/"), OSError))
+@pytest.mark.parametrize(
+    "error_cls",
+    (
+        OSError,
+        TimeoutError,
+        ExceptionGroup("test", [OSError()]),
+    ),
+)
 async def test_workflow_with_retries(workflow_payload: dict, error_cls: Exception):
     export_handler = AsyncMock(ExportHandler)
     export_handler.side_effect = error_cls
