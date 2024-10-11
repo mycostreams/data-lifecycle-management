@@ -33,6 +33,8 @@ services:
       SURF_PASSWORD: ${SURF_PASSWORD}
       WEBHOOK_URL: ${WEBHOOK_URL}
     labels: *log-labels
+    volumes:
+      - ./prince_archiver:/app/prince_archiver
     deploy:
       restart_policy:
         condition: on-failure

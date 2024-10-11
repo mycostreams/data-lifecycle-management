@@ -25,7 +25,7 @@ class AbstractArchiver(ABC):
 
 
 class SurfArchiver(AbstractArchiver):
-    COMMAND = "nohup surf-archiver archive {date} --job-id={job_id} > /dev/null 2>&1 &"
+    COMMAND = "nohup surf-archiver archive --job-id={job_id} {date} > /dev/null 2>&1 &"
 
     def __init__(self, settings: Settings):
         self.settings = settings
