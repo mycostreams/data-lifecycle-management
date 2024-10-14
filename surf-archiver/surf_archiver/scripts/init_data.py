@@ -5,6 +5,10 @@ from surf_archiver.file import managed_s3_file_system
 
 
 async def main():
+    """Populate S3 with test data.
+
+    This is intended for development purposes only.
+    """
     async with managed_s3_file_system() as s3:
         bucket = os.getenv(
             "SURF_ARCHVIER_BUCKET",

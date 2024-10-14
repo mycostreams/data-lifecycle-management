@@ -42,15 +42,10 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 RUN sed -i 's/#PermitUserEnvironment no/PermitUserEnvironment yes/' /etc/ssh/sshd_config
-
 RUN mkdir /var/run/sshd
-RUN useradd -m -s /bin/bash guest
-RUN echo "guest:guest" | chpasswd
 
 COPY ./scripts/entrypoint.sh /app/scripts/entrypoint.sh
 
 EXPOSE 22
 
 ENTRYPOINT [ "/app/scripts/entrypoint.sh" ]
-
-CMD ["tail", "-f", "/dev/null"]

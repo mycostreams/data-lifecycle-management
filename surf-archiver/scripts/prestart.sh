@@ -3,4 +3,4 @@
 set -e
 set -x
 
-python /app/surf_archiver/init_data.py
+python /app/surf_archiver/scripts/init_data.py

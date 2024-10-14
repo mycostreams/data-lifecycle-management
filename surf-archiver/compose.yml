@@ -6,6 +6,13 @@ x-aws-env-variables: &aws-env-variables
   AWS_ENDPOINT_URL: http://s3:4566
 
 
+x-surf-archiver-env-variables: &surf-archiver-env-variables
+  SURF_ARCHIVER_BUCKET: mycostreams-raw-data
+  SURF_ARCHIVER_CONNECTION_URL: amqp://guest:guest@rabbitmq:5672
+  SURF_ARCHIVER_LOG_FILE: /data/app.log
+  SURF_ARCHIVER_TARGET_DIR: /data
+
+
 services:
   surf-archiver-cli:
     image: surf-archiver
@@ -14,11 +21,7 @@ services:
       target: runtime
     command: ["bash"]
     environment:
-      <<: *aws-env-variables
-      SURF_ARCHIVER_BUCKET: mycostreams-raw-data
-      SURF_ARCHIVER_CONNECTION_URL: amqp://guest:guest@rabbitmq:5672
-      SURF_ARCHIVER_LOG_FILE: /data/app.log
-      SURF_ARCHIVER_TARGET_DIR: /data
+      <<: [*aws-env-variables, *surf-archiver-env-variables]
     volumes:
       - ./surf_archiver:/app/surf_archiver
     depends_on:
@@ -52,8 +55,7 @@ services:
     image: surf-archiver
     command: ["./scripts/prestart.sh"]
     environment:
-      <<: *aws-env-variables
-      SURF_ARCHIVER_BUCKET: mycostreams-raw-data
+      <<: [*aws-env-variables, *surf-archiver-env-variables]
     volumes:
       - ./surf_archiver:/app/surf_archiver
     depends_on:
@@ -67,9 +69,11 @@ services:
       target: ssh-server
     ports:
       - "127.0.0.1:2222:22"
+    environment:
+      <<: [*aws-env-variables, *surf-archiver-env-variables]
+      USER: guest
     volumes:
       - ./surf_archiver:/app/surf_archiver
-      - ./env.example:/home/guest/.ssh/environment
       - remote-data:/data
     depends_on:
       prestart:
