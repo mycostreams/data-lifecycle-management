@@ -1,30 +1,29 @@
 # Surf archiver: CLI tool 
 
 Surf-Archiver copies daily data from S3, bundling it into a per experiment per day
-tar archive.
+tar archive. 
+
+It consists of two components: 
+1) a CLI tool
+2) a remote client which can execute CLI installed on a remote machine
+
+The CLI tool can be installed via [pipx](https://github.com/pypa/pipx).
 
 
-# Installation
+# Development
 
-Surf archiver can be installed using [pipx](https://github.com/pypa/pipx). This allows
-the cli to be executing the command `surf-archiver`.
+The easiest way to develop the tool is via docker. This ensures that you can connect
+to the dependent services (e.g. s3, rabbitmq). The `prestart` container ensures that 
+some test data is populated on s3.
 
-In order for it run, ensure that the appropriate AWS environment variables are set. 
-These include (but are not limited to):
+The `surf-archiver-cli` container allows for the invocation of the cli tool. For example:
 
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
+```bash
+docker compose run --rm surf-archiver-cli bash
+surf-archiver --help # See the available commands
 
+surf-archiver archive 2000-01-01  # archive a specific day
+cat /data/app.log  # check the logs
+ls /data/  # See what data has been archived
 
-# Example usage
-
-To view available commands run:
-```
-surf-archive --help
-```
-
-
-To archive for a specific date run:
-```
-surf-archive archive "2000-01-01" --target-dir .
 ```

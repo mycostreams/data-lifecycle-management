@@ -1,0 +1,27 @@
+---
+
+services:
+  surf-archiver-remote:
+    image: surf-archiver
+    build:
+      context: .
+      target: runtime
+    command: ["arq", "surf_archiver.external.WorkerSettings"]
+    environment:
+      REDIS_DSN: redis//redis:6379
+      USERNAME: ${USERNAME}
+      PASSWORD: ${PASSWORD}
+    labels:
+      logging: loki
+      logging_jobname: ${DEPLOYMENT_NAME-:surf-archiver}
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:7.2.4
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
