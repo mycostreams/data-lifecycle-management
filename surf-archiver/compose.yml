@@ -12,6 +12,7 @@ services:
     build:
       context: .
       target: runtime
+    command: ["bash"]
     environment:
       <<: *aws-env-variables
       SURF_ARCHIVER_BUCKET: mycostreams-raw-data
@@ -108,7 +109,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 3
-    alias:
 
 
 
