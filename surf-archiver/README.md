@@ -19,7 +19,7 @@ some test data is populated on s3.
 The `surf-archiver-cli` container allows for the invocation of the cli tool. For example:
 
 ```bash
-docker compose run --rm surf-archiver-cli bash
+docker compose run --rm surf-archiver-cli
 surf-archiver --help # See the available commands
 
 surf-archiver archive 2000-01-01  # archive a specific day
