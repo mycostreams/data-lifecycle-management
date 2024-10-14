@@ -1,0 +1,119 @@
+---
+
+x-aws-env-variables: &aws-env-variables
+  AWS_ACCESS_KEY_ID: test
+  AWS_SECRET_ACCESS_KEY: test
+  AWS_ENDPOINT_URL: http://s3:4566
+
+
+x-surf-archiver-env-variables: &surf-archiver-env-variables
+  SURF_ARCHIVER_BUCKET: mycostreams-raw-data
+  SURF_ARCHIVER_CONNECTION_URL: amqp://guest:guest@rabbitmq:5672
+  SURF_ARCHIVER_LOG_FILE: /data/app.log
+  SURF_ARCHIVER_TARGET_DIR: /data
+
+
+services:
+  surf-archiver-cli:
+    image: surf-archiver
+    build:
+      context: .
+      target: runtime
+    command: ["bash"]
+    environment:
+      <<: [*aws-env-variables, *surf-archiver-env-variables]
+    volumes:
+      - ./surf_archiver:/app/surf_archiver
+    depends_on:
+      prestart:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+    profiles:
+      - cli
+
+  surf-archiver-remote:
+    image: surf-archiver
+    command: ["arq", "surf_archiver.external.WorkerSettings"]
+    environment:
+      REDIS_DSN: ${REDIS_DSN:-redis//redis:6379}
+      USERNAME: ${USERNAME:-guest}
+      PASSWORD: ${PASSWORD:-guest}
+      HOST: ${HOST:-mock-data-archive}
+    depends_on:
+      prestart:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./surf_archiver:/app/surf_archiver
+      - remote-data:/data
+
+  prestart:
+    image: surf-archiver
+    command: ["./scripts/prestart.sh"]
+    environment:
+      <<: [*aws-env-variables, *surf-archiver-env-variables]
+    volumes:
+      - ./surf_archiver:/app/surf_archiver
+    depends_on:
+      s3:
+        condition: service_healthy
+
+  mock-data-archive:
+    image: mock-data-archive
+    build:
+      context: .
+      target: ssh-server
+    ports:
+      - "127.0.0.1:2222:22"
+    environment:
+      <<: [*aws-env-variables, *surf-archiver-env-variables]
+      USER: guest
+    volumes:
+      - ./surf_archiver:/app/surf_archiver
+      - remote-data:/data
+    depends_on:
+      prestart:
+        condition: service_completed_successfully
+      s3:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports:
+      - 127.0.0.1:5672:5672
+      - 127.0.0.1:15672:15672
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  redis:
+    image: redis:7.2.4
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  s3:
+    image: localstack/localstack:latest
+    ports:
+      - 127.0.0.1:4566:4566
+    environment:
+      SERVICES: "s3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+
+volumes:
+  remote-data:
