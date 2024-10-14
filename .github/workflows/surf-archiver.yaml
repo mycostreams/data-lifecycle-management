@@ -52,5 +52,7 @@ jobs:
           cache: poetry
       - name: Install dependencies
         run: poetry install
-      - name: Run tests
-        run: ./scripts/run-tests.sh
+      - name: Unit tests
+        run: poetry run pytest tests/unit
+      - name: Integration tests
+        run: poetry run pytest tests/integration
