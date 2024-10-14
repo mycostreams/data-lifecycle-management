@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 
-def main():
+def main() -> None:
     """Write environment variables to file.
 
     This is intended for development purposes only.

@@ -6,7 +6,8 @@ from uuid import UUID, uuid4
 
 from arq import cron
 from arq.connections import RedisSettings
-from pydantic_settings import BaseSettings
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from zoneinfo import ZoneInfo
 
 from .client import ArchiveClientFactory
@@ -15,11 +16,17 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
-    USERNAME: str
-    PASSWORD: str
+    USERNAME: str = Field(default=...)
+    PASSWORD: str = Field(default=...)
     HOST: str = "archive.surfsara.nl"
 
     ARCHIVE_TRANSITION_DAYS: int = 1
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
 
 async def run_archiving(
