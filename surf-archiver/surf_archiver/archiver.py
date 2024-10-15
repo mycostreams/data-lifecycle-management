@@ -42,8 +42,8 @@ class Archiver(AbstractArchiver):
         Files will be bundled per experiment id.
         """
         LOGGER.info(
-            "[%s] Archiving %s/%s",
-            archive_params.job_id,
+            "Archiving %s/%s",
+            # archive_params.job_id,
             archive_params.mode,
             archive_params.date,
         )
@@ -51,8 +51,8 @@ class Archiver(AbstractArchiver):
         archives: list[ArchiveEntry] = []
         async for target_archive in self._get_target_archives(archive_params):
             LOGGER.info(
-                "[%s] Creating achive for %s",
-                archive_params.job_id,
+                "Creating archive for %s",
+                # archive_params.job_id,
                 target_archive.experiment_id,
             )
             await self._create_archive(target_archive)
@@ -64,7 +64,7 @@ class Archiver(AbstractArchiver):
                 )
             )
 
-        LOGGER.info("[%s] Archiving complete")
+        LOGGER.info("Archiving complete")
 
         return archives
 
@@ -75,7 +75,7 @@ class Archiver(AbstractArchiver):
         grouped_files = await self.experiment_file_system.list_files_by_date(
             archive_params.date, archive_params.mode
         )
-        LOGGER.info("[%s] Count %i", archive_params.job_id, len(grouped_files))
+        LOGGER.info(" Count %i", len(grouped_files))
 
         tar_name = archive_params.date.strftime("%Y-%m-%d.tar")
         for experiment_id, files in grouped_files.items():
