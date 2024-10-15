@@ -39,6 +39,7 @@ surf-archiver = 'surf_archiver.cli:app'
 module = [
     "pika.*",
     "s3fs.*",
+    "testcontainers.*"
 ]
 ignore_missing_imports = true
 
