@@ -4,6 +4,7 @@ from typing import Generator
 import pytest
 from mypy_boto3_s3 import S3Client
 from typer.testing import CliRunner
+import yaml
 
 from surf_archiver.cli import app
 from surf_archiver.config import Config
@@ -25,7 +26,6 @@ def fixture_object_store_data(
         Bucket=random_str,
         Key="images/test-id/20000101/0000.tar",
     )
-
     yield
 
     s3_client.delete_object(
@@ -54,10 +54,11 @@ def fixture_config(
 @pytest.fixture(name="config_file")
 def fixture_config_file(config: Config, tmp_path: Path) -> Path:
     config_dir = tmp_path / "config"
-    config_dir.mkdir()
+    config_dir.mkdir(parents=True, exist_ok=True)
 
     config_file = config_dir / "config.yaml"
-    config_file.write_text(config.model_dump_json())
+    with config_file.open("w") as file:
+        yaml.dump(config.model_dump(mode="json"), file)
 
     return config_file
 
