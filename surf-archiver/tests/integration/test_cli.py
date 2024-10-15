@@ -2,9 +2,9 @@ from pathlib import Path
 from typing import Generator
 
 import pytest
+import yaml
 from mypy_boto3_s3 import S3Client
 from typer.testing import CliRunner
-import yaml
 
 from surf_archiver.cli import app
 from surf_archiver.config import Config
