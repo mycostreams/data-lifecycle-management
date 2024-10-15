@@ -43,7 +43,6 @@ class Archiver(AbstractArchiver):
         """
         LOGGER.info(
             "Archiving %s/%s",
-            # archive_params.job_id,
             archive_params.mode,
             archive_params.date,
         )
@@ -52,7 +51,6 @@ class Archiver(AbstractArchiver):
         async for target_archive in self._get_target_archives(archive_params):
             LOGGER.info(
                 "Creating archive for %s",
-                # archive_params.job_id,
                 target_archive.experiment_id,
             )
             await self._create_archive(target_archive)
