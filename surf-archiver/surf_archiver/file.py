@@ -37,12 +37,12 @@ class ExperimentFileSystem:
     async def list_files_by_date(
         self,
         date: DateT,
-        mode: Optional[Mode] = None,
+        mode: Mode = Mode.STITCH,
     ) -> dict[str, list[str]]:
         date_prefix = date.strftime("%Y%m%d")
 
         files = await self.s3._glob(
-            f"{self.bucket_name}/{mode}/*/{date_prefix}/*.tar",
+            f"{self.bucket_name}/{mode.value}/*/{date_prefix}/*.tar",
         )
         return self._group_files(files)
 
