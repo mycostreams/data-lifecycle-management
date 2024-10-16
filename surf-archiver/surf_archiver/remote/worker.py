@@ -10,6 +10,8 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from zoneinfo import ZoneInfo
 
+from surf_archiver.log import configure_remote_logging
+
 from .client import ArchiveClientFactory
 
 LOGGER = logging.getLogger(__name__)
@@ -50,6 +52,8 @@ async def run_archiving(
 
 
 async def startup(ctx: dict):
+    configure_remote_logging()
+
     settings = Settings()
 
     ctx["settings"] = settings
@@ -64,7 +68,7 @@ class WorkerSettings:
     queue_name = "arq:queue-surf-archiver-remote"
 
     cron_jobs = [
-        cron(run_archiving, hour={2}, minute={0}, timeout=timedelta(minutes=2)),
+        cron(run_archiving, hour={15}, minute={15, 16}, timeout=timedelta(minutes=2)),
     ]
 
     on_startup = startup
