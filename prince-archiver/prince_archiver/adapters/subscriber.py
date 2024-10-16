@@ -43,9 +43,9 @@ class ManagedSubscriber:
 
         self.exit_stack: AsyncExitStack | None = None
 
-        self.connection: AbstractRobustConnection | None
-        self.exchange: AbstractRobustExchange | None
+        self.connection: AbstractRobustConnection | None = None
         self.channel: AbstractRobustChannel | None = None
+        self.exchange: AbstractRobustExchange | None
         self.queue: AbstractQueue | None = None
 
     async def __aenter__(self):
