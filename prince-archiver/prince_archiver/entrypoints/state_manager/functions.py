@@ -27,7 +27,6 @@ class State:
     stream: Stream
     uow_factory: Callable[[], UnitOfWork]
     messagebus_factory: MessagebusFactoryT
-    archiver: AbstractArchiver | None = None
     messenger: Messenger | None = None
 
 
@@ -45,24 +44,6 @@ async def run_persist_export(
     except ServiceLayerException as exc:
         job_try: int = ctx["job_try"]
         raise Retry(defer=job_try) from exc
-
-
-async def run_archiving(
-    ctx: dict,
-    *,
-    _date: date | None = None,
-    _job_id: UUID | None = None,
-):
-    job_id = _job_id or uuid4()
-
-    state: State = ctx["state"]
-
-    delta = timedelta(days=state.settings.ARCHIVE_TRANSITION_DAYS)
-    archive_files_from = _date or date.today() - delta
-
-    if archiver := state.archiver:
-        LOGGER.info("[%s] Initiating archiving for %s", job_id, archive_files_from)
-        await archiver.archive(archive_files_from)
 
 
 async def run_reporting(ctx: dict, *, _date: date | None = None):

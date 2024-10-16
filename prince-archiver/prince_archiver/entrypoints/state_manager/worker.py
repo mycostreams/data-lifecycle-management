@@ -1,7 +1,6 @@
 import logging
 import os
 from contextlib import AsyncExitStack
-from datetime import timedelta
 from functools import partial
 from typing import Any
 
@@ -10,8 +9,6 @@ from arq.connections import RedisSettings
 from httpx import AsyncClient
 from zoneinfo import ZoneInfo
 
-from prince_archiver.adapters.archiver import Settings as ArchiverSettings
-from prince_archiver.adapters.archiver import SurfArchiver
 from prince_archiver.adapters.messenger import Messenger
 from prince_archiver.adapters.streams import Stream
 from prince_archiver.adapters.subscriber import ManagedSubscriber
@@ -30,7 +27,7 @@ from prince_archiver.service_layer.streams import Streams
 from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
 
 from .external import SubscriberMessageHandler
-from .functions import State, run_archiving, run_persist_export, run_reporting
+from .functions import State, run_persist_export, run_reporting
 from .settings import Settings
 from .stream import managed_stream_ingester
 
@@ -66,16 +63,6 @@ async def startup(ctx: dict):
 
     # Configure optional state
     optional_state: dict[str, Any] = {}
-
-    if settings.SURF_USERNAME and settings.SURF_PASSWORD:
-        LOGGER.info("Adding archiver")
-        optional_state["archiver"] = SurfArchiver(
-            settings=ArchiverSettings(
-                username=settings.SURF_USERNAME,
-                password=settings.SURF_PASSWORD,
-                host=settings.DATA_ARCHIVE_HOST,
-            ),
-        )
 
     # Configure messenger
     if settings.WEBHOOK_URL:
@@ -119,7 +106,6 @@ class WorkerSettings:
 
     cron_jobs = [
         cron(run_reporting, hour={7}, minute={0}),
-        cron(run_archiving, hour={2}, minute={0}, timeout=timedelta(minutes=2)),
     ]
 
     on_startup = startup
