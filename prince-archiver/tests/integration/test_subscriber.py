@@ -7,7 +7,11 @@ from aio_pika import Message, connect
 from aio_pika.abc import AbstractConnection, AbstractExchange, AbstractIncomingMessage
 from testcontainers.rabbitmq import RabbitMqContainer
 
-from prince_archiver.adapters.subscriber import ExchangeConfig, ManagedSubscriber
+from prince_archiver.adapters.subscriber import (
+    ExchangeConfig,
+    ManagedSubscriber,
+    QueueConfig,
+)
 
 pytestmark = pytest.mark.integration
 
@@ -81,6 +85,10 @@ async def test_managed_subscriber(
         url,
         message_handler=message_handler,
         exchange_config=exchange_config,
+        queue_config=QueueConfig(
+            name=None,
+            durable=False,
+        ),
     )
     async with subscriber:
         message_body = uuid4().hex.encode()
