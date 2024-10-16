@@ -11,6 +11,9 @@ else
     echo "$USER:$USER" | chpasswd
 fi
 
+echo "Granting access to /data"
+chown -R $USER:$USER /data
+
 echo "Creating environment file for \"$USER\""
 python /app/surf_archiver/scripts/write_env_file.py 
 
