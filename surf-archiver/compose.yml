@@ -36,7 +36,7 @@ services:
 
   surf-archiver-remote:
     image: surf-archiver
-    command: ["arq", "surf_archiver.external.WorkerSettings"]
+    command: ["arq", "surf_archiver.remote.WorkerSettings"]
     environment:
       REDIS_DSN: ${REDIS_DSN:-redis//redis:6379}
       USERNAME: ${USERNAME:-guest}
