@@ -46,10 +46,7 @@ async def run_archiving(
     LOGGER.info("[%s] Initiating archiving for %s", job_id, archive_files_from)
 
     async with client_factory.get_managed_client() as client:
-        await client.archive(
-            archive_files_from,
-            job_id=job_id,
-        )
+        await client.archive(archive_files_from, job_id=job_id)
 
 
 async def startup(ctx: dict):
@@ -64,7 +61,7 @@ async def startup(ctx: dict):
 
 
 class WorkerSettings:
-    queue_name = "arq:surf-archiver"
+    queue_name = "arq:queue-surf-archiver-remote"
 
     cron_jobs = [
         cron(run_archiving, hour={2}, minute={0}, timeout=timedelta(minutes=2)),

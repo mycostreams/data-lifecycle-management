@@ -38,11 +38,13 @@ services:
     image: surf-archiver
     command: ["arq", "surf_archiver.remote.WorkerSettings"]
     environment:
-      REDIS_DSN: ${REDIS_DSN:-redis//redis:6379}
-      USERNAME: ${USERNAME:-guest}
-      PASSWORD: ${PASSWORD:-guest}
-      HOST: ${HOST:-mock-data-archive}
+      REDIS_DSN: redis://redis:6379
+      USERNAME: guest
+      PASSWORD: guest
+      HOST: mock-data-archive
     depends_on:
+      mock-data-archive:
+        condition: service_started
       prestart:
         condition: service_completed_successfully
       redis:
