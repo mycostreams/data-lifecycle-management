@@ -32,14 +32,17 @@ class EventIngester:
         start: datetime | None = None,
         end: datetime | None = None,
     ):
-        end = now()
-        start = start or (end - timedelta(hours=12))
-
         LOGGER.info("Ingesting backlog")
+
+        end = now()
+        start = start or (end - timedelta(hours=1))
+
         for sys_dir in self.system_dirs:
             async for file_info in sys_dir.iter_events():
                 if start < file_info.timestamp < end:
                     await self.handler(file_info)
+
+        LOGGER.info("Ingested backlog")
 
     async def ingest_latest(
         self,
