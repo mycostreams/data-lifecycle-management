@@ -2,11 +2,9 @@ import logging
 from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Callable
-from uuid import UUID, uuid4
 
 from arq import Retry
 
-from prince_archiver.adapters.archiver import AbstractArchiver
 from prince_archiver.adapters.messenger import Message, Messenger
 from prince_archiver.adapters.streams import Stream
 from prince_archiver.service_layer.exceptions import ServiceLayerException
