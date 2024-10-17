@@ -70,6 +70,15 @@ async def test_rm(
     assert not src_file_path.exists()
 
 
+async def test_write_bytes(
+    file_system: AsyncFileSystem,
+    tmp_path: Path
+):
+    filepath = tmp_path / uuid4().hex
+    await file_system.write_bytes(filepath, b"test")
+    assert filepath.read_bytes() == b"test"
+
+
 async def test_iter_bytes(
     file_system: AsyncFileSystem,
     src_file_path: Path,

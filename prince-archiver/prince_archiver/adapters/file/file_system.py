@@ -48,6 +48,10 @@ class AsyncFileSystem:
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(self.executor, shutil.rmtree, src)
 
+    async def write_bytes(self, target: Path, content: bytes):
+        async with aiofiles.open(target, "wb", executor=self.executor) as target_file:
+            await target_file.write(content)
+
     async def rm(self, src: Path) -> None:
         await aiofiles.os.remove(src, executor=self.executor)
 

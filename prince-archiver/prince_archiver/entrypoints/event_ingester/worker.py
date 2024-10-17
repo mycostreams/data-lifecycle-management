@@ -1,7 +1,6 @@
 import logging
 import os
 from contextlib import AsyncExitStack
-from functools import partial
 
 from arq import ArqRedis, cron
 from arq.connections import RedisSettings
@@ -17,7 +16,7 @@ from prince_archiver.log import configure_logging
 from prince_archiver.service_layer.streams import Streams
 
 from .functions import State, run_trim
-from .ingester import managed_ingester, process
+from .ingester import EventIngesterHandler, managed_ingester
 from .settings import Settings
 
 LOGGER = logging.getLogger(__name__)
@@ -44,9 +43,13 @@ async def startup(ctx: dict):
     )
 
     # Setup data ingester
-    event_queue = await stack.enter_async_context(
-        managed_event_queue(partial(process, state=state)),
+    handler = EventIngesterHandler(
+        stream=state.stream,
+        staging_path=(
+            state.path_manager.get_staging_path() if settings.COPY_TO_STAGING else None
+        ),
     )
+    event_queue = await stack.enter_async_context(managed_event_queue(handler.process))
 
     event_ingester = EventIngester(
         state.path_manager.get_system_dirs(),

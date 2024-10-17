@@ -75,6 +75,15 @@ async def test_src_dir_copy(src_dir: SrcDir):
     )
 
 
+async def test_src_dir_write_metadata(src_dir: SrcDir):
+    await src_dir.write_metadata("test")
+
+    src_dir.file_system.write_bytes.assert_awaited_once_with(
+        Path("/src/metadata.json"),
+        b"test",
+    )
+
+
 async def test_src_dir_rm(src_dir: SrcDir):
     await src_dir.rm()
 

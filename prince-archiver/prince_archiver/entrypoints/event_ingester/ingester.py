@@ -1,58 +1,52 @@
 import asyncio
 import logging
 from contextlib import asynccontextmanager
-from typing import Protocol
+from pathlib import Path
 
-from prince_archiver.adapters.file import PathManager
 from prince_archiver.adapters.ingester import EventFile, EventIngester
 from prince_archiver.adapters.streams import Stream
 from prince_archiver.service_layer.messages import ImagingEventStream, SrcDirInfo
 from prince_archiver.service_layer.streams import Message
 
-from .settings import Settings
-
 LOGGER = logging.getLogger(__name__)
 
 
-class State(Protocol):
-    settings: Settings
-    stream: Stream
-    path_manager: PathManager
+class EventIngesterHandler:
+    def __init__(
+        self,
+        stream: Stream,
+        staging_path: Path | None,
+    ):
+        self.stream = stream
+        self.staging_path = staging_path
 
+    async def process(self, event_file: EventFile):
+        async with event_file.process() as (dto, src_dir):
+            LOGGER.info("[%s] Adding to stream", dto.timestep_id)
 
-async def process(event_file: EventFile, *, state: State):
-    """Process new imaging event.
+            target_dir = f"{int(dto.timestamp.timestamp())}-{dto.timestep_id.hex[:6]}"
 
-    Copy to staging if necessary and add to stream.
+            # Prep the export message export message
+            msg = ImagingEventStream(
+                ref_id=dto.timestep_id,
+                type=dto.event_type,
+                experiment_id=dto.experiment_id,
+                timestamp=dto.timestamp,
+                system=event_file.system_dir.system,
+                src_dir_info=SrcDirInfo(
+                    staging_path=target_dir if self.staging_path else None,
+                    local_path=dto.img_dir,
+                    raw_metadata=dto.model_dump(mode="json", by_alias=True),
+                    img_count=dto.img_count,
+                ),
+            )
 
-    """
-    async with event_file.process() as (dto, src_dir):
-        LOGGER.info("[%s] Adding to stream", dto.timestep_id)
+            # Copy files if necessary
+            await src_dir.write_metadata(dto.model_dump_json(by_alias=True))
+            if self.staging_path:
+                await src_dir.copy(self.staging_path / target_dir)
 
-        target_dir = f"{int(dto.timestamp.timestamp())}-{dto.timestep_id.hex[:6]}"
-        metadata = await src_dir.get_metadata()
-
-        # Prep the export message export message
-        msg = ImagingEventStream(
-            ref_id=dto.timestep_id,
-            experiment_id=dto.experiment_id,
-            timestamp=dto.timestamp,
-            system=event_file.system_dir.system,
-            src_dir_info=SrcDirInfo(
-                staging_path=target_dir if state.settings.COPY_TO_STAGING else None,
-                local_path=dto.img_dir,
-                raw_metadata=metadata,
-                img_count=dto.img_count,
-            ),
-        )
-
-        # Copy to staging
-        if state.settings.COPY_TO_STAGING:
-            await src_dir.copy(state.path_manager.get_staging_path() / target_dir)
-
-        await state.stream.add(Message(msg))
-
-    LOGGER.info("[%s] Added to stream", dto.timestep_id)
+            await self.stream.add(Message(msg))
 
 
 @asynccontextmanager

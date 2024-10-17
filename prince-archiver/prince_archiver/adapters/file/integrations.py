@@ -5,15 +5,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import AsyncGenerator
 
-from pydantic import Json, TypeAdapter
-
 from prince_archiver.definitions import System
 from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.service_layer.external_dto import TimestepDTO
 
 from .file_system import AsyncFileSystem
-
-JsonT = TypeAdapter(Json)
 
 
 class SystemDir:
@@ -59,20 +55,14 @@ class SrcDir:
         self.path = path.absolute()
         self.file_system = file_system
 
-    async def get_metadata(self, filename="metadata.json") -> Json:
-        path = self.path / filename
-        if await self.file_system.exists(path):
-            return await self.file_system.read_json(
-                path,
-                mapper=JsonT.validate_json,
-            )
-        return {}
-
     async def exists(self) -> bool:
         return await self.file_system.exists(self.path)
 
     async def copy(self, target_dir: Path):
         await self.file_system.copy_tree(self.path, target_dir)
+
+    async def write_metadata(self, content: str, filename: str = "metadata.json"):
+        await self.file_system.write_bytes(self.path / filename, content.encode())
 
     async def rm(self):
         await self.file_system.rm_tree(self.path)

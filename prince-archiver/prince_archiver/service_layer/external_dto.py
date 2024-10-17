@@ -4,19 +4,19 @@ from datetime import UTC, date
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from pydantic import AwareDatetime, BaseModel, Field, model_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 
 from prince_archiver.definitions import EventType, System
 
 
 class TimestepMeta(BaseModel):
-    timestep_id: UUID = Field(default_factory=uuid4)
+    timestep_id: UUID = Field(default_factory=uuid4, serialization_alias="ref_id")
     plate: int
     cross_date: date
     experiment_id: str = Field(default_factory=str)
     position: int
     timestamp: AwareDatetime
-    event_type: EventType = Field(EventType.STITCH)
+    event_type: EventType = Field(EventType.STITCH, serialization_alias="type")
     system: System = System.PRINCE
 
     img_count: int = Field(150, alias="image_count")
@@ -40,6 +40,8 @@ class TimestepDTO(TimestepMeta):
             root = ts.strftime("%Y%m%d_%H%M.tar")
             self.key = f"{self.experiment_id}/{root}"
         return self
+
+    model_config = ConfigDict(extra="allow")
 
 
 # Messages emitted from Surf Data Archive
