@@ -28,9 +28,6 @@ services:
     command: ["arq", "prince_archiver.entrypoints.state_manager.WorkerSettings"]
     environment:
       <<: [*postgres-env-variable, *redis-env-variable]
-      DATA_ARCHIVE_HOST: archive.surfsara.nl
-    volumes:
-      - ${SSH_HOSTS_PATH:-~/.ssh/known_hosts}:/root/.ssh/known_hosts:ro
     depends_on:
       db:
         condition: service_healthy
