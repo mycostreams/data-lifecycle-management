@@ -16,6 +16,7 @@ class Export(ReadBase):
             ImagingEvent.id,
             ImagingEvent.ref_id,
             ImagingEvent.type,
+            ImagingEvent.timestamp,
             ImagingEvent.experiment_id,
             ObjectStoreEntry.key,
             ObjectStoreEntry.uploaded_at,

@@ -9,11 +9,7 @@ from s3fs import S3FileSystem
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from prince_archiver.config import AWSSettings
-from prince_archiver.service_layer.uow import (
-    AbstractUnitOfWork,
-    UnitOfWork,
-    get_session_maker,
-)
+from prince_archiver.service_layer.uow import get_session_maker
 
 SessionmakerT = async_sessionmaker[AsyncSession]
 
@@ -66,8 +62,8 @@ async def get_file_system(
     return state.file_system
 
 
-async def get_uow(
+async def get_session(
     state: Annotated[AppState, Depends(get_app_state)],
-) -> AsyncGenerator[AbstractUnitOfWork, None]:
-    async with UnitOfWork(state.sessionmaker) as uow:
-        yield uow
+) -> AsyncGenerator[AsyncSession, None]:
+    async with state.sessionmaker() as session:
+        yield session

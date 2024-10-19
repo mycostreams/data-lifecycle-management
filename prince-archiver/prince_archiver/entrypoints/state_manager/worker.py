@@ -2,14 +2,11 @@ import logging
 import os
 from contextlib import AsyncExitStack
 from functools import partial
-from typing import Any
 
-from arq import ArqRedis, cron
+from arq import ArqRedis
 from arq.connections import RedisSettings
-from httpx import AsyncClient
 from zoneinfo import ZoneInfo
 
-from prince_archiver.adapters.messenger import Messenger
 from prince_archiver.adapters.streams import Stream
 from prince_archiver.adapters.subscriber import ManagedSubscriber
 from prince_archiver.log import configure_logging
@@ -27,7 +24,7 @@ from prince_archiver.service_layer.streams import Streams
 from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
 
 from .external import SubscriberMessageHandler
-from .functions import State, run_persist_export, run_reporting
+from .functions import State, run_persist_export
 from .settings import Settings
 from .stream import managed_stream_ingester
 
@@ -62,20 +59,10 @@ async def startup(ctx: dict):
     stream = Stream(redis=redis, stream=Streams.new_imaging_event)
 
     # Configure optional state
-    optional_state: dict[str, Any] = {}
-
-    # Configure messenger
-    if settings.WEBHOOK_URL:
-        LOGGER.info("Adding messenger")
-        client = await exit_stack.enter_async_context(AsyncClient())
-        optional_state["messenger"] = Messenger(client, str(settings.WEBHOOK_URL))
-
     state = State(
         stream=stream,
         settings=settings,
         messagebus_factory=messagebus_factory,
-        uow_factory=uow_factory,
-        **optional_state,
     )
 
     # Configure stream ingester
@@ -103,10 +90,6 @@ class WorkerSettings:
     queue_name = "arq:queue-state-manager"
 
     functions = [run_persist_export]
-
-    cron_jobs = [
-        cron(run_reporting, hour={7}, minute={0}),
-    ]
 
     on_startup = startup
     on_shutdown = shutdown

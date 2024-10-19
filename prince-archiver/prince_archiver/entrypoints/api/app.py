@@ -24,7 +24,7 @@ def create_app(*, _state: AppState | None = None):
         lifespan=partial(lifespan, app_state=state),
     )
 
-    app.include_router(router, prefix="/api/1")
+    app.include_router(router)
 
     @app.get("/health", response_model=None, status_code=204)
     async def health_check():
