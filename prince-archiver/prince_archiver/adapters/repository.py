@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import date, datetime
+from datetime import date
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -7,68 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql import Select
 
-from prince_archiver.definitions import EventType
 from prince_archiver.domain.models import DataArchiveEntry, ImagingEvent
 from prince_archiver.models import v2 as data_models
-from prince_archiver.models.read import DailyStats, Export
-from prince_archiver.utils import now
-
-
-class AbstractReadRepo(ABC):
-    """
-    Repository to be used with read models.
-    """
-
-    @abstractmethod
-    async def get_exports(
-        self,
-        start: datetime,
-        end: datetime,
-        event_type: EventType,
-    ) -> list[Export]: ...
-
-    @abstractmethod
-    async def get_daily_stats(
-        self,
-        start: date,
-        end: date,
-    ) -> list[DailyStats]: ...
-
-
-class ReadRepo(AbstractReadRepo):
-    """
-    Concrete read repository.
-    """
-
-    def __init__(self, session: AsyncSession):
-        self.session = session
-
-    async def get_exports(
-        self,
-        start: datetime,
-        end: datetime,
-        event_type: EventType,
-    ) -> list[Export]:
-        filter_params = [
-            Export.type == event_type,
-            Export.uploaded_at > start,
-            Export.uploaded_at < end,
-        ]
-        stmt = select(Export).where(*filter_params)
-        result = await self.session.stream_scalars(stmt)
-        return [item async for item in result]
-
-    async def get_daily_stats(
-        self,
-        start: date,
-        end: date | None = None,
-    ) -> list[DailyStats]:
-        stmt = select(DailyStats).where(
-            DailyStats.date >= start,
-            DailyStats.date <= (end or now().date()),
-        )
-        result = await self.session.stream_scalars(stmt)
-        return [item async for item in result]
 
 
 class AbstractDataArchiveEntryRepo(ABC):
