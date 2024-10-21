@@ -33,4 +33,4 @@ def create_app(*, _state: AppState | None = None):
     return app
 
 
-app = create_app()
+# app = create_app()

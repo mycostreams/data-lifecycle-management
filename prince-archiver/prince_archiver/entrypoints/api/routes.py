@@ -23,10 +23,7 @@ from .utils import get_pagininated_results
 router = APIRouter(prefix="/api/1")
 
 
-@router.get(
-    "/exports",
-    response_model=ExportsModel,
-)
+@router.get("/exports")
 async def list_exports(
     filter_query: Annotated[ExportFilterParams, Query()],
     session: Annotated[AsyncSession, Depends(get_session)],
@@ -59,10 +56,7 @@ async def list_exports(
     )
 
 
-@router.get(
-    "/archives",
-    response_model=ArchivesModel,
-)
+@router.get("/archives")
 async def list_archives(
     session: Annotated[AsyncSession, Depends(get_session)],
     experiment_id: str | None = None,
@@ -91,15 +85,11 @@ async def list_archives(
     )
 
 
-@router.get(
-    "/archives/{id}",
-    name="read_archive",
-    response_model=ArchiveModel,
-)
+@router.get("/archives/{id}", name="read_archive")
 async def read_archive(
     id: UUID,
     session: Annotated[AsyncSession, Depends(get_session)],
-):
+) -> ArchiveModel:
     archive = await session.scalar(select(read.Archive).where(read.Archive.id == id))
     if not archive:
         raise HTTPException(status_code=404, detail="item not found")
@@ -114,11 +104,10 @@ async def read_archive(
     )
 
 
-@router.get(
-    "/daily-stats",
-    response_model=list[DailyStatsModel],
-)
-async def list_daily_stats(session: Annotated[AsyncSession, Depends(get_session)]):
+@router.get("/daily-stats")
+async def list_daily_stats(
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> list[DailyStatsModel]:
     result = await session.scalars(
         select(read.DailyStats).order_by(read.DailyStats.date.desc()).limit(7)
     )
