@@ -4,6 +4,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Mapped
 
+from prince_archiver.definitions import EventType
 from prince_archiver.models.v2 import (
     ArchiveChecksum,
     DataArchiveMember,
@@ -34,9 +35,11 @@ class ArchiveMember(ReadBase):
         .subquery()
     )
 
+    id: Mapped[UUID]
     data_archive_entry_id: Mapped[UUID]
     member_key: Mapped[str]
     timestamp: Mapped[datetime]
     ref_id: Mapped[UUID]
     checksum: Mapped[str]
     size: Mapped[int]
+    type: Mapped[EventType]

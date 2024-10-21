@@ -13,7 +13,6 @@ from .utils import ReadBase
 class Export(ReadBase):
     __table__ = (
         select(
-            ImagingEvent.id,
             ImagingEvent.ref_id,
             ImagingEvent.type,
             ImagingEvent.timestamp,
@@ -24,10 +23,11 @@ class Export(ReadBase):
         .join_from(ObjectStoreEntry, ImagingEvent)
         .subquery()
     )
+    __mapper_args__ = {"primary_key": __table__.c.ref_id}
 
-    id: Mapped[UUID]
     ref_id: Mapped[UUID]
     experiment_id: Mapped[str]
     type: Mapped[EventType]
     key: Mapped[str]
     uploaded_at: Mapped[datetime]
+    timestamp: Mapped[datetime]
