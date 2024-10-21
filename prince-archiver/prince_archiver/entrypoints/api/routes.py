@@ -66,8 +66,8 @@ async def list_exports(
 async def list_archives(
     session: Annotated[AsyncSession, Depends(get_session)],
     experiment_id: str | None = None,
-    offset: int = 0,
-    limit: int = 100,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
 ) -> ArchivesModel:
     filter_params = []
     if experiment_id:

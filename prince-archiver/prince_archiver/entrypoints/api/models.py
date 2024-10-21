@@ -11,8 +11,8 @@ class ExportFilterParams(BaseModel):
     start: AwareDatetime = Field(default_factory=lambda: now() - timedelta(hours=24))
     end: AwareDatetime = Field(default_factory=now)
     event_type: EventType = EventType.STITCH
-    limit: int = 500
-    offset: int = 0
+    limit: int = Field(500, le=500)
+    offset: int = Field(0, ge=0)
 
 
 class DailyStatsModel(BaseModel):
@@ -62,5 +62,5 @@ class ArchiveMemberModel(BaseModel):
     size: int
 
 
-class ArchiveModel(BaseModel):
+class ArchiveModel(BaseArchiveModel):
     members: list[ArchiveMemberModel]
