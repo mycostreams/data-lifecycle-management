@@ -26,11 +26,11 @@ async def test_imaging_event_mappers(session: AsyncSession):
     assert imaging_event.experiment_id == "test_experiment_id"
 
     assert (object_store_entry := imaging_event.object_store_entry)
-    assert object_store_entry.key == "test_key"
+    assert object_store_entry.key == "test/key"
     assert object_store_entry.uploaded_at == datetime(2001, 1, 1, tzinfo=UTC)
 
     assert (event_archive := imaging_event.event_archive)
-    assert event_archive.size == 3
+    assert event_archive.size == 10
     assert event_archive.checksum == Checksum(hex="test_hex")
 
     assert (src_dir_info := imaging_event.src_dir_info)
@@ -52,5 +52,5 @@ async def test_data_archive_mappers(session: AsyncSession):
     assert (members := data_archive_entry.members) and len(members) == 1
 
     member = members[0]
-    assert member.src_key == "test_key"
+    assert member.src_key == "test/key"
     assert member.member_key == "test_member_key"
