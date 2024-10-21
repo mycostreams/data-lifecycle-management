@@ -83,8 +83,8 @@ docker compose -f compose.yml -f compose.dev.yml logs -f event-ingester state-ma
 ```
 
 To view data via the api navigate to `http://fastapi.localhost/docs`. Alternatively 
-to access programmitically run:
+to access it programmitically run e.g.:
 
 ```bash
-curl --header Host:fastapi.localhost localhost:80/api/1/exports
+curl --header Host:fastapi.localhost localhost:80/api/1/exports?limit=1
 ```

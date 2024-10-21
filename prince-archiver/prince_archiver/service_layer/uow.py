@@ -7,10 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from prince_archiver.adapters.repository import (
     AbstractDataArchiveEntryRepo,
     AbstractImagingEventRepo,
-    AbstractReadRepo,
     DataArchiveEntryRepo,
     ImagingEventRepo,
-    ReadRepo,
 )
 
 
@@ -28,7 +26,6 @@ class AbstractUnitOfWork(ABC):
 
     data_archive: AbstractDataArchiveEntryRepo
     imaging_events: AbstractImagingEventRepo
-    read: AbstractReadRepo
 
     @abstractmethod
     async def __aenter__(self) -> "AbstractUnitOfWork": ...
@@ -55,7 +52,6 @@ class UnitOfWork(AbstractUnitOfWork):
 
     data_archive: DataArchiveEntryRepo
     imaging_events: ImagingEventRepo
-    read: ReadRepo
 
     def __init__(self, session_maker: async_sessionmaker[AsyncSession]):
         self.session_maker = session_maker
@@ -67,7 +63,6 @@ class UnitOfWork(AbstractUnitOfWork):
         # Initialize repos
         self.data_archive = DataArchiveEntryRepo(self.session)
         self.imaging_events = ImagingEventRepo(self.session)
-        self.read = ReadRepo(self.session)
 
         return self
 

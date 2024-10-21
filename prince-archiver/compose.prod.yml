@@ -28,7 +28,6 @@ services:
       <<: *aws-env-variables
       RABBITMQ_DSN: ${RABBITMQ_DSN}
       SENTRY_DSN: ${SENTRY_DSN}
-      WEBHOOK_URL: ${WEBHOOK_URL}
     labels: *log-labels
     deploy:
       restart_policy:

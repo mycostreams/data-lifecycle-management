@@ -93,6 +93,7 @@ def fixture_data_archive_entry():
     return data_models.DataArchiveEntry(
         id=UUID("611598397745466bb78b82f4c462fd6a"),
         path="images/test_experiment_id/test.tar",
+        created_at=datetime(2002, 1, 1, tzinfo=UTC),
     )
 
 
@@ -101,8 +102,9 @@ def fixture_data_archive_member(
     data_archive_entry: data_models.DataArchiveEntry,
 ) -> data_models.DataArchiveMember:
     return data_models.DataArchiveMember(
+        id=UUID("a9d959f074dd4f22b037c402372a0bbc"),
         member_key="test_member_key",
-        src_key="test_key",
+        src_key="test/key",
         data_archive_entry_id=data_archive_entry.id,
         created_at=datetime(2002, 1, 1, tzinfo=UTC),
     )
@@ -113,7 +115,7 @@ def fixture_object_store_entry(
     imaging_event: data_models.ImagingEvent,
 ) -> data_models.ObjectStoreEntry:
     return data_models.ObjectStoreEntry(
-        key="test_key",
+        key="test/key",
         uploaded_at=datetime(2001, 1, 1, tzinfo=UTC),
         imaging_event_id=imaging_event.id,
     )
@@ -125,7 +127,7 @@ def fixture_event_archive(
 ) -> data_models.EventArchive:
     return data_models.EventArchive(
         id=uuid4(),
-        size=3,
+        size=10,
         imaging_event_id=imaging_event.id,
     )
 
@@ -173,6 +175,7 @@ async def fixture_seed_data(
         data_archive_entry,
         data_archive_member,
     ]
+
     for object in items:
         session.add(object)
         await session.commit()
