@@ -5,7 +5,7 @@ from uuid import UUID
 
 import pytest
 
-from prince_archiver.service_layer.external_dto import TimestepDTO, TimestepMeta
+from prince_archiver.service_layer.external_dto import TimestepDTO
 
 
 @dataclass
@@ -25,11 +25,5 @@ def fixture_base_kwargs() -> _BaseKwargs:
 
 
 def test_experiment_id_set(base_kwargs: _BaseKwargs):
-    dto = TimestepMeta(**base_kwargs.__dict__)
+    dto = TimestepDTO(**base_kwargs.__dict__)
     assert dto.experiment_id == "20000101_001"
-
-
-def test_key_set(base_kwargs: _BaseKwargs):
-    dto = TimestepDTO(experiment_id="test-id", **base_kwargs.__dict__)
-
-    assert dto.key == "test-id/20010101_0000.tar"

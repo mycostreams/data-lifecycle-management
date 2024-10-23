@@ -6,7 +6,7 @@ from uuid import uuid4
 import typer
 
 from prince_archiver.definitions import System
-from prince_archiver.service_layer.external_dto import TimestepMeta
+from prince_archiver.service_layer.external_dto import TimestepDTO
 from prince_archiver.test_utils.utils import make_timestep_directory
 from prince_archiver.utils import now
 
@@ -27,7 +27,7 @@ def make_timestep_dir(
     data_dir: DataDirT,
     timestamp: Annotated[datetime, typer.Option(default_factory=now)],
 ):
-    meta = TimestepMeta(
+    meta = TimestepDTO(
         plate=1,
         cross_date=date(2000, 1, 1),
         position=1,

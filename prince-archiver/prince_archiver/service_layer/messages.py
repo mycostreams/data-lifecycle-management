@@ -1,8 +1,7 @@
-from datetime import datetime
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field, AwareDatetime
+from pydantic import AwareDatetime, BaseModel, Field
 
 from prince_archiver.definitions import Algorithm, EventType, System
 from prince_archiver.utils import now
