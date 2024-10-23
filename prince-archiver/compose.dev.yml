@@ -53,6 +53,8 @@ services:
     environment:
       <<: *aws-env-variables
     <<: *code-volumes
+    ports:
+      - 127.0.0.1:8000:8000
 
   prestart:
     <<: *code-volumes
