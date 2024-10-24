@@ -58,8 +58,8 @@ class ArchiveMemberModel(BaseModel):
     member_key: str
     ref_id: UUID
     timestamp: datetime
-    checksum: str
-    size: int
+    checksum: str | None
+    size: int | None
 
 
 class ArchiveModel(BaseArchiveModel):
