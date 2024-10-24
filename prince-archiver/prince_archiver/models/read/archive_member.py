@@ -30,8 +30,8 @@ class ArchiveMember(ReadBase):
         )
         .join_from(DataArchiveMember, ObjectStoreEntry)
         .join_from(ObjectStoreEntry, ImagingEvent)
-        .join_from(ImagingEvent, EventArchive)
-        .join_from(EventArchive, ArchiveChecksum)
+        .outerjoin_from(ImagingEvent, EventArchive)
+        .outerjoin_from(EventArchive, ArchiveChecksum)
         .subquery()
     )
 
