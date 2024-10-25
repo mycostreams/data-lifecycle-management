@@ -2,27 +2,26 @@
 
 services:
   surf-archiver-remote:
-    image: surf-archiver
+    image: mycostreams/surf-archiver:${TAG:-latest}
     build:
       context: .
       target: runtime
     command: ["arq", "surf_archiver.remote.WorkerSettings"]
     environment:
-      REDIS_DSN: redis//redis:6379
+      REDIS_DSN: ${REDIS_DSN}
       USERNAME: ${SURF_USERNAME}
       PASSWORD: ${SURF_PASSWORD}
       SENTRY_DSN: ${SENTRY_DSN}
     labels:
       logging: loki
       logging_jobname: ${DEPLOYMENT_NAME-:surf-archiver}
-    depends_on:
-      redis:
-        condition: service_healthy
+    deploy:
+      restart_policy:
+        condition: on-failure
+    networks:
+      - external
 
-  redis:
-    image: redis:7.2.4
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+networks:
+  external:
+    name: infra-public
+    external: true
