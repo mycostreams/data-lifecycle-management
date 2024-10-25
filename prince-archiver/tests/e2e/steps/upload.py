@@ -10,7 +10,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from prince_archiver.definitions import EventType
-from prince_archiver.service_layer.external_dto import TimestepMeta
+from prince_archiver.service_layer.external_dto import TimestepDTO
 from prince_archiver.test_utils.utils import Timer
 
 
@@ -25,7 +25,7 @@ def step_impl(context):
 
     context.timestep_id = uuid4()
 
-    meta = TimestepMeta(
+    meta = TimestepDTO(
         timestep_id=context.timestep_id,
         plate=1,
         cross_date=date(2000, 1, 1),

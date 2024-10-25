@@ -5,7 +5,7 @@ from timeit import default_timer
 
 import httpx
 
-from prince_archiver.service_layer.external_dto import TimestepMeta
+from prince_archiver.service_layer.external_dto import TimestepDTO
 
 DOWNLOAD_URL = "https://vu.data.surfsara.nl/index.php/s/ndI1UoMRwliVYGR/download"
 
@@ -26,7 +26,7 @@ def _get_image(url: str = DOWNLOAD_URL):
 
 
 def make_timestep_directory(
-    meta: TimestepMeta,
+    meta: TimestepDTO,
     base_dir: Path,
     src_img: Path | None = None,
 ) -> None:
