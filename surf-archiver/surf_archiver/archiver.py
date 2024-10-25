@@ -73,7 +73,7 @@ class Archiver(AbstractArchiver):
         grouped_files = await self.experiment_file_system.list_files_by_date(
             archive_params.date, archive_params.mode
         )
-        LOGGER.info(" Count %i", len(grouped_files))
+        LOGGER.info("Count %i", len(grouped_files))
 
         tar_name = archive_params.date.strftime("%Y-%m-%d.tar")
         for experiment_id, files in grouped_files.items():
