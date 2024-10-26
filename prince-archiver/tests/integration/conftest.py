@@ -148,7 +148,6 @@ def fixture_src_dir_info(
     return data_models.SrcDirInfo(
         id=uuid4(),
         img_count=10,
-        staging_path=None,
         local_path=Path("test/path"),
         raw_metadata={"test_key": "test_value"},
         imaging_event_id=imaging_event.id,

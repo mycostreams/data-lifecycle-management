@@ -6,10 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     SRC_DIR: Path
-    COPY_TO_STAGING: bool = False
-
     SRC_LIFESPAN: timedelta = timedelta(hours=8)
-    STAGING_LIFESPAN: timedelta = timedelta(days=24)
 
     model_config = SettingsConfigDict(
         env_file=".env",

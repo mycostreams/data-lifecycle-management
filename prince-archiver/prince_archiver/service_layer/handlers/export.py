@@ -9,7 +9,6 @@ import s3fs
 from arq import ArqRedis
 
 from prince_archiver.adapters.file import PathManager, SrcDir
-from prince_archiver.definitions import StorageSystem
 from prince_archiver.domain.models import EventArchive, ObjectStoreEntry
 from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.service_layer import messages
@@ -64,8 +63,6 @@ class ExportHandler:
         )
 
     def _get_src_dir(self, message: messages.ExportImagingEvent) -> SrcDir:
-        if staging_path := message.staging_path:
-            return self.path_manager.get_src_dir(StorageSystem.STAGING, staging_path)
         return self.path_manager.get_src_dir(message.system, message.local_path)
 
 

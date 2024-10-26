@@ -69,7 +69,6 @@ class WorkerSettings:
 
     cron_jobs = [
         # cron(delete_src, hour={*range(0, 24, 2)}, minute={0}),
-        # cron(delete_staging, second={0, 15, 30, 45}),
         cron(run_trim, hour={3, 15}, minute={0}),
     ]
 

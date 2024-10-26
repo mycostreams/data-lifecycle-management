@@ -32,7 +32,6 @@ class DataArchiveEntry:
 
 @dataclass
 class SrcDirInfo:
-    staging_path: Path | None
     local_path: Path
     img_count: int
     raw_metadata: dict[str, Any]
