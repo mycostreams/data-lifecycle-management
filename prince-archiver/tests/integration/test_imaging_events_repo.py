@@ -26,7 +26,6 @@ async def test_add(repo: ImagingEventRepo):
         timestamp=datetime.now(),
         type=EventType.STITCH,
         src_dir_info=SrcDirInfo(
-            staging_path=None,
             local_path=Path("test/path"),
             img_count=10,
             raw_metadata={"key": "value"},

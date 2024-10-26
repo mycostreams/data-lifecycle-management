@@ -33,8 +33,8 @@ async def delete_src(ctx: dict):
 
     async for message in state.stream.range(start, end, msg_cls=IncomingMessage):
         data = message.processed_data()
-
-        LOGGER.info("[%s] Deleting src directory", data.ref_id)
+        if data.system not in state.settings.SRC_SYSTEMS_DELETE:
+            continue
 
         src_dir = state.path_manager.get_src_dir(
             data.system,
@@ -42,5 +42,5 @@ async def delete_src(ctx: dict):
         )
 
         if src_dir.exists():
-            LOGGER.info("[%s] Deleting staging directory", data.ref_id)
+            LOGGER.info("[%s] Deleting src directory", data.ref_id)
             await src_dir.rm()

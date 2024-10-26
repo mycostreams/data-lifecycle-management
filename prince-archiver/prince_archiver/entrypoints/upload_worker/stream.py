@@ -30,7 +30,6 @@ async def stream_ingester(state: State):
             data = msg.processed_data()
             mapped_msg = ExportImagingEvent(
                 **data.model_dump(),
-                staging_path=data.src_dir_info.staging_path,
                 local_path=data.src_dir_info.local_path,
             )
 
