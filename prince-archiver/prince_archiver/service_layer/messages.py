@@ -19,10 +19,10 @@ class CommonImagingEvent(BaseModel):
 class SrcDirInfo(BaseModel):
     local_path: Path
     img_count: int
-    raw_metadata: dict
 
 
 class ImportImagingEvent(CommonImagingEvent):
+    raw_metadata: dict
     src_dir_info: SrcDirInfo
 
 

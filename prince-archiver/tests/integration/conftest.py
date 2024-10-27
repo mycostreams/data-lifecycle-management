@@ -85,6 +85,7 @@ def fixture_imaging_event() -> data_models.ImagingEvent:
         system=System.PRINCE,
         system_position=3,
         timestamp=datetime(2000, 1, 1, tzinfo=UTC),
+        raw_metadata={"test_key": "test_value"},
     )
 
 
@@ -149,7 +150,6 @@ def fixture_src_dir_info(
         id=uuid4(),
         img_count=10,
         local_path=Path("test/path"),
-        raw_metadata={"test_key": "test_value"},
         imaging_event_id=imaging_event.id,
     )
 

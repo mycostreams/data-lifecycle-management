@@ -11,13 +11,16 @@ from prince_archiver.definitions import EventType, System
 
 class TimestepDTO(BaseModel):
     timestep_id: UUID = Field(default_factory=uuid4)
+
     plate: int
     cross_date: date
     experiment_id: str = Field(default_factory=str)
-    position: int
+
     timestamp: AwareDatetime
-    event_type: EventType = Field(EventType.STITCH)
+    event_type: EventType = EventType.STITCH
     system: System = System.PRINCE
+
+    metadata: dict = Field(default_factory=dict)
 
     img_count: int = Field(150, alias="image_count")
     img_dir: Path = Field(..., alias="path")

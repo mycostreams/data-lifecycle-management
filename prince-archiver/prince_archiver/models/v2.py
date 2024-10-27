@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Annotated
 from uuid import UUID, uuid4
 
-from sqlalchemy import ForeignKey, UniqueConstraint
+from sqlalchemy import ForeignKey, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import Enum, Uuid
@@ -73,7 +73,6 @@ class SrcDirInfo(Base):
     id: Mapped[uuid_pk]
     local_path: Mapped[Path]
     img_count: Mapped[int]
-    raw_metadata: Mapped[dict] = mapped_column(JSONB)
 
     imaging_event_id: Mapped[UUID] = mapped_column(
         ForeignKey("imaging_events.id"),
@@ -101,6 +100,11 @@ class ImagingEvent(Base):
     )
     experiment_id: Mapped[str]
     timestamp: Mapped[datetime]
+
+    raw_metadata: Mapped[dict] = mapped_column(
+        JSONB,
+        server_default=text("'{}'"),
+    )
 
     # TODO: remove these if not needed.
     system: Mapped[System | None] = mapped_column(

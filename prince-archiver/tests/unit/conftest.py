@@ -36,8 +36,8 @@ def fixture_unexported_imaging_event() -> ImagingEvent:
         src_dir_info=SrcDirInfo(
             local_path=Path("unexported/path"),
             img_count=10,
-            raw_metadata={"key": "value"},
         ),
+        raw_metadata={"key": "value"},
     )
 
 
@@ -52,8 +52,8 @@ def fixture_exported_imaging_event() -> ImagingEvent:
         src_dir_info=SrcDirInfo(
             local_path=Path("exported/path"),
             img_count=10,
-            raw_metadata={"key": "value"},
         ),
+        raw_metadata={"key": "value"},
     )
 
     imaging_event.add_event_archive(

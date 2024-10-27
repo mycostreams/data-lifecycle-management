@@ -109,10 +109,10 @@ class EventFile:
         await self.file_system.rm(self.path)
 
     @asynccontextmanager
-    async def process(self, remove: bool = True):
+    async def process(self, remove: bool = True) -> AsyncGenerator[TimestepDTO, None]:
         dto = await self.read()
         try:
-            yield dto, self.system_dir.get_src_dir(dto.img_dir)
+            yield dto
         except Exception as e:
             raise e
 

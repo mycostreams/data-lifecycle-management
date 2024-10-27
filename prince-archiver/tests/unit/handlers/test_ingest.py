@@ -24,7 +24,6 @@ from .utils import MockUnitOfWork
 class _SrcDirInfo:
     local_path: Path
     img_count: int
-    raw_metadata: dict
 
 
 class _MsgKwargs(BaseModel):
@@ -33,6 +32,7 @@ class _MsgKwargs(BaseModel):
     type: EventType
     timestamp: datetime
     src_dir_info: _SrcDirInfo
+    raw_metadata: dict
 
 
 @pytest.fixture()
@@ -48,8 +48,8 @@ def msg_kwargs() -> _MsgKwargs:
         src_dir_info=_SrcDirInfo(
             local_path="test/path",
             img_count=1,
-            raw_metadata={"key": "value"},
         ),
+        raw_metadata={"key": "value"},
     )
 
 
