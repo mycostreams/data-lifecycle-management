@@ -15,7 +15,7 @@ x-surf-archiver-env-variables: &surf-archiver-env-variables
 
 services:
   surf-archiver-cli:
-    image: surf-archiver
+    image: mycostreams/surf-archiver:${TAG:-latest}
     build:
       context: .
       target: runtime
@@ -35,7 +35,7 @@ services:
       - cli
 
   surf-archiver-remote:
-    image: surf-archiver
+    image: mycostreams/surf-archiver:${TAG:-latest}
     command: ["arq", "surf_archiver.remote.WorkerSettings"]
     environment:
       REDIS_DSN: redis://redis:6379
@@ -54,7 +54,7 @@ services:
       - remote-data:/data
 
   prestart:
-    image: surf-archiver
+    image: mycostreams/surf-archiver:${TAG:-latest}
     command: ["./scripts/prestart.sh"]
     environment:
       <<: [*aws-env-variables, *surf-archiver-env-variables]

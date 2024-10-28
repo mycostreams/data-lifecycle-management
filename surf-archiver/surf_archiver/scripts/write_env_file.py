@@ -7,8 +7,8 @@ def main() -> None:
 
     This is intended for development purposes only.
     """
-    venv_path = os.getenv("VENV_PATH", "/app/.venv")
-    entries: list[str] = [f"PATH={venv_path}/bin:$PATH\n"]
+    path = os.environ["PATH"]
+    entries: list[str] = [f"PATH={path}\n"]
     for k, v in os.environ.items():
         if k.startswith("AWS_") or k.startswith("SURF_"):
             entries.append(f"{k}={v}\n")

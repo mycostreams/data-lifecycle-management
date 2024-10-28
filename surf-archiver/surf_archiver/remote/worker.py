@@ -68,7 +68,7 @@ class WorkerSettings:
     queue_name = "arq:queue-surf-archiver-remote"
 
     cron_jobs = [
-        cron(run_archiving, hour={15}, minute={15, 16}, timeout=timedelta(minutes=2)),
+        cron(run_archiving, hour={3}, minute={0}, timeout=timedelta(minutes=2)),
     ]
 
     on_startup = startup
