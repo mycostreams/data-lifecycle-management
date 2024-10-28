@@ -2,7 +2,7 @@
 
 services:
   surf-archiver-remote:
-    image: mycostreams/surf-archiver:${TAG:-latest}
+    image: mycostreams/surf-archiver-remote:${TAG:-latest}
     build:
       context: .
       target: runtime
