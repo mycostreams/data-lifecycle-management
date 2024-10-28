@@ -134,11 +134,3 @@ class AsyncFileSystem:
             await self.tar_tree(src_path, temp_archive_path, metadata)
 
             yield Path(temp_archive_path)
-
-    @asynccontextmanager
-    async def managed_dir(self, path: Path):
-        try:
-            yield path
-        except Exception as e:
-            await self.rm_tree(path)
-            raise e
