@@ -27,11 +27,14 @@ async def stream_ingester(state: State):
     )
 
     async for message in state.stream.stream_group(group, msg_cls=IncomingMessage):
-        mapped_message = ImportImagingEvent(
-            **message.processed_data().model_dump(),
-        )
-        messagebus = state.messagebus_factory()
+        data = message.processed_data()
+        src_dir_info = {
+            "img_count": data.img_count,
+            "local_path": data.local_path,
+        }
+        mapped_message = ImportImagingEvent(**dict(data), src_dir_info=src_dir_info)
 
+        messagebus = state.messagebus_factory()
         async with message.process():
             try:
                 await messagebus.handle(mapped_message)

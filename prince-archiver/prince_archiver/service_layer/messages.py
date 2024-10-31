@@ -21,13 +21,13 @@ class SrcDirInfo(BaseModel):
     img_count: int
 
 
+class ImagingEventStream(SrcDirInfo, CommonImagingEvent):
+    raw_metadata: dict
+
+
 class ImportImagingEvent(CommonImagingEvent):
     raw_metadata: dict
     src_dir_info: SrcDirInfo
-
-
-class ImagingEventStream(ImportImagingEvent):
-    pass
 
 
 class ImportedImagingEvent(ImportImagingEvent):

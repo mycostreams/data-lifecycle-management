@@ -36,11 +36,7 @@ async def delete_src(ctx: dict):
         if data.system not in state.settings.SRC_SYSTEMS_DELETE:
             continue
 
-        src_dir = state.path_manager.get_src_dir(
-            data.system,
-            data.src_dir_info.local_path,
-        )
-
+        src_dir = state.path_manager.get_src_dir(data.system, data.local_path)
         if src_dir.exists():
             LOGGER.info("[%s] Deleting src directory", data.ref_id)
             await src_dir.rm()
