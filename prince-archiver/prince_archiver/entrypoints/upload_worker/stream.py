@@ -7,7 +7,7 @@ from typing import Protocol
 
 from arq import ArqRedis
 
-from prince_archiver.adapters.streams import ConsumerGroup, Stream
+from prince_archiver.adapters.streams import Consumer, Stream
 from prince_archiver.service_layer.messages import ExportImagingEvent
 from prince_archiver.service_layer.streams import Group, IncomingMessage
 
@@ -22,27 +22,17 @@ class State(Protocol):
 async def stream_ingester(state: State):
     """Ingest message from stream and add to queue."""
 
-    LOGGER.info("Hello??????")
+    consumer = Consumer(group_name=Group.export_event)
+    async for msg in state.stream.stream_group(consumer, msg_cls=IncomingMessage):
+        async with msg.process():
+            data = msg.processed_data()
+            mapped_msg = ExportImagingEvent(**data.model_dump())
 
-    group = ConsumerGroup(
-        group_name=Group.export_event,
-        consumer_name=Group.export_event,
-    )
-    try:
-        async for msg in state.stream.stream_group(group, msg_cls=IncomingMessage):
-            LOGGER.info("hello")
-            async with msg.process():
-                data = msg.processed_data()
-                LOGGER.info("processed_data")
-                mapped_msg = ExportImagingEvent(**data.model_dump())
-
-                LOGGER.info("[%s] Adding to queue", mapped_msg.ref_id)
-                await state.arq_redis.enqueue_job(
-                    "run_export",
-                    mapped_msg.model_dump(mode="json"),
-                )
-    except Exception as e:
-        print(e)
+            LOGGER.info("[%s] Adding to queue", mapped_msg.ref_id)
+            await state.arq_redis.enqueue_job(
+                "run_export",
+                mapped_msg.model_dump(mode="json"),
+            )
 
 
 @asynccontextmanager

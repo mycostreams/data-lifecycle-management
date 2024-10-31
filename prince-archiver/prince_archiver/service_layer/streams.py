@@ -1,10 +1,11 @@
 import logging
 from enum import StrEnum, auto
 
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 
 from prince_archiver.adapters.streams import AbstractIncomingMessage, AbstractMessage
 
+from .exceptions import InvalidStreamMessage
 from .messages import ImagingEventStream
 
 LOGGER = logging.getLogger(__name__)
@@ -33,11 +34,14 @@ class Message(AbstractMessage):
         }
 
 
-class IncomingMessage(AbstractIncomingMessage):
+class IncomingMessage(AbstractIncomingMessage[ImagingEventStream]):
     def processed_data(self) -> ImagingEventStream:
-        return ImagingEventStream(
-            **{k.decode(): v.decode() for k, v in self.raw_data.items()},
-            raw_metadata=MetadataModel.validate_json(
-                self.raw_data.get(b"metadata", b"{}"),
-            ),
-        )
+        try:
+            return ImagingEventStream(
+                **{k.decode(): v.decode() for k, v in self.raw_data.items()},
+                raw_metadata=MetadataModel.validate_json(
+                    self.raw_data.get(b"metadata", b"{}"),
+                ),
+            )
+        except ValidationError as exc:
+            raise InvalidStreamMessage("Invalid message") from exc

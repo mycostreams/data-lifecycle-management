@@ -3,7 +3,7 @@ import logging
 from contextlib import asynccontextmanager
 from typing import Protocol
 
-from prince_archiver.adapters.streams import ConsumerGroup, Stream
+from prince_archiver.adapters.streams import Consumer, Stream
 from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.messagebus import MessageBus
 from prince_archiver.service_layer.messages import ImportImagingEvent
@@ -21,12 +21,9 @@ class State(Protocol):
 async def stream_ingester(state: State):
     LOGGER.info("Ingesting stream")
 
-    group = ConsumerGroup(
-        consumer_name=Group.import_event,
-        group_name=Group.import_event,
-    )
+    consumer = Consumer(group_name=Group.import_event)
 
-    async for message in state.stream.stream_group(group, msg_cls=IncomingMessage):
+    async for message in state.stream.stream_group(consumer, msg_cls=IncomingMessage):
         data = message.processed_data()
         src_dir_info = {
             "img_count": data.img_count,
