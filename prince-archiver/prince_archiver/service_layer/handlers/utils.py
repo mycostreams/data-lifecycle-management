@@ -1,10 +1,10 @@
 from datetime import UTC
 
 from prince_archiver.definitions import EventType
-from prince_archiver.service_layer.messages import ExportImagingEvent
+from prince_archiver.service_layer.messages import CommonImagingEvent
 
 
-def get_target_key(imaging_event: ExportImagingEvent, bucket: str) -> str:
+def get_target_key(imaging_event: CommonImagingEvent, bucket: str) -> str:
     event_type = "images" if imaging_event.type == EventType.STITCH else "videos"
 
     ref_timestamp = imaging_event.timestamp.astimezone(UTC)
