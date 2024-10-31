@@ -22,10 +22,8 @@ from .utils import MockUnitOfWork
 
 @dataclass
 class _SrcDirInfo:
-    staging_path: Path | None
     local_path: Path
     img_count: int
-    raw_metadata: dict
 
 
 class _MsgKwargs(BaseModel):
@@ -34,6 +32,7 @@ class _MsgKwargs(BaseModel):
     type: EventType
     timestamp: datetime
     src_dir_info: _SrcDirInfo
+    raw_metadata: dict
 
 
 @pytest.fixture()
@@ -47,11 +46,10 @@ def msg_kwargs() -> _MsgKwargs:
         timestamp=datetime(2000, 1, 1, tzinfo=UTC),
         type=EventType.STITCH,
         src_dir_info=_SrcDirInfo(
-            staging_path=None,
             local_path="test/path",
             img_count=1,
-            raw_metadata={"key": "value"},
         ),
+        raw_metadata={"key": "value"},
     )
 
 

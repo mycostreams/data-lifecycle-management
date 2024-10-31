@@ -7,7 +7,7 @@ from uuid import uuid4
 import pytest
 
 from prince_archiver.adapters.file.checksum import ChecksumFactory
-from prince_archiver.adapters.file.file_system import AsyncFileSystem
+from prince_archiver.adapters.file.file_system import AsyncFileSystem, MetaData
 
 pytestmark = pytest.mark.integration
 
@@ -97,13 +97,14 @@ async def test_tar_tree(
     src_file_path: Path,
     tmp_path: Path,
 ):
+    metadata = MetaData(content=b"test")
     target_path = tmp_path / uuid4().hex
-    await file_system.tar_tree(src_file_path.parent, target_path)
+    await file_system.tar_tree(src_file_path.parent, target_path, metadata=metadata)
 
     assert target_path.exists()
 
     with tarfile.open(target_path, "r") as tar:
-        assert set(tar.getnames()) == {".", "./test.json"}
+        assert set(tar.getnames()) == {".", "./metadata.json", "./test.json"}
 
 
 async def test_get_size(

@@ -29,6 +29,8 @@ services:
     <<: *code-and-data-volumes
 
   event-ingester:
+    environment:
+      SRC_SYSTEMS_DELETE: '["prince"]'
     <<: *code-and-data-volumes
 
   state-manager:

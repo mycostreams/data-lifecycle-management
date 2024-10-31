@@ -32,10 +32,8 @@ class DataArchiveEntry:
 
 @dataclass
 class SrcDirInfo:
-    staging_path: Path | None
     local_path: Path
     img_count: int
-    raw_metadata: dict[str, Any]
 
 
 @dataclass
@@ -60,6 +58,7 @@ class ImagingEvent:
         experiment_id: str,
         timestamp: datetime,
         src_dir_info: SrcDirInfo,
+        raw_metadata: dict[str, Any],
         *,
         event_archive: EventArchive | None = None,
         object_store_entry: ObjectStoreEntry | None = None,
@@ -71,6 +70,7 @@ class ImagingEvent:
         self.timestamp = timestamp
         self.experiment_id = experiment_id
         self.src_dir_info = src_dir_info
+        self.raw_metadata = raw_metadata
 
         self.event_archive = event_archive
         self.object_store_entry = object_store_entry
@@ -94,6 +94,7 @@ class ImagingEvent:
         experiment_id: str,
         timestamp: datetime,
         src_dir_info: SrcDirInfo,
+        raw_metadata: dict,
         *,
         _id: UUID | None = None,
     ):
@@ -105,4 +106,5 @@ class ImagingEvent:
             experiment_id,
             timestamp,
             src_dir_info,
+            raw_metadata,
         )

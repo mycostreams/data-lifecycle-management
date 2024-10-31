@@ -34,11 +34,10 @@ def fixture_unexported_imaging_event() -> ImagingEvent:
         experiment_id="test_experiment_id",
         timestamp=datetime(2000, 1, 1, tzinfo=UTC),
         src_dir_info=SrcDirInfo(
-            staging_path=None,
             local_path=Path("unexported/path"),
             img_count=10,
-            raw_metadata={"key": "value"},
         ),
+        raw_metadata={"key": "value"},
     )
 
 
@@ -51,11 +50,10 @@ def fixture_exported_imaging_event() -> ImagingEvent:
         experiment_id="test_experiment_id",
         timestamp=datetime(2001, 1, 1, tzinfo=UTC),
         src_dir_info=SrcDirInfo(
-            staging_path=None,
             local_path=Path("exported/path"),
             img_count=10,
-            raw_metadata={"key": "value"},
         ),
+        raw_metadata={"key": "value"},
     )
 
     imaging_event.add_event_archive(

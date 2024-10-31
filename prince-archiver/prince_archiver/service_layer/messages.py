@@ -17,13 +17,12 @@ class CommonImagingEvent(BaseModel):
 
 # For importing imaging events into system
 class SrcDirInfo(BaseModel):
-    staging_path: Path | None
     local_path: Path
     img_count: int
-    raw_metadata: dict
 
 
 class ImportImagingEvent(CommonImagingEvent):
+    raw_metadata: dict
     src_dir_info: SrcDirInfo
 
 
@@ -37,7 +36,6 @@ class ImportedImagingEvent(ImportImagingEvent):
 
 # for exporting out
 class ExportImagingEvent(CommonImagingEvent):
-    staging_path: Path | None = None
     local_path: Path
 
 

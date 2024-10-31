@@ -1,9 +1,11 @@
 import asyncio
+import io
 import logging
 import shutil
 import tarfile
 from concurrent.futures import Executor
 from contextlib import asynccontextmanager
+from dataclasses import dataclass
 from pathlib import Path
 from typing import AsyncGenerator, Awaitable, Callable, TypeVar
 from uuid import uuid4
@@ -22,6 +24,12 @@ T = TypeVar("T")
 MapperT = Callable[[bytes], T]
 
 ChecksumFactoryT = Callable[[AsyncGenerator[bytes, None]], Awaitable[Checksum]]
+
+
+@dataclass
+class MetaData:
+    content: bytes
+    name: str = "./metadata.json"
 
 
 class AsyncFileSystem:
@@ -78,17 +86,38 @@ class AsyncFileSystem:
     ) -> T:
         return mapper(await self.read_bytes(path))
 
-    async def tar_tree(self, src_dir: Path, target_path: Path):
+    async def tar_tree(
+        self,
+        src_dir: Path,
+        target_path: Path,
+        metadata: MetaData | None = None,
+    ):
         loop = asyncio.get_event_loop()
-        await loop.run_in_executor(self.executor, self._tar, src_dir, target_path)
+        await loop.run_in_executor(
+            self.executor,
+            self._tar,
+            src_dir,
+            target_path,
+            metadata,
+        )
 
     @staticmethod
-    def _tar(src: Path, target: Path):
+    def _tar(
+        src: Path,
+        target: Path,
+        metadata: MetaData | None = None,
+    ):
         LOGGER.debug("Tarring %s", src)
 
         target.parent.mkdir(parents=True, exist_ok=True)
         with tarfile.open(target, "a") as tar:
             tar.add(src, arcname=".")
+
+            if metadata:
+                tar.addfile(
+                    tarfile.TarInfo(metadata.name),
+                    io.BytesIO(metadata.content),
+                )
 
         LOGGER.debug("Tarred %s", src)
 
@@ -96,18 +125,12 @@ class AsyncFileSystem:
     async def get_temp_archive(
         self,
         src_path: Path,
+        *,
+        metadata: MetaData | None = None,
     ) -> AsyncGenerator[Path, None]:
         async with TemporaryDirectory() as temp_dir:
             temp_archive_path = Path(temp_dir, f"{uuid4().hex[:6]}.tar")
 
-            await self.tar_tree(src_path, temp_archive_path)
+            await self.tar_tree(src_path, temp_archive_path, metadata)
 
             yield Path(temp_archive_path)
-
-    @asynccontextmanager
-    async def managed_dir(self, path: Path):
-        try:
-            yield path
-        except Exception as e:
-            await self.rm_tree(path)
-            raise e

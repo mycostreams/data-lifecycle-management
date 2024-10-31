@@ -26,11 +26,8 @@ async def process(event_file: EventFile, *, state: State):
     Copy to staging if necessary and add to stream.
 
     """
-    async with event_file.process() as (dto, src_dir):
+    async with event_file.process() as dto:
         LOGGER.info("[%s] Adding to stream", dto.timestep_id)
-
-        target_dir = f"{int(dto.timestamp.timestamp())}-{dto.timestep_id.hex[:6]}"
-        metadata = await src_dir.get_metadata()
 
         # Prep the export message export message
         msg = ImagingEventStream(
@@ -38,17 +35,12 @@ async def process(event_file: EventFile, *, state: State):
             experiment_id=dto.experiment_id,
             timestamp=dto.timestamp,
             system=event_file.system_dir.system,
+            raw_metadata=dto.metadata,
             src_dir_info=SrcDirInfo(
-                staging_path=target_dir if state.settings.COPY_TO_STAGING else None,
                 local_path=dto.img_dir,
-                raw_metadata=metadata,
                 img_count=dto.img_count,
             ),
         )
-
-        # Copy to staging
-        if state.settings.COPY_TO_STAGING:
-            await src_dir.copy(state.path_manager.get_staging_path() / target_dir)
 
         await state.stream.add(Message(msg))
 

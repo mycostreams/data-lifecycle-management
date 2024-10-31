@@ -1,7 +1,7 @@
 from functools import partial
 from pathlib import Path
 
-from prince_archiver.definitions import StorageSystem, System
+from prince_archiver.definitions import System
 
 from .file_system import AsyncFileSystem
 from .integrations import SrcDir, SystemDir
@@ -17,10 +17,7 @@ class PathManager:
         self.data_dir: Path = data_dir
         self.file_system = file_system or AsyncFileSystem()
 
-    def get_staging_path(self) -> Path:
-        return self.data_dir / StorageSystem.STAGING
-
-    def get_src_dir(self, system: System | StorageSystem, path: Path) -> SrcDir:
+    def get_src_dir(self, system: System, path: Path) -> SrcDir:
         return SrcDir(self.data_dir / system / path, self.file_system)
 
     def get_system_dirs(self) -> list[SystemDir]:

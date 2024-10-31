@@ -1,15 +1,16 @@
 from datetime import timedelta
 from pathlib import Path
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from prince_archiver.definitions import System
 
 
 class Settings(BaseSettings):
     SRC_DIR: Path
-    COPY_TO_STAGING: bool = False
-
     SRC_LIFESPAN: timedelta = timedelta(hours=8)
-    STAGING_LIFESPAN: timedelta = timedelta(days=24)
+    SRC_SYSTEMS_DELETE: set[System] = Field(default_factory=set)
 
     model_config = SettingsConfigDict(
         env_file=".env",
