@@ -35,14 +35,9 @@ class Message(AbstractMessage):
 
 class IncomingMessage(AbstractIncomingMessage):
     def processed_data(self) -> ImagingEventStream:
-        try:
-            item = ImagingEventStream(
-                **{k.decode(): v.decode() for k, v in self.raw_data.items()},
-                raw_metadata=MetadataModel.validate_json(
-                    self.raw_data.get(b"metadata", b"{}"),
-                ),
-            )
-        except Exception as e:
-            LOGGER.exception(e)
-
-        return item
+        return ImagingEventStream(
+            **{k.decode(): v.decode() for k, v in self.raw_data.items()},
+            raw_metadata=MetadataModel.validate_json(
+                self.raw_data.get(b"metadata", b"{}"),
+            ),
+        )
