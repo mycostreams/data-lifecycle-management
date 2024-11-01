@@ -1,31 +1,17 @@
 import logging
 import os
 from contextlib import AsyncExitStack
-from functools import partial
 
 from arq import ArqRedis
 from arq.connections import RedisSettings
 from zoneinfo import ZoneInfo
 
-from prince_archiver.adapters.streams import Stream
-from prince_archiver.adapters.subscriber import ManagedSubscriber
 from prince_archiver.log import configure_logging
 from prince_archiver.models import init_mappers
-from prince_archiver.service_layer.handlers.archive import add_data_archive_entry
-from prince_archiver.service_layer.handlers.export import persist_imaging_event_export
-from prince_archiver.service_layer.handlers.ingest import import_imaging_event
-from prince_archiver.service_layer.messagebus import MessageBus
-from prince_archiver.service_layer.messages import (
-    AddDataArchiveEntry,
-    ExportedImagingEvent,
-    ImportImagingEvent,
-)
-from prince_archiver.service_layer.streams import Streams
-from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
 
-from .external import SubscriberMessageHandler
-from .functions import State, run_persist_export
+from .functions import run_persist_export
 from .settings import Settings
+from .state import get_managed_state
 from .stream import managed_stream_ingester
 
 LOGGER = logging.getLogger(__name__)
@@ -40,40 +26,19 @@ async def startup(ctx: dict):
     exit_stack = await AsyncExitStack().__aenter__()
 
     settings = Settings()
-
-    uow_factory = partial(
-        UnitOfWork,
-        get_session_maker(str(settings.POSTGRES_DSN)),
-    )
-
-    messagebus_factory = MessageBus.factory(
-        handlers={
-            ImportImagingEvent: [import_imaging_event],
-            ExportedImagingEvent: [persist_imaging_event_export],
-            AddDataArchiveEntry: [add_data_archive_entry],
-        },
-        uow=uow_factory,
-    )
-
     redis: ArqRedis = ctx["redis"]
-    stream = Stream(redis=redis, stream=Streams.new_imaging_event)
 
-    # Configure optional state
-    state = State(
-        stream=stream,
-        settings=settings,
-        messagebus_factory=messagebus_factory,
+    state = await exit_stack.enter_async_context(
+        get_managed_state(redis, settings=settings),
     )
 
     # Configure stream ingester
-    await exit_stack.enter_async_context(managed_stream_ingester(state))
+    await exit_stack.enter_async_context(
+        managed_stream_ingester(state.stream, state.stream_message_handler)
+    )
 
     # Configure archive subscriber
-    subscriber = ManagedSubscriber(
-        connection_url=settings.RABBITMQ_DSN,
-        message_handler=SubscriberMessageHandler(messagebus_factory),
-    )
-    await exit_stack.enter_async_context(subscriber)
+    await exit_stack.enter_async_context(state.subscriber)
 
     ctx["state"] = state
     ctx["exit_stack"] = exit_stack

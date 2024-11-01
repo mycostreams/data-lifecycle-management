@@ -46,7 +46,9 @@ async def startup(ctx: dict):
     )
 
     # Consume stream
-    await exit_stack.enter_async_context(managed_stream_ingester(state))
+    await exit_stack.enter_async_context(
+        managed_stream_ingester(state.stream, state.stream_message_handler),
+    )
 
     ctx["state"] = state
     ctx["exit_stack"] = exit_stack

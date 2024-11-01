@@ -1,9 +1,8 @@
 import logging
-from contextlib import AsyncExitStack
+from contextlib import AsyncExitStack, asynccontextmanager
 from dataclasses import dataclass
 from functools import partial
 from typing import AsyncGenerator
-from contextlib import asynccontextmanager
 
 from arq import ArqRedis
 
@@ -14,12 +13,12 @@ from prince_archiver.service_layer.export import (
     Exporter,
     ExportHandler,
     Publisher,
-    StreamMessageHandler,
 )
 from prince_archiver.service_layer.handlers.utils import get_target_key
 from prince_archiver.service_layer.streams import Streams
 
 from .settings import Settings
+from .stream import StreamMessageHandler
 
 LOGGER = logging.getLogger(__name__)
 

@@ -21,8 +21,8 @@ def fixture_workflow_payload():
         "message_info": {
             "id": "test-id",
             "stream_name": "test-stream",
-            "group_name": "test-group"
-        }
+            "group_name": "test-group",
+        },
     }
 
 

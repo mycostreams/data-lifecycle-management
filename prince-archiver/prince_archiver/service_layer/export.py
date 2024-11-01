@@ -1,9 +1,9 @@
 import asyncio
+import logging
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable
-import logging
 
 import s3fs
 from arq import ArqRedis
@@ -12,7 +12,6 @@ from prince_archiver.adapters.file import PathManager
 from prince_archiver.adapters.streams import MessageInfo, Stream
 from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.service_layer import messages
-from prince_archiver.service_layer.streams import IncomingMessage
 from prince_archiver.utils import now
 
 LOGGER = logging.getLogger(__name__)
@@ -103,18 +102,3 @@ class ExportHandler:
             messages.ExportedImagingEvent(**kwargs),
         )
         await self.stream.ack(MessageInfo(**dict(message.message_info)))
-
-
-class StreamMessageHandler:
-    def __init__(self, redis: ArqRedis):
-        self.redis = redis
-
-    async def process(self, message: IncomingMessage):
-        mapped_msg = messages.ExportImagingEvent(
-            **dict(message.processed_data()),
-            message_info=message.info.__dict__,
-        )
-        await self.redis.enqueue_job(
-            "run_export",
-            mapped_msg.model_dump(mode="json"),
-        )
