@@ -1,48 +1,30 @@
-import asyncio
 import logging
 import os
 from contextlib import AsyncExitStack
-from dataclasses import dataclass
-from functools import partial
 
 from arq import ArqRedis, Retry
 from arq.connections import RedisSettings
 
-from prince_archiver.adapters.file import PathManager
-from prince_archiver.adapters.streams import Stream
-from prince_archiver.file import managed_file_system
 from prince_archiver.log import configure_logging
 from prince_archiver.models import init_mappers
-from prince_archiver.service_layer.handlers.export import ExportHandler
-from prince_archiver.service_layer.handlers.utils import get_target_key
 from prince_archiver.service_layer.messages import ExportImagingEvent
-from prince_archiver.service_layer.streams import Streams
 
 from .settings import Settings
+from .state import State, get_managed_state
 from .stream import managed_stream_ingester
 
 LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
-class State:
-    arq_redis: ArqRedis
-    stream: Stream
-    export_handler: ExportHandler
-
-
 async def run_export(
     ctx: dict,
     input_data: dict,
-    *,
-    _timeout: int = 180,
 ):
     dto = ExportImagingEvent.model_validate(input_data)
     state: State = ctx["state"]
 
     try:
-        async with asyncio.timeout(_timeout):
-            await state.export_handler(dto)
+        await state.export_handler.process(dto)
     except* (OSError, TimeoutError) as exc:
         job_try: int = ctx.get("job_try", 1)
         raise Retry(defer=job_try * (3 * 60)) from exc
@@ -54,28 +36,13 @@ async def startup(ctx: dict):
 
     LOGGER.info("Starting up worker")
 
-    exit_stack = await AsyncExitStack().__aenter__()
-
-    settings = Settings()
-
-    s3 = await exit_stack.enter_async_context(managed_file_system(settings))
     redis: ArqRedis = ctx["redis"]
 
-    state = State(
-        arq_redis=redis,
-        stream=Stream(
-            redis=redis,
-            stream=Streams.new_imaging_event,
-        ),
-        export_handler=ExportHandler(
-            redis=redis,
-            s3=s3,
-            key_generator=partial(
-                get_target_key,
-                bucket=settings.AWS_BUCKET_NAME,
-            ),
-            path_manager=PathManager(settings.SRC_DIR),
-        ),
+    settings = Settings()
+    exit_stack = await AsyncExitStack().__aenter__()
+
+    state = await exit_stack.enter_async_context(
+        get_managed_state(redis, settings=settings),
     )
 
     # Consume stream
@@ -99,7 +66,7 @@ class WorkerSettings:
 
     keep_result = 0
     max_retries = 5
-    max_jobs = 3
+    max_jobs = 2
 
     redis_settings = RedisSettings.from_dsn(
         os.getenv("REDIS_DSN", "redis://localhost:6379"),

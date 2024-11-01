@@ -10,16 +10,15 @@ from testcontainers.redis import AsyncRedisContainer
 from prince_archiver.adapters.streams import (
     AbstractIncomingMessage,
     AbstractMessage,
-    MessageInfo,
     Consumer,
+    MessageInfo,
     Stream,
 )
 
 
 class MockIncomingMessage(AbstractIncomingMessage[dict[str, str]]):
-
     def processed_data(self) -> dict[str, str]:
-        return {k.decode(): v.decode() for k,v in self.raw_data.items()}
+        return {k.decode(): v.decode() for k, v in self.raw_data.items()}
 
 
 class Message(AbstractMessage):

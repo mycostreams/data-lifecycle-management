@@ -34,9 +34,16 @@ class ImportedImagingEvent(ImportImagingEvent):
     id: UUID
 
 
-# for exporting out
+class MessageInfo(BaseModel):
+    id: str | bytes
+    stream_name: str
+    group_name: str
+
+
+# For exporting out
 class ExportImagingEvent(CommonImagingEvent):
     local_path: Path
+    message_info: MessageInfo
 
 
 class Checksum(BaseModel):
