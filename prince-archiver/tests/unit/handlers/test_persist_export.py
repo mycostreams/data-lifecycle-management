@@ -6,9 +6,7 @@ import pytest
 from prince_archiver.definitions import Algorithm
 from prince_archiver.domain.models import ImagingEvent
 from prince_archiver.service_layer.exceptions import ServiceLayerException
-from prince_archiver.service_layer.handlers.export import (
-    persist_imaging_event_export,
-)
+from prince_archiver.service_layer.handlers.state import persist_imaging_event_export
 from prince_archiver.service_layer.messages import (
     Checksum,
     ExportedImagingEvent,

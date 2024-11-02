@@ -4,7 +4,7 @@ import pytest
 
 from prince_archiver.domain import models
 from prince_archiver.service_layer.exceptions import ServiceLayerException
-from prince_archiver.service_layer.handlers.archive import add_data_archive_entry
+from prince_archiver.service_layer.handlers.state import add_data_archive_entry
 from prince_archiver.service_layer.messages import (
     AddDataArchiveEntry,
     ArchivedImagingEvent,

@@ -9,7 +9,7 @@ from arq import ArqRedis
 from prince_archiver.adapters.file import PathManager
 from prince_archiver.adapters.streams import Stream
 from prince_archiver.file import managed_file_system
-from prince_archiver.service_layer.export import (
+from prince_archiver.service_layer.handlers.export import (
     Exporter,
     ExportHandler,
     Publisher,
