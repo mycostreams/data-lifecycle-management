@@ -11,7 +11,6 @@ from prince_archiver.service_layer.messages import ExportImagingEvent
 
 from .settings import Settings
 from .state import State, get_managed_state
-from .stream import managed_stream_ingester
 
 LOGGER = logging.getLogger(__name__)
 
@@ -46,9 +45,7 @@ async def startup(ctx: dict):
     )
 
     # Consume stream
-    await exit_stack.enter_async_context(
-        managed_stream_ingester(state.stream, state.stream_message_handler),
-    )
+    await exit_stack.enter_async_context(state.stream_ingester.managed_consumer())
 
     ctx["state"] = state
     ctx["exit_stack"] = exit_stack
@@ -57,6 +54,9 @@ async def startup(ctx: dict):
 
 
 async def shutdown(ctx: dict):
+    state: State = ctx["state"]
+    state.stop_event.set()
+
     exit_stack: AsyncExitStack = ctx["exit_stack"]
     await exit_stack.aclose()
 

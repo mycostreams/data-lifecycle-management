@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import AsyncGenerator, Generic, Type, TypeVar
+from typing import AsyncGenerator, Awaitable, Callable, Generic, Type, TypeVar
 from uuid import uuid4
 
 from redis.asyncio import Redis
@@ -30,7 +30,7 @@ class MessageInfo:
     group_name: str | None = None
 
 
-class AbstractMessage(ABC):
+class AbstractOutgoingMessage(ABC):
     @abstractmethod
     def fields(self) -> dict: ...
 
@@ -139,7 +139,7 @@ class Stream:
                     stream=self,
                 )
 
-    async def add(self, msg: AbstractMessage):
+    async def add(self, msg: AbstractOutgoingMessage):
         await self.redis.xadd(self.name, msg.fields())
 
     async def ack(self, message_info: MessageInfo):
@@ -152,3 +152,24 @@ class Stream:
             approximate=False,
             minid=get_id(datetime),
         )
+
+
+class AbstractIngester(ABC):
+    def __init__(
+        self,
+        streamer: AsyncGenerator[AbstractIncomingMessageT, None],
+        handler: Callable[[AbstractIncomingMessageT], Awaitable[None]],
+    ):
+        self.streamer = streamer
+        self.handler = handler
+
+    @abstractmethod
+    async def consume(self): ...
+
+    @asynccontextmanager
+    async def managed_consumer(self):
+        task = asyncio.create_task(self.consume())
+
+        yield
+
+        await task

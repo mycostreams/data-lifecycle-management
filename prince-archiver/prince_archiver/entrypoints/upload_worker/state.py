@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from contextlib import AsyncExitStack, asynccontextmanager
 from dataclasses import dataclass
@@ -7,7 +8,7 @@ from typing import AsyncGenerator
 from arq import ArqRedis
 
 from prince_archiver.adapters.file import PathManager
-from prince_archiver.adapters.streams import Stream
+from prince_archiver.adapters.streams import Consumer, Stream
 from prince_archiver.file import managed_file_system
 from prince_archiver.service_layer.handlers.export import (
     Exporter,
@@ -15,18 +16,18 @@ from prince_archiver.service_layer.handlers.export import (
     Publisher,
 )
 from prince_archiver.service_layer.handlers.utils import get_target_key
-from prince_archiver.service_layer.streams import Streams
+from prince_archiver.service_layer.streams import Group, IncomingMessage, Streams
 
 from .settings import Settings
-from .stream import StreamMessageHandler
+from .stream import Ingester, message_handler
 
 LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
 class State:
-    stream: Stream
-    stream_message_handler: StreamMessageHandler
+    stop_event: asyncio.Event
+    stream_ingester: Ingester
     export_handler: ExportHandler
 
 
@@ -42,14 +43,23 @@ async def get_managed_state(
 
     s3 = await exit_stack.enter_async_context(managed_file_system(settings))
 
+    stop_event = asyncio.Event()
+
     stream = Stream(
         redis=redis,
         stream=Streams.new_imaging_event,
     )
 
     yield State(
-        stream=stream,
-        stream_message_handler=StreamMessageHandler(redis=redis),
+        stop_event=stop_event,
+        stream_ingester=Ingester(
+            streamer=stream.stream_group(
+                Consumer(group_name=Group.export_event),
+                msg_cls=IncomingMessage,
+                stop_event=stop_event,
+            ),
+            handler=partial(message_handler, redis=redis),
+        ),
         export_handler=ExportHandler(
             stream=stream,
             exporter=Exporter(

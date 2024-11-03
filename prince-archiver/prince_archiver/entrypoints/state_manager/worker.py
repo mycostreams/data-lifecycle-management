@@ -11,8 +11,7 @@ from prince_archiver.models import init_mappers
 
 from .functions import run_persist_export
 from .settings import Settings
-from .state import get_managed_state
-from .stream import managed_stream_ingester
+from .state import State, get_managed_state
 
 LOGGER = logging.getLogger(__name__)
 
@@ -33,9 +32,7 @@ async def startup(ctx: dict):
     )
 
     # Configure stream ingester
-    await exit_stack.enter_async_context(
-        managed_stream_ingester(state.stream, state.stream_message_handler)
-    )
+    await exit_stack.enter_async_context(state.import_ingester.managed_consumer())
 
     # Configure archive subscriber
     await exit_stack.enter_async_context(state.subscriber)
@@ -47,6 +44,9 @@ async def startup(ctx: dict):
 
 
 async def shutdown(ctx: dict):
+    state: State = ctx["state"]
+    state.stop_event.set()
+
     exit_stack: AsyncExitStack = ctx["exit_stack"]
     await exit_stack.aclose()
 
