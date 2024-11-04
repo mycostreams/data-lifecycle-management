@@ -18,12 +18,6 @@ class State:
     path_manager: PathManager
 
 
-async def run_trim(ctx: dict):
-    state: State = ctx["state"]
-    trim_to = datetime.now(tz=UTC) - timedelta(days=5)
-    await state.stream.trim(trim_to)
-
-
 async def delete_src(ctx: dict):
     LOGGER.info("Deleting src files")
 

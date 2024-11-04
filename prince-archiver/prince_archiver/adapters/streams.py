@@ -78,9 +78,11 @@ AbstractIncomingMessageT = TypeVar(
 
 
 class Stream:
-    def __init__(self, redis: Redis, stream: str):
-        self.name = stream
+    def __init__(self, redis: Redis, name: str, *, max_len: int | None = None):
+        self.name = name
         self.redis = redis
+
+        self.max_len = max_len
 
     async def range(
         self,
@@ -117,7 +119,7 @@ class Stream:
                 groupname=consumer.group_name,
                 consumername=consumer.consumer_name,
                 streams={self.name: stream_id},
-                count=5,
+                count=1,
                 block=2000,
             )
 
@@ -140,7 +142,7 @@ class Stream:
                 )
 
     async def add(self, msg: AbstractOutgoingMessage):
-        await self.redis.xadd(self.name, msg.fields())
+        await self.redis.xadd(self.name, msg.fields(), maxlen=self.max_len)
 
     async def ack(self, message_info: MessageInfo):
         if message_info.group_name:

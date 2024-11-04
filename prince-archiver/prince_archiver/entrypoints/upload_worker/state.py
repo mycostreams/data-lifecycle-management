@@ -45,12 +45,13 @@ async def get_managed_state(
 
     stop_event = asyncio.Event()
 
-    stream = Stream(redis=redis, stream=Streams.imaging_events)
+    imaging_events_stream = Stream(redis=redis, name=Streams.imaging_events)
+    upload_events_stream = Stream(redis=redis, name=Streams.upload_events, max_len=150)
 
     yield State(
         stop_event=stop_event,
         stream_ingester=Ingester(
-            streamer=stream.stream_group(
+            streamer=imaging_events_stream.stream_group(
                 Consumer(group_name=Group.upload_worker),
                 msg_cls=IncomingMessage,
                 stop_event=stop_event,
@@ -58,7 +59,7 @@ async def get_managed_state(
             handler=partial(message_handler, redis=redis),
         ),
         export_handler=ExportHandler(
-            stream=stream,
+            stream=imaging_events_stream,
             exporter=Exporter(
                 s3=s3,
                 key_generator=partial(
@@ -67,12 +68,7 @@ async def get_managed_state(
                 ),
                 path_manager=PathManager(settings.SRC_DIR),
             ),
-            publisher=Publisher(
-                stream=Stream(
-                    redis=redis,
-                    stream=Streams.upload_events,
-                )
-            ),
+            publisher=Publisher(stream=upload_events_stream),
         ),
     )
 

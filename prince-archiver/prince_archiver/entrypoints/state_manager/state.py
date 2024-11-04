@@ -67,8 +67,8 @@ async def get_managed_state(
         uow=uow_factory,
     )
 
-    import_stream = Stream(redis=redis, stream=Streams.imaging_events)
-    upload_stream = Stream(redis=redis, stream=Streams.upload_events)
+    import_stream = Stream(redis=redis, name=Streams.imaging_events)
+    upload_stream = Stream(redis=redis, name=Streams.upload_events)
 
     stop_event = asyncio.Event()
 
