@@ -62,13 +62,13 @@ async def get_managed_state(
         uow=uow_factory,
     )
 
-    stream = Stream(redis=redis, stream=Streams.new_imaging_event)
+    stream = Stream(redis=redis, stream=Streams.imaging_events)
 
     stop_event = asyncio.Event()
 
     import_ingester = Ingester(
         stream.stream_group(
-            consumer=Consumer(Group.import_event),
+            consumer=Consumer(Group.state_manager),
             msg_cls=IncomingMessage,
             stop_event=stop_event,
         ),

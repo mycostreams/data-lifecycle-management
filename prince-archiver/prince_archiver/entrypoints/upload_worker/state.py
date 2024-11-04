@@ -45,16 +45,13 @@ async def get_managed_state(
 
     stop_event = asyncio.Event()
 
-    stream = Stream(
-        redis=redis,
-        stream=Streams.new_imaging_event,
-    )
+    stream = Stream(redis=redis, stream=Streams.imaging_events)
 
     yield State(
         stop_event=stop_event,
         stream_ingester=Ingester(
             streamer=stream.stream_group(
-                Consumer(group_name=Group.export_event),
+                Consumer(group_name=Group.upload_worker),
                 msg_cls=IncomingMessage,
                 stop_event=stop_event,
             ),

@@ -15,13 +15,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Streams(StrEnum):
-    new_imaging_event = "data-ingester:new-imaging-event"
-    status_update = "state-manager:status-update"
+    imaging_events = "data-lifecycle-management:imaging-events"
+    upload_events = "data-lifecycle-management:export-events"
 
 
 class Group(StrEnum):
-    export_event = auto()
-    import_event = auto()
+    upload_worker = auto()
+    state_manager = auto()
 
 
 MetadataModel = TypeAdapter(dict)

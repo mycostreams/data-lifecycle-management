@@ -38,7 +38,7 @@ async def startup(ctx: dict):
         settings=settings,
         stream=Stream(
             redis=redis,
-            stream=Streams.new_imaging_event,
+            stream=Streams.imaging_events,
         ),
         path_manager=PathManager(settings.SRC_DIR),
     )
