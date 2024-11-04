@@ -17,9 +17,11 @@ class Ingester(AbstractIngester):
                 await self.handler(message)
             except ServiceLayerException:
                 pass
+            except Exception as err:
+                LOGGER.exception(err)
 
 
-async def status_update_handler(
+async def upload_event_handler(
     message: IncomingExportMessage,
     *,
     messagebus_factory: Callable[[], MessageBus],

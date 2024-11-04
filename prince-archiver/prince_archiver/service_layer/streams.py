@@ -1,7 +1,7 @@
 import logging
 from enum import StrEnum, auto
 
-from pydantic import TypeAdapter, ValidationError
+from pydantic import ValidationError
 
 from prince_archiver.adapters.streams import (
     AbstractIncomingMessage,
@@ -24,18 +24,12 @@ class Group(StrEnum):
     state_manager = auto()
 
 
-MetadataModel = TypeAdapter(dict)
-
-
 class Message(AbstractOutgoingMessage):
     def __init__(self, data: ImagingEventStream):
         self.data = data
 
     def fields(self) -> dict:
-        return {
-            **self.data.model_dump(mode="json", exclude={"raw_metadata"}),
-            "metadata": MetadataModel.dump_json(self.data.raw_metadata),
-        }
+        return self.data.model_dump(mode="json", round_trip=True, by_alias=True)
 
 
 class IncomingMessage(AbstractIncomingMessage[ImagingEventStream]):
@@ -43,9 +37,6 @@ class IncomingMessage(AbstractIncomingMessage[ImagingEventStream]):
         try:
             return ImagingEventStream(
                 **{k.decode(): v.decode() for k, v in self.raw_data.items()},
-                raw_metadata=MetadataModel.validate_json(
-                    self.raw_data.get(b"metadata", b"{}"),
-                ),
             )
         except ValidationError as exc:
             raise InvalidStreamMessage("Invalid message") from exc
@@ -56,7 +47,7 @@ class OutgoingExportMessage(AbstractOutgoingMessage):
         self.data = data
 
     def fields(self) -> dict:
-        return self.data.model_dump(mode="json")
+        return self.data.model_dump(mode="json", round_trip=True)
 
 
 class IncomingExportMessage(AbstractIncomingMessage[ExportedImagingEvent]):

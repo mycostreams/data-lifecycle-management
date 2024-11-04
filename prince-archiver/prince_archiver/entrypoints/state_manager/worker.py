@@ -9,11 +9,14 @@ from zoneinfo import ZoneInfo
 from prince_archiver.log import configure_logging
 from prince_archiver.models import init_mappers
 
-from .functions import run_persist_export
 from .settings import Settings
 from .state import State, get_managed_state
 
 LOGGER = logging.getLogger(__name__)
+
+
+async def run_heartbeat(_: dict):
+    LOGGER.info("HEARTBEAT")
 
 
 async def startup(ctx: dict):
@@ -31,10 +34,9 @@ async def startup(ctx: dict):
         get_managed_state(redis, settings=settings),
     )
 
-    # Configure stream ingester
+    # Configure consumers
     await exit_stack.enter_async_context(state.import_ingester.managed_consumer())
-
-    # Configure archive subscriber
+    await exit_stack.enter_async_context(state.export_ingester.managed_consumer())
     await exit_stack.enter_async_context(state.subscriber)
 
     ctx["state"] = state
@@ -54,7 +56,7 @@ async def shutdown(ctx: dict):
 class WorkerSettings:
     queue_name = "arq:queue-state-manager"
 
-    functions = [run_persist_export]
+    functions = [run_heartbeat]
 
     on_startup = startup
     on_shutdown = shutdown

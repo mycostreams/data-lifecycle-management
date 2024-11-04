@@ -6,12 +6,12 @@ from pathlib import Path
 from typing import Any, Callable
 
 import s3fs
-from arq import ArqRedis
 
 from prince_archiver.adapters.file import PathManager
 from prince_archiver.adapters.streams import MessageInfo, Stream
 from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.service_layer import messages
+from prince_archiver.service_layer.streams import OutgoingExportMessage
 from prince_archiver.utils import now
 
 LOGGER = logging.getLogger(__name__)
@@ -67,15 +67,12 @@ class Publisher:
     Class to handle to the publishing of export result
     """
 
-    def __init__(self, redis: ArqRedis):
-        self.redis = redis
+    def __init__(self, stream: Stream):
+        self.stream = stream
 
     async def publish(self, message: messages.ExportedImagingEvent):
-        await self.redis.enqueue_job(
-            "run_persist_export",
-            message.model_dump(mode="json"),
-            _queue_name="arq:queue-state-manager",
-        )
+        LOGGER.info("[%s] Publishing export", message.ref_id)
+        await self.stream.add(OutgoingExportMessage(message))
 
 
 class ExportHandler:

@@ -67,7 +67,12 @@ async def get_managed_state(
                 ),
                 path_manager=PathManager(settings.SRC_DIR),
             ),
-            publisher=Publisher(redis=redis),
+            publisher=Publisher(
+                stream=Stream(
+                    redis=redis,
+                    stream=Streams.upload_events,
+                )
+            ),
         ),
     )
 
