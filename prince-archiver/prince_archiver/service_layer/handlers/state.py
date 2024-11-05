@@ -68,7 +68,7 @@ async def persist_imaging_event_export(
             )
         )
         await uow.commit()
-    
+
     LOGGER.info("[%s] Persisted export", message.ref_id)
 
 
