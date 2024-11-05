@@ -16,7 +16,7 @@ from prince_archiver.adapters.streams import Stream
 from prince_archiver.log import configure_logging
 from prince_archiver.service_layer.streams import Streams
 
-from .functions import State, delete_src, run_trim
+from .functions import State, delete_src
 from .ingester import managed_ingester, process
 from .settings import Settings
 
@@ -36,10 +36,7 @@ async def startup(ctx: dict):
 
     state = State(
         settings=settings,
-        stream=Stream(
-            redis=redis,
-            stream=Streams.new_imaging_event,
-        ),
+        stream=Stream(redis=redis, name=Streams.imaging_events, max_len=500),
         path_manager=PathManager(settings.SRC_DIR),
     )
 
@@ -69,7 +66,6 @@ class WorkerSettings:
 
     cron_jobs = [
         cron(delete_src, hour={*range(0, 24, 2)}, minute={0}),
-        cron(run_trim, hour={3, 15}, minute={0}),
     ]
 
     timezone = ZoneInfo("Europe/Amsterdam")

@@ -6,7 +6,7 @@ from typing import Protocol
 from prince_archiver.adapters.file import PathManager
 from prince_archiver.adapters.ingester import EventFile, EventIngester
 from prince_archiver.adapters.streams import Stream
-from prince_archiver.service_layer.messages import ImagingEventStream, SrcDirInfo
+from prince_archiver.service_layer.messages import ImagingEventStream
 from prince_archiver.service_layer.streams import Message
 
 from .settings import Settings
@@ -35,11 +35,9 @@ async def process(event_file: EventFile, *, state: State):
             experiment_id=dto.experiment_id,
             timestamp=dto.timestamp,
             system=event_file.system_dir.system,
+            local_path=dto.img_dir,
+            img_count=dto.img_count,
             raw_metadata=dto.metadata,
-            src_dir_info=SrcDirInfo(
-                local_path=dto.img_dir,
-                img_count=dto.img_count,
-            ),
         )
 
         await state.stream.add(Message(msg))

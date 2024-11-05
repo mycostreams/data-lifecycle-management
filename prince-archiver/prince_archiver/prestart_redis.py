@@ -24,18 +24,22 @@ async def create_group(redis: redis.Redis, stream: str, group_name: str):
     stop=stop_after_attempt(5),
     wait=wait_fixed(5),
 )
-async def main():
+async def main() -> None:
     client = redis.from_url(
         os.getenv("REDIS_DSN", "redis://localhost:6379"),
     )
 
     await client.ping()
 
-    stream = Streams.new_imaging_event
+    mapping: dict[Streams, list[Group]] = {
+        Streams.imaging_events: [Group.state_manager, Group.upload_worker],
+        Streams.upload_events: [Group.state_manager],
+    }
+    groups = ((stream, group) for stream, groups in mapping.items() for group in groups)
 
     async with client:
         await asyncio.gather(
-            *(create_group(client, stream, group) for group in Group),
+            *(create_group(client, *args) for args in groups),
         )
 
 

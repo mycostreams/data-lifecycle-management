@@ -1,7 +1,7 @@
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from pydantic import AwareDatetime, BaseModel, Field
+from pydantic import AwareDatetime, BaseModel, Field, Json
 
 from prince_archiver.definitions import Algorithm, EventType, System
 from prince_archiver.utils import now
@@ -21,22 +21,29 @@ class SrcDirInfo(BaseModel):
     img_count: int
 
 
+class ImagingEventStream(SrcDirInfo, CommonImagingEvent):
+    raw_metadata: Json[dict] | dict = Field(default_factory=dict, alias="metadata")
+
+
 class ImportImagingEvent(CommonImagingEvent):
     raw_metadata: dict
     src_dir_info: SrcDirInfo
-
-
-class ImagingEventStream(ImportImagingEvent):
-    pass
 
 
 class ImportedImagingEvent(ImportImagingEvent):
     id: UUID
 
 
-# for exporting out
+class MessageInfo(BaseModel):
+    id: str | bytes
+    stream_name: str
+    group_name: str
+
+
+# For exporting out
 class ExportImagingEvent(CommonImagingEvent):
     local_path: Path
+    message_info: MessageInfo
 
 
 class Checksum(BaseModel):
@@ -46,7 +53,7 @@ class Checksum(BaseModel):
 
 class ExportedImagingEvent(BaseModel):
     ref_id: UUID
-    checksum: Checksum
+    checksum: Json[Checksum] | Checksum
     size: int
     key: str
     timestamp: AwareDatetime = Field(default_factory=now)

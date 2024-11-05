@@ -1,96 +1,101 @@
-"""Handlers used to export imaging event bundles."""
-
 import asyncio
 import logging
-from dataclasses import asdict
-from typing import Callable
+from dataclasses import asdict, dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Callable
 
 import s3fs
-from arq import ArqRedis
 
-from prince_archiver.adapters.file import PathManager, SrcDir
-from prince_archiver.domain.models import EventArchive, ObjectStoreEntry
+from prince_archiver.adapters.file import PathManager
+from prince_archiver.adapters.streams import MessageInfo, Stream
 from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.service_layer import messages
-from prince_archiver.service_layer.exceptions import ServiceLayerException
-from prince_archiver.service_layer.uow import AbstractUnitOfWork
+from prince_archiver.service_layer.streams import OutgoingExportMessage
+from prince_archiver.utils import now
 
 LOGGER = logging.getLogger(__name__)
 
 
-class ExportHandler:
+@dataclass
+class _ExportInfo:
+    key: str
+    size: str
+    checksum: Checksum
+    timestamp: datetime = field(default_factory=now)
+
+
+class Exporter:
     """
-    Class handles export of local images to cloud.
+    Class to handle export from local to s3
     """
 
     def __init__(
         self,
-        redis: ArqRedis,
         s3: s3fs.S3FileSystem,
         key_generator: Callable[[messages.ExportImagingEvent], str],
         path_manager: PathManager,
+        *,
+        timeout: int = 120,
     ):
         self.s3 = s3
-        self.redis = redis
         self.key_generator = key_generator
         self.path_manager = path_manager
+        self.timeout = timeout
 
-    async def __call__(
-        self,
-        message: messages.ExportImagingEvent,
-    ):
+    async def export(self, message: messages.ExportImagingEvent) -> _ExportInfo:
         LOGGER.info("[%s] Exporting", message.ref_id)
 
         key = self.key_generator(message)
-        src_dir = self._get_src_dir(message)
+        src_dir = self.path_manager.get_src_dir(message.system, message.local_path)
         async with (
             src_dir.get_temp_archive() as archive_file,
             asyncio.TaskGroup() as tg,
         ):
             t1 = tg.create_task(archive_file.get_info())
-            tg.create_task(self.s3._put_file(archive_file.path, key))
+            tg.create_task(self._upload(archive_file.path, key))
 
-        msg = messages.ExportedImagingEvent(
-            ref_id=message.ref_id,
-            key=key,
-            **asdict(t1.result()),
-        )
+        return _ExportInfo(key=key, **asdict(t1.result()))
 
-        await self.redis.enqueue_job(
-            "run_persist_export",
-            msg.model_dump(mode="json"),
-            _queue_name="arq:queue-state-manager",
-        )
-
-    def _get_src_dir(self, message: messages.ExportImagingEvent) -> SrcDir:
-        return self.path_manager.get_src_dir(message.system, message.local_path)
+    async def _upload(self, path: Path, key: str, *, timeout: int | None = None):
+        async with asyncio.timeout(timeout or self.timeout):
+            await self.s3._put_file(path, key)
 
 
-async def persist_imaging_event_export(
-    message: messages.ExportedImagingEvent,
-    uow: AbstractUnitOfWork,
-):
+class Publisher:
     """
-    Persist imaging event export.
+    Class to handle to the publishing of export result
     """
-    LOGGER.info("[%s] Persisting export", message.ref_id)
 
-    async with uow:
-        imaging_event = await uow.imaging_events.get_by_ref_id(message.ref_id)
-        if not imaging_event:
-            raise ServiceLayerException("Rejecting persistence")
+    def __init__(self, stream: Stream):
+        self.stream = stream
 
-        imaging_event.add_event_archive(
-            EventArchive(
-                size=message.size,
-                checksum=Checksum(**message.checksum.model_dump()),
-            )
+    async def publish(self, message: messages.ExportedImagingEvent):
+        LOGGER.info("[%s] Publishing export", message.ref_id)
+        await self.stream.add(OutgoingExportMessage(message))
+
+
+class ExportHandler:
+    """
+    Class to handle to the publishing of export result
+    """
+
+    def __init__(
+        self,
+        stream: Stream,
+        exporter: Exporter,
+        publisher: Publisher,
+    ):
+        self.exporter = exporter
+        self.publisher = publisher
+        self.stream = stream
+
+    async def process(self, message: messages.ExportImagingEvent):
+        upload_info = await self.exporter.export(message)
+
+        kwargs: dict[str, Any] = {**dict(message), **upload_info.__dict__}
+
+        await self.publisher.publish(
+            messages.ExportedImagingEvent(**kwargs),
         )
-
-        imaging_event.add_object_store_entry(
-            ObjectStoreEntry(
-                key=message.key,
-                uploaded_at=message.timestamp,
-            )
-        )
-        await uow.commit()
+        await self.stream.ack(MessageInfo(**dict(message.message_info)))

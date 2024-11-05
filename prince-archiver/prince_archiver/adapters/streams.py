@@ -1,12 +1,16 @@
+import asyncio
 from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import AsyncGenerator, Type, TypeVar
+from typing import AsyncGenerator, Awaitable, Callable, Generic, Type, TypeVar
+from uuid import uuid4
 
 from redis.asyncio import Redis
 
 ResponseT = list[tuple[str, list[tuple[bytes, dict[bytes, bytes]]]]]
+
+T = TypeVar("T")
 
 
 def get_id(dt: datetime) -> int:
@@ -14,29 +18,48 @@ def get_id(dt: datetime) -> int:
 
 
 @dataclass
-class ConsumerGroup:
+class Consumer:
     group_name: str
-    consumer_name: str
+    consumer_name: str = field(default_factory=lambda: uuid4().hex)
 
 
-class AbstractMessage(ABC):
+@dataclass
+class MessageInfo:
+    id: str
+    stream_name: str
+    group_name: str | None = None
+
+
+class AbstractOutgoingMessage(ABC):
     @abstractmethod
     def fields(self) -> dict: ...
 
 
-class AbstractIncomingMessage:
+class AbstractIncomingMessage(Generic[T], ABC):
     def __init__(
         self,
-        id: bytes,
+        id: bytes | str,
+        stream_name: str,
+        group_name: str | None,
         raw_data: dict[bytes, bytes],
-        *,
         stream: "Stream",
-        group_name: str | None = None,
     ):
         self.id = id
+        self.stream_name = stream_name
+        self.group_name = group_name
         self.raw_data = raw_data
         self.stream = stream
-        self.group_name = group_name
+
+    @property
+    def info(self):
+        return MessageInfo(
+            id=self.id,
+            stream_name=self.stream_name,
+            group_name=self.group_name,
+        )
+
+    @abstractmethod
+    def processed_data(self) -> T: ...
 
     @asynccontextmanager
     async def process(self):
@@ -45,8 +68,7 @@ class AbstractIncomingMessage:
         except Exception as e:
             raise e
         else:
-            if self.group_name:
-                await self.stream.ack(self.id, self.group_name)
+            await self.stream.ack(self.info)
 
 
 AbstractIncomingMessageT = TypeVar(
@@ -56,9 +78,11 @@ AbstractIncomingMessageT = TypeVar(
 
 
 class Stream:
-    def __init__(self, redis: Redis, stream: str):
+    def __init__(self, redis: Redis, name: str, *, max_len: int | None = None):
+        self.name = name
         self.redis = redis
-        self.stream = stream
+
+        self.max_len = max_len
 
     async def range(
         self,
@@ -68,7 +92,7 @@ class Stream:
         msg_cls: Type[AbstractIncomingMessageT],
     ) -> AsyncGenerator[AbstractIncomingMessageT, None]:
         response: list[tuple[bytes, dict[bytes, bytes]]] = await self.redis.xrange(
-            name=self.stream,
+            name=self.name,
             min=get_id(start),
             max=get_id(end),
         )
@@ -76,22 +100,26 @@ class Stream:
             yield msg_cls(
                 id=id,
                 raw_data=raw_payload,
+                stream_name=self.name,
+                group_name=None,
                 stream=self,
             )
 
     async def stream_group(
         self,
-        group: ConsumerGroup,
+        consumer: Consumer,
         *,
         msg_cls: Type[AbstractIncomingMessageT],
+        stop_event: asyncio.Event | None = None,
     ) -> AsyncGenerator[AbstractIncomingMessageT, None]:
         stream_id: int | str = 0
-        while True:
+        stop_event = stop_event or asyncio.Event()
+        while not stop_event.is_set():
             response: ResponseT = await self.redis.xreadgroup(
-                groupname=group.group_name,
-                consumername=group.consumer_name,
-                streams={self.stream: stream_id},
-                count=5,
+                groupname=consumer.group_name,
+                consumername=consumer.consumer_name,
+                streams={self.name: stream_id},
+                count=1,
                 block=2000,
             )
 
@@ -107,20 +135,43 @@ class Stream:
             for id, raw_payload in msgs:
                 yield msg_cls(
                     id=id,
+                    stream_name=self.name,
+                    group_name=consumer.group_name,
                     raw_data=raw_payload,
                     stream=self,
-                    group_name=group.group_name,
                 )
 
-    async def add(self, msg: AbstractMessage):
-        await self.redis.xadd(self.stream, msg.fields())
+    async def add(self, msg: AbstractOutgoingMessage):
+        await self.redis.xadd(self.name, msg.fields(), maxlen=self.max_len)
+
+    async def ack(self, message_info: MessageInfo):
+        if message_info.group_name:
+            await self.redis.xack(self.name, message_info.group_name, message_info.id)
 
     async def trim(self, datetime: datetime):
         await self.redis.xtrim(
-            self.stream,
+            self.name,
             approximate=False,
             minid=get_id(datetime),
         )
 
-    async def ack(self, id: str, group_name: str):
-        await self.redis.xack(self.stream, group_name, id)
+
+class AbstractIngester(ABC):
+    def __init__(
+        self,
+        streamer: AsyncGenerator[AbstractIncomingMessageT, None],
+        handler: Callable[[AbstractIncomingMessageT], Awaitable[None]],
+    ):
+        self.streamer = streamer
+        self.handler = handler
+
+    @abstractmethod
+    async def consume(self): ...
+
+    @asynccontextmanager
+    async def managed_consumer(self):
+        task = asyncio.create_task(self.consume())
+
+        yield
+
+        await task

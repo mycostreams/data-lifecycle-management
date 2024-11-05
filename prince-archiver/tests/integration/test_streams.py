@@ -9,13 +9,19 @@ from testcontainers.redis import AsyncRedisContainer
 
 from prince_archiver.adapters.streams import (
     AbstractIncomingMessage,
-    AbstractMessage,
-    ConsumerGroup,
+    AbstractOutgoingMessage,
+    Consumer,
+    MessageInfo,
     Stream,
 )
 
 
-class Message(AbstractMessage):
+class MockIncomingMessage(AbstractIncomingMessage[dict[str, str]]):
+    def processed_data(self) -> dict[str, str]:
+        return {k.decode(): v.decode() for k, v in self.raw_data.items()}
+
+
+class Message(AbstractOutgoingMessage):
     def __init__(self, data: dict):
         self.data = data
 
@@ -75,12 +81,12 @@ async def test_stream_backlog(
     await message_factory("*", payload)
 
     streamer = stream.stream_group(
-        ConsumerGroup("test", "test"),
-        msg_cls=AbstractIncomingMessage,
+        Consumer("test", "test"),
+        msg_cls=MockIncomingMessage,
     )
 
     assert (msg := await asyncio.wait_for(anext(streamer), 2))
-    assert msg.raw_data == {k.encode(): v.encode() for k, v in payload.items()}
+    assert msg.processed_data() == payload
 
 
 async def test_stream_latest(
@@ -88,23 +94,23 @@ async def test_stream_latest(
     message_factory: Callable[[str, dict], Awaitable[str]],
 ):
     streamer = stream.stream_group(
-        ConsumerGroup("test", "test"),
-        msg_cls=AbstractIncomingMessage,
+        Consumer("test", "test"),
+        msg_cls=MockIncomingMessage,
     )
 
     payload = {"hex": uuid4().hex}
     await message_factory("*", payload)
 
     assert (msg := await asyncio.wait_for(anext(streamer), 2))
-    assert msg.raw_data == {k.encode(): v.encode() for k, v in payload.items()}
+    assert msg.processed_data() == payload
 
 
 async def test_add(stream: Stream, redis: Redis):
-    assert await redis.xlen(stream.stream) == 0
+    assert await redis.xlen(stream.name) == 0
 
     await stream.add(Message({"a": "b"}))
 
-    assert await redis.xlen(stream.stream) == 1
+    assert await redis.xlen(stream.name) == 1
 
 
 async def test_trim(
@@ -123,11 +129,11 @@ async def test_trim(
         payload,
     )
 
-    assert await redis.xlen(stream.stream) == 2
+    assert await redis.xlen(stream.name) == 2
 
     await stream.trim(datetime(2000, 1, 1, tzinfo=UTC))
 
-    assert await redis.xlen(stream.stream) == 1
+    assert await redis.xlen(stream.name) == 1
 
 
 async def test_can_acknowledge_message(
@@ -140,15 +146,15 @@ async def test_can_acknowledge_message(
     response = await redis.xreadgroup(
         groupname="test",
         consumername="test",
-        streams={stream.stream: ">"},
+        streams={stream.name: ">"},
     )
 
-    response: dict = await redis.xpending(stream.stream, "test")
+    response: dict = await redis.xpending(stream.name, "test")
     assert response["pending"] == 1
 
-    await stream.ack(id, "test")
+    await stream.ack(MessageInfo(id=id, stream_name="test", group_name="test"))
 
-    response: dict = await redis.xpending(stream.stream, "test")
+    response: dict = await redis.xpending(stream.name, "test")
     assert response["pending"] == 0
 
 
@@ -167,7 +173,7 @@ async def test_range(
     iterator = stream.range(
         start=datetime(2000, 1, 1, tzinfo=UTC),
         end=datetime.now(),
-        msg_cls=AbstractIncomingMessage,
+        msg_cls=MockIncomingMessage,
     )
 
     msgs = [item async for item in iterator]

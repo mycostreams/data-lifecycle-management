@@ -1,27 +1,60 @@
+import logging
 from enum import StrEnum, auto
 
-from prince_archiver.adapters.streams import AbstractIncomingMessage, AbstractMessage
+from pydantic import ValidationError
 
-from .messages import ImagingEventStream
+from prince_archiver.adapters.streams import (
+    AbstractIncomingMessage,
+    AbstractOutgoingMessage,
+)
+
+from .exceptions import InvalidStreamMessage
+from .messages import ExportedImagingEvent, ImagingEventStream
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Streams(StrEnum):
-    new_imaging_event = "data-ingester:new-imaging-event"
+    imaging_events = "data-lifecycle-management:imaging-events"
+    upload_events = "data-lifecycle-management:export-events"
 
 
 class Group(StrEnum):
-    export_event = auto()
-    import_event = auto()
+    upload_worker = auto()
+    state_manager = auto()
 
 
-class Message(AbstractMessage):
+class Message(AbstractOutgoingMessage):
     def __init__(self, data: ImagingEventStream):
         self.data = data
 
     def fields(self) -> dict:
-        return {"data": self.data.model_dump_json()}
+        return self.data.model_dump(mode="json", round_trip=True, by_alias=True)
 
 
-class IncomingMessage(AbstractIncomingMessage):
+class IncomingMessage(AbstractIncomingMessage[ImagingEventStream]):
     def processed_data(self) -> ImagingEventStream:
-        return ImagingEventStream.model_validate_json(self.raw_data[b"data"])
+        try:
+            return ImagingEventStream(
+                **{k.decode(): v.decode() for k, v in self.raw_data.items()},
+            )
+        except ValidationError as exc:
+            raise InvalidStreamMessage("Invalid message") from exc
+
+
+class OutgoingExportMessage(AbstractOutgoingMessage):
+    def __init__(self, data: ExportedImagingEvent):
+        self.data = data
+
+    def fields(self) -> dict:
+        return self.data.model_dump(mode="json", round_trip=True)
+
+
+class IncomingExportMessage(AbstractIncomingMessage[ExportedImagingEvent]):
+    def processed_data(self) -> ExportedImagingEvent:
+        try:
+            return ExportedImagingEvent(
+                **{k.decode(): v.decode() for k, v in self.raw_data.items()}
+            )
+        except ValidationError as exc:
+            raise InvalidStreamMessage("Invalid message") from exc

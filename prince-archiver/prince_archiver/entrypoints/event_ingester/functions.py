@@ -18,12 +18,6 @@ class State:
     path_manager: PathManager
 
 
-async def run_trim(ctx: dict):
-    state: State = ctx["state"]
-    trim_to = datetime.now(tz=UTC) - timedelta(days=5)
-    await state.stream.trim(trim_to)
-
-
 async def delete_src(ctx: dict):
     LOGGER.info("Deleting src files")
 
@@ -36,11 +30,7 @@ async def delete_src(ctx: dict):
         if data.system not in state.settings.SRC_SYSTEMS_DELETE:
             continue
 
-        src_dir = state.path_manager.get_src_dir(
-            data.system,
-            data.src_dir_info.local_path,
-        )
-
+        src_dir = state.path_manager.get_src_dir(data.system, data.local_path)
         if src_dir.exists():
             LOGGER.info("[%s] Deleting src directory", data.ref_id)
             await src_dir.rm()

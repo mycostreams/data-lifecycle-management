@@ -18,13 +18,18 @@ def fixture_workflow_payload():
         "type": EventType.STITCH,
         "system": System.PRINCE,
         "local_path": "test/path",
+        "message_info": {
+            "id": "test-id",
+            "stream_name": "test-stream",
+            "group_name": "test-group",
+        },
     }
 
 
 async def test_run_export_successful(
     workflow_payload: dict,
 ):
-    export_handler = AsyncMock()
+    export_handler = AsyncMock(ExportHandler)
 
     state = AsyncMock(State, export_handler=export_handler)
     ctx = {"state": state}
@@ -33,7 +38,7 @@ async def test_run_export_successful(
 
     expected_msg = ExportImagingEvent(**workflow_payload)
 
-    export_handler.assert_awaited_once_with(expected_msg)
+    export_handler.process.assert_awaited_once_with(expected_msg)
 
 
 @pytest.mark.parametrize(
@@ -46,7 +51,7 @@ async def test_run_export_successful(
 )
 async def test_workflow_with_retries(workflow_payload: dict, error_cls: Exception):
     export_handler = AsyncMock(ExportHandler)
-    export_handler.side_effect = error_cls
+    export_handler.process.side_effect = error_cls
 
     state = AsyncMock(State, export_handler=export_handler)
     ctx = {"state": state}
