@@ -3,6 +3,7 @@ from enum import StrEnum, auto
 
 class System(StrEnum):
     PRINCE = auto()
+    ARETHA_A = auto()
 
 
 class EventType(StrEnum):

@@ -46,11 +46,14 @@ async def main():
         )
 
         async for msg in streamer:
+            logging.info("Processing message %s", msg.id)
             async with msg.process():
                 try:
                     msg.processed_data()
                 except InvalidStreamMessage as err:
                     logging.exception(err)
+                    continue
+                logging.info("Ingested  %s", msg.id)
 
 
 if __name__ == "__main__":

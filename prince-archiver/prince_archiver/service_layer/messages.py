@@ -18,7 +18,7 @@ class CommonImagingEvent(BaseModel):
 # For importing imaging events into system
 class SrcDirInfo(BaseModel):
     local_path: Path
-    img_count: int
+    img_count: int = Field(default_factory=int)
 
 
 class ImagingEventStream(SrcDirInfo, CommonImagingEvent):
