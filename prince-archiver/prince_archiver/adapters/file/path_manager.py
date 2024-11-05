@@ -1,10 +1,9 @@
-from functools import partial
 from pathlib import Path
 
 from prince_archiver.definitions import System
 
 from .file_system import AsyncFileSystem
-from .integrations import SrcDir, SystemDir
+from .integrations import SrcDir
 
 
 class PathManager:
