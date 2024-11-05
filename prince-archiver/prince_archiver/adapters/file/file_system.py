@@ -78,14 +78,6 @@ class AsyncFileSystem:
     async def read_bytes(self, path: Path) -> bytes:
         return await anext(self.iter_bytes(path, chunk_size=None))
 
-    async def read_json(
-        self,
-        path: Path,
-        *,
-        mapper: MapperT,
-    ) -> T:
-        return mapper(await self.read_bytes(path))
-
     async def tar_tree(
         self,
         src_dir: Path,

@@ -26,6 +26,10 @@ services:
     environment:
       INTERVAL: ${INTERVAL:-30}
       DATA_DIR: /data
+      REDIS_DSN: redis://redis:6379
+    depends_on:
+      prestart:
+        condition: service_completed_successfully
     <<: *code-and-data-volumes
 
   event-ingester:

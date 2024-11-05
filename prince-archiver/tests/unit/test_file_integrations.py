@@ -6,7 +6,6 @@ import pytest
 from prince_archiver.adapters.file.file_system import AsyncFileSystem
 from prince_archiver.adapters.file.integrations import (
     ArchiveFile,
-    EventFile,
     SrcDir,
     SystemDir,
 )
@@ -35,27 +34,6 @@ def fixture_src_dir():
         path=Path("/src"),
         file_system=AsyncMock(AsyncFileSystem),
     )
-
-
-@pytest.fixture(name="event_file")
-def fixure_event_file(system_dir: SystemDir):
-    return EventFile(
-        path=Path("/event"),
-        system_dir=system_dir,
-        file_system=AsyncMock(AsyncFileSystem),
-    )
-
-
-def test_system_dir_events_dir(system_dir: SystemDir):
-    assert system_dir.events_dir == Path("/system/events")
-
-
-async def test_system_dir_iter_events(system_dir: SystemDir):
-    events = [event async for event in system_dir.iter_events()]
-    assert len(events) == 1
-
-    (event,) = events
-    assert event.path == Path("test.json")
 
 
 @pytest.mark.parametrize(
@@ -88,18 +66,3 @@ async def test_src_dir_get_temp_archive(src_dir: SrcDir):
 
     async with src_dir.get_temp_archive() as archive_file:
         assert isinstance(archive_file, ArchiveFile)
-
-
-async def test_event_file_removed_on_successful_process(event_file: EventFile):
-    async with event_file.process():
-        pass
-
-    event_file.file_system.rm.assert_awaited_once_with(Path("/event"))
-
-
-async def test_event_file_not_removed_on_unsuccessful_process(event_file: EventFile):
-    with pytest.raises(MockException):
-        async with event_file.process():
-            raise MockException
-
-    event_file.file_system.rm.assert_not_awaited()
