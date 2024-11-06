@@ -1,81 +1,60 @@
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from pathlib import Path
-from textwrap import dedent
-from uuid import UUID, uuid4
+from uuid import uuid4
+from typing import Callable
 
 import httpx
 from behave import *  # noqa:
-from behave.api.async_step import async_run_until_complete
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncEngine
 
-from prince_archiver.definitions import EventType
-from prince_archiver.service_layer.external_dto import TimestepDTO
+from prince_archiver.definitions import EventType, System
+from prince_archiver.service_layer.streams import ImagingEventStream
 from prince_archiver.test_utils.utils import Timer
 
 
-@given("the watcher and worker are running")
+@given("the containers are running")
 def step_impl(context):
-    pass
+    response: dict = context.get_exports()
+    context.initial_count = response["count"]
 
 
-@when("a timestep is added")
+@when("an event is added")
 def step_impl(context):
     client: httpx.Client = context.client
 
-    context.timestep_id = uuid4()
+    ref_id = uuid4()
 
-    meta = TimestepDTO(
-        timestep_id=context.timestep_id,
-        plate=1,
-        cross_date=date(2000, 1, 1),
-        position=1,
+    context.ref_id = ref_id
+
+    event = ImagingEventStream(
+        ref_id=ref_id,
+        experiment_id=f"test-id-{ref_id.hex[:6]}",
         timestamp=datetime(2000, 1, 1, tzinfo=timezone.utc),
-        event_type=EventType.STITCH,
-        path=Path(uuid4().hex[:6]),
+        type=EventType.STITCH,
+        system=System.PRINCE,
+        local_path=Path(ref_id.hex[:6]),
+        img_count=1,
     )
 
     resp = client.post(
         "http://localhost:8001/timestep",
-        json=meta.model_dump(mode="json", by_alias=True),
+        json=event.model_dump(mode="json"),
     )
 
     assert resp.status_code == 200
 
 
-@then("the results are stored locally")
-@async_run_until_complete
-async def step_impl(context, timeout=15):
-    db_engine: AsyncEngine = context.db_engine
-    timestep_id: UUID = context.timestep_id
+@then("the export count should be incremented")
+def step_impl(context, timeout=10):
+    get_exports: Callable[[], dict] = context.get_exports
 
-    raw_stmt = dedent(
-        """
-        SELECT COUNT(1)
-        FROM object_store_entry 
-        WHERE timestep_id=:timestep_id
-        """
-    )
+    initial_count: int = context.initial_count
 
-    async with db_engine.begin() as conn:
-        timer = Timer()
-        exists = False
-        while not exists and timer.delta < timeout:
-            _exists: int = await conn.scalar(
-                text(raw_stmt),
-                {"timestep_id": timestep_id.hex},
-            )
-            exists = bool(_exists)
+    timer = Timer()
+    while (
+        (data := get_exports())
+        and data["count"] <= initial_count
+        and timer.delta <= timeout
+    ):
+        continue
 
-        assert exists
-
-
-@then("the processed timestep is available in the object store")
-def step_impl(context, timeout=30):
-    client: httpx.Client = context.client
-
-    expected_path = "mycostreams/images/20000101_001/20000101_0000.tar"
-
-    resp = client.head(f"http://localhost:9091/{expected_path}")
-
-    assert resp.status_code == 200
+    assert initial_count < data["count"]

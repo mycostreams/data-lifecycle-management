@@ -7,7 +7,7 @@ from uuid import uuid4
 import httpx
 import redis.asyncio as redis
 from fastapi import FastAPI, Response
-from pydantic import RedisDsn
+from pydantic import FilePath, RedisDsn
 from pydantic_settings import BaseSettings
 
 from prince_archiver.adapters.streams import Stream
@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     INTERVAL: int = 30
     DATA_DIR: Path
     REDIS_DSN: RedisDsn
+    SRC_IMG: FilePath | None = None
 
 
 def _create_event() -> ImagingEventStream:
@@ -58,7 +59,8 @@ def create_app(*, settings: Settings | None = None) -> FastAPI:
         logging.info("[%s] Added timestep", data.ref_id)
 
         make_timestep_directory(
-            target_dir=settings.DATA_DIR / data.system / data.local_path
+            target_dir=settings.DATA_DIR / data.system / data.local_path,
+            src_img=settings.SRC_IMG,
         )
 
         await stream.add(Message(data))
