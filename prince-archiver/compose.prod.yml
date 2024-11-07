@@ -22,6 +22,9 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+    env_file:
+      - .env
+      - ../.env
 
   state-manager:
     environment:
@@ -32,6 +35,9 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+    env_file:
+      - .env
+      - ../.env
 
   upload-worker:
     environment:
@@ -43,12 +49,21 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+    env_file:
+      - .env
+      - ../.env
 
   api:
     environment:
       <<: *aws-env-variables
       SENTRY_DSN: ${SENTRY_DSN}
     labels: *log-labels
+    deploy:
+      restart_policy:
+        condition: on-failure
+    env_file:
+      - .env
+      - ../.env
 
   aws-cli:
     image: amazon/aws-cli
@@ -57,14 +72,18 @@ services:
       AWS_DEFAULT_REGION: default
     volumes:
       - ${POSTGRES_BACKUP_DIR:-${PWD}/backups}:/aws/postgres
-      - redis_data:/aws/redis
     labels: *log-labels
+    env_file:
+      - .env
+      - ../.env
     profiles:
       - tools
 
-  redis:
-    networks:
-      - external
+
+networks:
+  traefik-public:
+    external: true
+
 
 volumes:
   cifs_mount: 
@@ -73,8 +92,3 @@ volumes:
       device: //prince.amolf.nl/Data/Prince2/Images/
       o: username=${AMOLF_USERNAME},password=${AMOLF_PASSWORD}
 
-
-networks:
-  external:
-    name: "infra-public"
-    external: true

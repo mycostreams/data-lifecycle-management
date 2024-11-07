@@ -18,10 +18,6 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    networks:
-      - external
-
-networks:
-  external:
-    name: infra-public
-    external: true
+    env_file:
+      - .env
+      - ../.env
