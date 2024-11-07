@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     INTERVAL: int = 30
     DATA_DIR: Path
     REDIS_DSN: RedisDsn
-    SRC_IMG: FilePath | None = None
+    SRC_IMG: FilePath
 
 
 def _create_event() -> ImagingEventStream:
