@@ -26,6 +26,13 @@ class _ExportInfo:
     timestamp: datetime = field(default_factory=now)
 
 
+SchemaMapperT = Callable[[messages.ExportImagingEvent], messages.BaseSchema]
+
+
+def default_schema_mapper(msg: messages.ExportImagingEvent) -> messages.BaseSchema:
+    return messages.Schema(**dict(msg))
+
+
 class Exporter:
     """
     Class to handle export from local to s3
@@ -37,11 +44,13 @@ class Exporter:
         key_generator: Callable[[messages.ExportImagingEvent], str],
         path_manager: PathManager,
         *,
+        schema_mapper: SchemaMapperT = default_schema_mapper,
         timeout: int = 120,
     ):
         self.s3 = s3
         self.key_generator = key_generator
         self.path_manager = path_manager
+        self.schema_mapper = schema_mapper
         self.timeout = timeout
 
     async def export(self, message: messages.ExportImagingEvent) -> _ExportInfo:
@@ -64,18 +73,17 @@ class Exporter:
         message: messages.ExportImagingEvent,
     ) -> AsyncGenerator[ArchiveFile, None]:
         src_dir = self.path_manager.get_src_dir(message.system, message.local_path)
-        metadata = MetaData(
-            message.model_dump_json(
-                exclude={"message_info", "local_path", "img_count"},
-                indent=4,
-            ).encode()
-        )
+        metadata = self._get_metadata(message)
         async with src_dir.get_temp_archive(metadata=metadata) as archive_file:
             yield archive_file
 
     async def _upload(self, path: Path, key: str, *, timeout: int | None = None):
         async with asyncio.timeout(timeout or self.timeout):
             await self.s3._put_file(path, key)
+
+    def _get_metadata(self, message: messages.ExportImagingEvent) -> MetaData:
+        schema = self.schema_mapper(message)
+        return MetaData(schema.model_dump_json(indent=4).encode())
 
 
 class Publisher:
