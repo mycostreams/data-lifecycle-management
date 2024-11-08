@@ -66,25 +66,21 @@ Where `img_dir` is the relative path to directory containing the images.
 As a preliminary step, we must ensure that the source directories are correctly set up
 in the development environment, to do this run:
 
-```bash
-./scripts/init-dev.sh
-```
-
 Now you can get all services started with:
 
 ```bash
-docker compose -f compose.yml -f compose.dev.yml up -d
+docker compose up -d
 ```
 
 Follow the logs of the relevant containers with:
 
 ```bash
-docker compose -f compose.yml -f compose.dev.yml logs -f event-ingester state-manager upload-worker
+docker compose logs -f event-ingester state-manager upload-worker
 ```
 
 To view data via the api navigate to `http://fastapi.localhost/docs`. Alternatively 
 to access it programmitically run e.g.:
 
 ```bash
-curl --header Host:fastapi.localhost localhost:80/api/1/exports?limit=1
+curl localhost:8000/api/1/exports?limit=1
 ```
