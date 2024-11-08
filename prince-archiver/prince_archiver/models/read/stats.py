@@ -3,7 +3,11 @@ from datetime import date
 from sqlalchemy import Select, case, func, select
 from sqlalchemy.orm import Mapped
 
-from prince_archiver.models.v2 import DataArchiveMember, ImagingEvent, ObjectStoreEntry
+from prince_archiver.models.write import (
+    DataArchiveMember,
+    ImagingEvent,
+    ObjectStoreEntry,
+)
 
 from .utils import ReadBase
 

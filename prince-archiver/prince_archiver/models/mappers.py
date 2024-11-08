@@ -8,7 +8,7 @@ from sqlalchemy.orm import registry, relationship
 from prince_archiver.domain import models as domain_models
 from prince_archiver.domain import value_objects as vo
 
-from . import v2 as data_models
+from . import write as data_models
 
 
 def get_exclude_fields(model_cls: Type[data_models.Base]) -> list[ColumnElement]:

@@ -14,7 +14,7 @@ from sqlalchemy.orm import clear_mappers
 from testcontainers.postgres import PostgresContainer
 
 from prince_archiver.definitions import Algorithm, EventType, System
-from prince_archiver.models import v2 as data_models
+from prince_archiver.models import write as data_models
 from prince_archiver.models.mappers import init_mappers
 
 
