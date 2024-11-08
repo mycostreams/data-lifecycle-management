@@ -1,0 +1,32 @@
+---
+
+services:  
+  redis:
+    image: redis:7.2.4
+    command: ["redis-server", "--save", "60", "1"]
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis_data:/data
+
+  aws-cli:
+    image: amazon/aws-cli
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: default
+    volumes:
+      - redis_data:/aws/redis
+    profiles:
+      - tools
+    env_file:
+      - .env
+      - ../../.env
+
+volumes:
+  redis_data:

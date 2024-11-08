@@ -22,7 +22,7 @@ x-code-and-data-volumes: &code-and-data-volumes
 
 services:
   prince:
-    image: prince-archiver
+    image: mycostreams/prince-archiver:${TAG:-latest}
     command: ["python", "-m", "prince_archiver.entrypoints.mock_prince.main"]
     environment:
       INTERVAL: ${INTERVAL:-30}
@@ -43,19 +43,11 @@ services:
     environment:
       RABBITMQ_DSN: amqp://guest:guest@rabbitmq:5672
     <<: *code-volumes
-    depends_on:
-      s3:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
 
   upload-worker:
     environment:
       <<: *aws-env-variables
     <<: *code-and-data-volumes
-    depends_on:
-      s3:
-        condition: service_healthy
 
   api:
     environment:
@@ -64,6 +56,26 @@ services:
 
   prestart:
     <<: *code-volumes
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+
+  redis:
+    image: redis:7.2.4
+    command: ["redis-server", "--save", "60", "1"]
+    ports:
+      - 127.0.0.1:6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis_data:/data
 
   s3:
     image: localstack/localstack:latest
@@ -92,8 +104,14 @@ services:
       retries: 3
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - default
 
+networks:
+  traefik-public:
 
 volumes:
   input_data:
   rabbitmq_data:
+  redis_data:
+  

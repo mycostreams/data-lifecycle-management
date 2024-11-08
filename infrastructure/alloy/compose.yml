@@ -23,3 +23,6 @@ services:
     privileged: true
     ports:
       - 12345:12345
+    env_file:
+      - .env
+      - ../../.env
