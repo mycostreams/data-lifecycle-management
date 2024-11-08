@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.sql import Select
 
 from prince_archiver.domain.models import DataArchiveEntry, ImagingEvent
-from prince_archiver.models import v2 as data_models
+from prince_archiver.models import write as data_models
 
 
 class AbstractDataArchiveEntryRepo(ABC):
