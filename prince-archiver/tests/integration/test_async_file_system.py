@@ -1,4 +1,3 @@
-import json
 import tarfile
 from hashlib import sha256
 from pathlib import Path
@@ -75,13 +74,6 @@ async def test_iter_bytes(
     src_file_path: Path,
 ):
     assert await anext(file_system.iter_bytes(src_file_path, None)) == b'{"a": 1}'
-
-
-async def test_read_json(
-    file_system: AsyncFileSystem,
-    src_file_path: Path,
-):
-    assert await file_system.read_json(src_file_path, mapper=json.loads) == {"a": 1}
 
 
 async def test_list_dir(

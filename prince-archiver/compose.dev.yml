@@ -16,6 +16,7 @@ x-code-and-data-volumes: &code-and-data-volumes
   volumes:
     - ./prince_archiver:/app/prince_archiver
     - ./alembic/:/app/alembic
+    - ./img/example.tif:/data/example.tif
     - input_data:/data
 
 
@@ -26,6 +27,11 @@ services:
     environment:
       INTERVAL: ${INTERVAL:-30}
       DATA_DIR: /data
+      REDIS_DSN: redis://redis:6379
+      SRC_IMG: /data/example.tif
+    depends_on:
+      prestart:
+        condition: service_completed_successfully
     <<: *code-and-data-volumes
 
   event-ingester:

@@ -29,7 +29,7 @@ class Message(AbstractOutgoingMessage):
         self.data = data
 
     def fields(self) -> dict:
-        return self.data.model_dump(mode="json", round_trip=True, by_alias=True)
+        return self.data.model_dump(mode="json", round_trip=True)
 
 
 class IncomingMessage(AbstractIncomingMessage[ImagingEventStream]):

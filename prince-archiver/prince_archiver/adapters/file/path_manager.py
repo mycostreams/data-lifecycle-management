@@ -1,10 +1,9 @@
-from functools import partial
 from pathlib import Path
 
 from prince_archiver.definitions import System
 
 from .file_system import AsyncFileSystem
-from .integrations import SrcDir, SystemDir
+from .integrations import SrcDir
 
 
 class PathManager:
@@ -19,11 +18,3 @@ class PathManager:
 
     def get_src_dir(self, system: System, path: Path) -> SrcDir:
         return SrcDir(self.data_dir / system / path, self.file_system)
-
-    def get_system_dirs(self) -> list[SystemDir]:
-        factory = partial(SystemDir, file_system=self.file_system)
-        filtered_dirs = filter(
-            lambda path: path.name in System,
-            self.data_dir.iterdir(),
-        )
-        return [factory(System(path.name), path) for path in filtered_dirs]

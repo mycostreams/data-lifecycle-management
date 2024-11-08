@@ -1,7 +1,5 @@
 import logging
-import tarfile
 from contextlib import asynccontextmanager
-from pathlib import Path
 from typing import AsyncGenerator
 
 import s3fs
@@ -9,16 +7,6 @@ import s3fs
 from .config import AWSSettings
 
 LOGGER = logging.getLogger(__name__)
-
-
-def tar(src: Path, target: Path):
-    LOGGER.debug("Tarring %s", src)
-
-    target.parent.mkdir(parents=True, exist_ok=True)
-    with tarfile.open(target, "a") as tar:
-        tar.add(src, arcname=".")
-
-    LOGGER.debug("Tarred %s", src)
 
 
 @asynccontextmanager
