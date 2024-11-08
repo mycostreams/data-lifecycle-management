@@ -8,6 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from s3fs import S3FileSystem
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from prince_archiver.adapters.s3 import file_system_factory
 from prince_archiver.config import AWSSettings
 from prince_archiver.service_layer.uow import get_session_maker
 
@@ -21,21 +22,6 @@ class Settings(AWSSettings, BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
-    )
-
-
-def file_system_factory(settings: Settings) -> S3FileSystem:
-    client_kwargs = {}
-    if settings.AWS_REGION_NAME:
-        client_kwargs["region_name"] = settings.AWS_REGION_NAME
-
-    return S3FileSystem(
-        key=settings.AWS_ACCESS_KEY_ID,
-        secret=settings.AWS_SECRET_ACCESS_KEY,
-        endpoint_url=settings.AWS_ENDPOINT_URL,
-        client_kwargs=client_kwargs,
-        asynchronous=True,
-        max_concurrency=settings.UPLOAD_MAX_CONCURRENCY,
     )
 
 

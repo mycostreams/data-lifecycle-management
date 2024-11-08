@@ -4,17 +4,16 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI
 
+from prince_archiver.adapters.s3 import managed_file_system
+
 from .dependencies import AppState, get_app_state
 from .routes import router
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI, *, app_state: AppState) -> AsyncGenerator[None, None]:
-    session = await app_state.file_system.set_session()
-
-    yield
-
-    await session.close()
+    async with managed_file_system(app_state.file_system):
+        yield
 
 
 def create_app(*, _state: AppState | None = None):
@@ -31,6 +30,3 @@ def create_app(*, _state: AppState | None = None):
         """Get health check."""
 
     return app
-
-
-# app = create_app()
