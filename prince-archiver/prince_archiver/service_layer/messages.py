@@ -43,6 +43,7 @@ class MessageInfo(BaseModel):
 # For exporting out
 class ExportImagingEvent(CommonImagingEvent):
     local_path: Path
+    metadata: dict
     message_info: MessageInfo
 
 
