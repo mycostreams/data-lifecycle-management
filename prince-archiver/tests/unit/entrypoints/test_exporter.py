@@ -4,7 +4,7 @@ import pytest
 from arq import Retry
 
 from prince_archiver.definitions import EventType, System
-from prince_archiver.entrypoints.upload_worker.worker import State, run_export
+from prince_archiver.entrypoints.exporter.worker import State, run_export
 from prince_archiver.service_layer.handlers.export import ExportHandler
 from prince_archiver.service_layer.messages import ExportImagingEvent
 

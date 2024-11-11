@@ -46,9 +46,9 @@ services:
     networks:
       - prince-archiver-e2e
 
-  upload-worker:
+  exporter:
     image: prince-archiver-e2e
-    command: ["arq", "prince_archiver.entrypoints.upload_worker.WorkerSettings"]
+    command: ["arq", "prince_archiver.entrypoints.exporter.WorkerSettings"]
     environment: 
       <<: *env-variables
     depends_on:
@@ -148,11 +148,11 @@ services:
       retries: 3
     networks:
       - prince-archiver-e2e
-      
 
 
 networks:
   prince-archiver-e2e:
+
 
 volumes:
   input_data:

@@ -10,7 +10,7 @@ trap compose_down EXIT
 
 compose_down
 
-docker compose build event-generator --quiet
+docker compose -f ${COMPOSE_FILE} build event-generator --quiet
 
 docker compose -f ${COMPOSE_FILE} up --detach --wait
 
