@@ -19,6 +19,7 @@ services:
     environment:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_ENDPOINT_URL: https://objectstore.surf.nl
       AWS_DEFAULT_REGION: default
     volumes:
       - redis_data:/aws/redis
