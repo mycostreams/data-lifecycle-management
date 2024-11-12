@@ -15,8 +15,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Streams(StrEnum):
-    imaging_events = "data-lifecycle-management:imaging-events"
-    upload_events = "data-lifecycle-management:export-events"
+    imaging_events = "dlm:imaging-events"
+    upload_events = "dlm:export-events"
 
 
 class Group(StrEnum):
