@@ -8,8 +8,8 @@ from typing import AsyncGenerator
 from arq import ArqRedis
 
 from prince_archiver.adapters.file import PathManager
+from prince_archiver.adapters.s3 import file_system_factory, managed_file_system
 from prince_archiver.adapters.streams import Consumer, Stream
-from prince_archiver.file import managed_file_system
 from prince_archiver.service_layer.handlers.export import (
     Exporter,
     ExportHandler,
@@ -41,7 +41,8 @@ async def get_managed_state(
 
     settings = settings or Settings()
 
-    s3 = await exit_stack.enter_async_context(managed_file_system(settings))
+    s3 = file_system_factory(settings)
+    await exit_stack.enter_async_context(managed_file_system(s3))
 
     stop_event = asyncio.Event()
 

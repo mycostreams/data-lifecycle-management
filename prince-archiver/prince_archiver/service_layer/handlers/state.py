@@ -22,7 +22,7 @@ async def import_imaging_event(
             raise ServiceLayerException("Already imported.")
 
         imaging_event = models.ImagingEvent.factory(
-            **message.model_dump(exclude={"src_dir_info"}),
+            **message.model_dump(exclude={"src_dir_info"}, by_alias=True),
             src_dir_info=models.SrcDirInfo(**message.src_dir_info.model_dump()),
         )
 

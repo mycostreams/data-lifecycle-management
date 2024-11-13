@@ -1,77 +1,105 @@
 ---
-x-aws-env-variables: &aws-env-variables
+x-env-variables: &env-variables
   AWS_ACCESS_KEY_ID: aws-access-key-id
   AWS_SECRET_ACCESS_KEY: aws-access-key-id
-  AWS_ENDPOINT_URL: http://s3:9090
-  DATA_DIR: /data/input/
+  AWS_ENDPOINT_URL: http://localhost.localstack.cloud:4566
+  AWS_BUCKET_NAME: mycostreams-raw-data
+  SRC_DIR: /data/input/
+  RABBITMQ_DSN: amqp://guest:guest@rabbitmq:5672
   REDIS_DSN: redis://redis:6379
   POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
 
 
 services:
-  timestep-generator:
-    image: prince-archiver
+  event-generator:
+    image: prince-archiver-e2e
+    build:
+      context: ..
     command:
       - "uvicorn"
       - "--factory"
       - "--host=0.0.0"
-      - "prince_archiver.test_utils.mock_prince:create_app"
+      - "prince_archiver.entrypoints.mock_prince.main:create_app"
     environment:
-      DATA_DIR: /data/input/  
+      <<: *env-variables
+      DATA_DIR: /data/input/
+      SRC_IMG: /data/example.tif
+    depends_on:
+      prestart:
+        condition: service_completed_successfully
     ports:
-      - 8001:8000
+      - 127.0.0.1:8001:8000
     volumes:
+      - ../img/example.tif:/data/example.tif
       - input_data:/data/input/
     networks:
       - prince-archiver-e2e
-  
-  watcher:
-    image: prince-archiver
-    command: ["python", "-m", "prince_archiver.watcher.main"]
-    environment: *aws-env-variables
-    volumes:
-      - input_data:/data/input/:ro
+
+  state-manager:
+    image: prince-archiver-e2e
+    command: ["arq", "prince_archiver.entrypoints.state_manager.WorkerSettings"]
+    environment:
+      <<: *env-variables
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      prestart:
+        condition: service_completed_successfully
     networks:
       - prince-archiver-e2e
 
   upload-worker:
-    image: prince-archiver
-    command: ["arq", "prince_archiver.upload_worker.WorkerSettings"]
-    environment:
-      <<: *aws-env-variables
-      AWS_BUCKET_NAME: mycostreams
+    image: prince-archiver-e2e
+    command: ["arq", "prince_archiver.entrypoints.upload_worker.WorkerSettings"]
+    environment: 
+      <<: *env-variables
+    depends_on:
+      prestart:
+        condition: service_completed_successfully
     volumes:
-      - input_data:/data/input/:r0
+      - input_data:/data/input/
+    networks:
+      - prince-archiver-e2e
+
+  api:
+    image: prince-archiver-e2e
+    command: [
+      "uvicorn",
+      "--factory",
+      "prince_archiver.entrypoints.api.app:create_app",
+      "--host=0.0.0.0"
+    ]
+    expose:
+      - 8000
+    ports:
+      - 127.0.0.1:8002:8000
+    environment:
+      <<: *env-variables
+    depends_on:
+      prestart:
+        condition: service_completed_successfully
+    networks:
+      - prince-archiver-e2e
+
+  prestart:
+    image: prince-archiver-e2e
+    command: ["./prestart.sh"]
+    environment:
+      <<: *env-variables
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
-    networks:
-      - prince-archiver-e2e
-
-  db-migrations:
-    image: prince-archiver
-    command: ["alembic", "upgrade", "head"]
-    environment: 
-      POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@db:5432/postgres
-    depends_on:
-      db:
+      rabbitmq:
         condition: service_healthy
+      s3:
+        condition: service_healthy
+    volumes:
+      - "../scripts/prestart.sh:/app/prestart.sh"
     networks:
       - prince-archiver-e2e
-    profiles:
-      - tools
 
   db:
     image: postgres:15-alpine
-    ports:
-      - 5431:5432
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -81,6 +109,16 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - prince-archiver-e2e
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
     networks:
       - prince-archiver-e2e
 
@@ -95,23 +133,26 @@ services:
       - prince-archiver-e2e
 
   s3:
-    image: adobe/s3mock:3.1.0
+    image: localstack/localstack:latest
+    hostname: localhost.localstack.cloud
     ports:
-      - 9091:9090
+      - 127.0.0.1:4567:4566
     environment:
-      initialBuckets: mycostreams
-      validKmsKeys: arn:aws:kms:eu-central-1:1234567890:key/aws-access-key-id
+      SERVICES: "s3"
+    volumes:
+      - "../scripts/init-localstack.sh:/etc/localstack/init/ready.d/init-localstack.sh"
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090"]
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 3
     networks:
       - prince-archiver-e2e
+      
 
 
 networks:
   prince-archiver-e2e:
 
 volumes:
-  input_data: 
+  input_data:

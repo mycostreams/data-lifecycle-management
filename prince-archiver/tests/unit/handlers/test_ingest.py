@@ -30,7 +30,7 @@ class _MsgKwargs(BaseModel):
     type: EventType
     timestamp: datetime
     src_dir_info: _SrcDirInfo
-    raw_metadata: dict
+    metadata: dict
 
 
 @pytest.fixture()
@@ -47,7 +47,7 @@ def msg_kwargs() -> _MsgKwargs:
             local_path="test/path",
             img_count=1,
         ),
-        raw_metadata={"key": "value"},
+        metadata={"key": "value"},
     )
 
 

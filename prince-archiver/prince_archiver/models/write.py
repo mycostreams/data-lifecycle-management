@@ -5,17 +5,28 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import ForeignKey, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.types import Enum, Uuid
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.types import TIMESTAMP, Enum, Uuid
 
 from prince_archiver.definitions import Algorithm, EventType, System
+from prince_archiver.utils import now
 
-from .v1 import Base
+from .types import PathType
 
 uuid_pk = Annotated[
     UUID,
     mapped_column(Uuid(native_uuid=False), default=uuid4, primary_key=True),
 ]
+
+
+class Base(DeclarativeBase):
+    created_at: Mapped[datetime] = mapped_column(default=now)
+    updated_at: Mapped[datetime] = mapped_column(default=now, onupdate=now)
+
+    type_annotation_map = {
+        datetime: TIMESTAMP(timezone=True),
+        Path: PathType,
+    }
 
 
 class DataArchiveEntry(Base):

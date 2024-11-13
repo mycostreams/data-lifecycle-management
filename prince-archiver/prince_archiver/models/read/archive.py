@@ -5,7 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Mapped
 
 from prince_archiver.definitions import EventType
-from prince_archiver.models.v2 import (
+from prince_archiver.models.write import (
     DataArchiveEntry,
     DataArchiveMember,
     ImagingEvent,

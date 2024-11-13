@@ -22,11 +22,11 @@ class SrcDirInfo(BaseModel):
 
 
 class ImagingEventStream(SrcDirInfo, CommonImagingEvent):
-    raw_metadata: Json[dict] | dict = Field(default_factory=dict, alias="metadata")
+    metadata: Json[dict] | dict = Field(default_factory=dict)
 
 
 class ImportImagingEvent(CommonImagingEvent):
-    raw_metadata: dict
+    metadata: dict = Field(..., serialization_alias="raw_metadata")
     src_dir_info: SrcDirInfo
 
 
