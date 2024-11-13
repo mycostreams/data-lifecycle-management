@@ -13,6 +13,7 @@ from prince_archiver.adapters.streams import (
     Consumer,
     MessageInfo,
     Stream,
+    get_id,
 )
 
 
@@ -120,14 +121,8 @@ async def test_trim(
 ):
     payload = {"a": "b"}
 
-    await message_factory(
-        f"{datetime(1999, 1, 1, tzinfo=UTC).timestamp():.0f}",
-        payload,
-    )
-    await message_factory(
-        f"{datetime(2001, 1, 1, tzinfo=UTC).timestamp():.0f}",
-        payload,
-    )
+    await message_factory(get_id(datetime(1999, 1, 1, tzinfo=UTC)), payload)
+    await message_factory(get_id(datetime(2001, 1, 1, tzinfo=UTC)), payload)
 
     assert await redis.xlen(stream.name) == 2
 
@@ -164,11 +159,8 @@ async def test_range(
 ):
     payload = {"a": "b"}
 
-    t1 = datetime(1999, 1, 1, tzinfo=UTC)
-    t2 = datetime(2001, 1, 1, tzinfo=UTC)
-
-    await message_factory(f"{t1.timestamp():.0f}", payload)
-    id = await message_factory(f"{t2.timestamp():.0f}", payload)
+    await message_factory(get_id(datetime(1999, 1, 1, tzinfo=UTC)), payload)
+    id = await message_factory(get_id(datetime(2001, 1, 1, tzinfo=UTC)), payload)
 
     iterator = stream.range(
         start=datetime(2000, 1, 1, tzinfo=UTC),
