@@ -107,11 +107,12 @@ services:
     networks:
       - default
 
+
 networks:
   traefik-public:
+
 
 volumes:
   input_data:
   rabbitmq_data:
   redis_data:
-  
