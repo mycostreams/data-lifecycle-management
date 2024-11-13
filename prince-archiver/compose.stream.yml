@@ -1,0 +1,13 @@
+---
+
+services:
+  stream-ingester:
+    image: mycostreams/prince-archiver:${TAG:-latest}
+    build:
+      context: .
+    command: ["python", "stream_ingester.py"]
+    environment: 
+      REDIS_DSN: redis://host.docker.internal:6380
+    volumes:
+      - ./prince_archiver:/app/prince_archiver
+      - ./stream_ingester.py:/app/stream_ingester.py

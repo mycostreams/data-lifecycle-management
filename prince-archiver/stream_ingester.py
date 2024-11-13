@@ -11,7 +11,10 @@ from prince_archiver.adapters.streams import Stream, Consumer
 from prince_archiver.service_layer.streams import IncomingMessage
 
 
-logging.basicConfig(format="%(asctime)s %(message)s", level=logging.INFO)
+logging.basicConfig(
+    format="%(asctime)s %(message)s", 
+    level=logging.INFO
+)
 
 
 async def create_group(redis: redis.Redis, stream: str, group_name: str):
@@ -28,8 +31,10 @@ async def create_group(redis: redis.Redis, stream: str, group_name: str):
 
 async def main():
 
-    stream_name = "data-lifecycle-management:imaging-events"
+    logging.info("hello")
 
+
+    stream_name = "data-lifecycle-management:imaging-events"
     consumer = Consumer(group_name="state-manager")
 
     client = redis.from_url(
@@ -53,8 +58,8 @@ async def main():
                 except InvalidStreamMessage as err:
                     logging.exception(err)
                     continue
+
                 logging.info("Ingested  %s", msg.id) 
-            break
 
 
 if __name__ == "__main__":

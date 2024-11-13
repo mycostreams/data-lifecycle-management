@@ -1,7 +1,7 @@
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from pydantic import AwareDatetime, BaseModel, Field, Json
+from pydantic import AwareDatetime, BaseModel, Field, Json, field_validator
 
 from prince_archiver.definitions import Algorithm, EventType, System
 from prince_archiver.utils import now
@@ -23,6 +23,12 @@ class SrcDirInfo(BaseModel):
 
 class ImagingEventStream(SrcDirInfo, CommonImagingEvent):
     metadata: Json[dict] | dict = Field(default_factory=dict)
+
+    @field_validator("system", mode="before")
+    def lower_case(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 
 class ImportImagingEvent(CommonImagingEvent):
