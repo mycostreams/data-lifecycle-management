@@ -53,7 +53,8 @@ async def main():
                 except InvalidStreamMessage as err:
                     logging.exception(err)
                     continue
-                logging.info("Ingested  %s", msg.id)
+                logging.info("Ingested  %s", msg.id) 
+            break
 
 
 if __name__ == "__main__":
