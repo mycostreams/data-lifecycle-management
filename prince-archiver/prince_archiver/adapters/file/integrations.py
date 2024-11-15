@@ -7,7 +7,7 @@ from typing import AsyncGenerator
 from prince_archiver.definitions import System
 from prince_archiver.domain.value_objects import Checksum
 
-from .file_system import AsyncFileSystem
+from .file_system import AsyncFileSystem, MetaData
 
 
 class SystemDir:
@@ -54,8 +54,13 @@ class SrcDir:
         await self.file_system.rm_tree(self.path)
 
     @asynccontextmanager
-    async def get_temp_archive(self) -> AsyncGenerator["ArchiveFile", None]:
-        async with self.file_system.get_temp_archive(self.path) as path:
+    async def get_temp_archive(
+        self,
+        *,
+        metadata: MetaData | None = None,
+    ) -> AsyncGenerator["ArchiveFile", None]:
+        temp_archive = self.file_system.get_temp_archive(self.path, metadata=metadata)
+        async with temp_archive as path:
             yield ArchiveFile(path, self.file_system)
 
 

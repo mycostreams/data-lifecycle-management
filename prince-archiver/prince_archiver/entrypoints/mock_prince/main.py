@@ -37,6 +37,7 @@ def _create_event() -> ImagingEventStream:
         type=EventType.STITCH,
         system=System.PRINCE,
         img_count=1,
+        metadata={"application": {"application": "mock-prince"}},
         local_path=Path(ref_id.hex[:6]),
     )
 

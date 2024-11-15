@@ -1,13 +1,14 @@
 import asyncio
 import logging
+from contextlib import asynccontextmanager
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, AsyncGenerator, Callable
 
 import s3fs
 
-from prince_archiver.adapters.file import PathManager
+from prince_archiver.adapters.file import ArchiveFile, MetaData, PathManager
 from prince_archiver.adapters.streams import MessageInfo, Stream
 from prince_archiver.domain.value_objects import Checksum
 from prince_archiver.service_layer import messages
@@ -25,6 +26,13 @@ class _ExportInfo:
     timestamp: datetime = field(default_factory=now)
 
 
+SchemaMapperT = Callable[[messages.ExportImagingEvent], messages.BaseSchema]
+
+
+def default_schema_mapper(msg: messages.ExportImagingEvent) -> messages.BaseSchema:
+    return messages.Schema(**dict(msg))
+
+
 class Exporter:
     """
     Class to handle export from local to s3
@@ -36,20 +44,22 @@ class Exporter:
         key_generator: Callable[[messages.ExportImagingEvent], str],
         path_manager: PathManager,
         *,
+        schema_mapper: SchemaMapperT = default_schema_mapper,
         timeout: int = 120,
     ):
         self.s3 = s3
         self.key_generator = key_generator
         self.path_manager = path_manager
+        self.schema_mapper = schema_mapper
         self.timeout = timeout
 
     async def export(self, message: messages.ExportImagingEvent) -> _ExportInfo:
         LOGGER.info("[%s] Exporting", message.ref_id)
 
         key = self.key_generator(message)
-        src_dir = self.path_manager.get_src_dir(message.system, message.local_path)
+
         async with (
-            src_dir.get_temp_archive() as archive_file,
+            self._get_temp_archive(message) as archive_file,
             asyncio.TaskGroup() as tg,
         ):
             t1 = tg.create_task(archive_file.get_info())
@@ -57,9 +67,23 @@ class Exporter:
 
         return _ExportInfo(key=key, **asdict(t1.result()))
 
+    @asynccontextmanager
+    async def _get_temp_archive(
+        self,
+        message: messages.ExportImagingEvent,
+    ) -> AsyncGenerator[ArchiveFile, None]:
+        src_dir = self.path_manager.get_src_dir(message.system, message.local_path)
+        metadata = self._get_metadata(message)
+        async with src_dir.get_temp_archive(metadata=metadata) as archive_file:
+            yield archive_file
+
     async def _upload(self, path: Path, key: str, *, timeout: int | None = None):
         async with asyncio.timeout(timeout or self.timeout):
             await self.s3._put_file(path, key)
+
+    def _get_metadata(self, message: messages.ExportImagingEvent) -> MetaData:
+        schema = self.schema_mapper(message)
+        return MetaData(schema.model_dump_json(indent=4).encode())
 
 
 class Publisher:

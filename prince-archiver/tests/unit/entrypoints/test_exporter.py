@@ -18,6 +18,7 @@ def fixture_workflow_payload():
         "type": EventType.STITCH,
         "system": System.PRINCE,
         "local_path": "test/path",
+        "metadata": {},
         "message_info": {
             "id": "test-id",
             "stream_name": "test-stream",
