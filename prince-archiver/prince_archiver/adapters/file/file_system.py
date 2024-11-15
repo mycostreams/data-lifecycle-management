@@ -106,8 +106,11 @@ class AsyncFileSystem:
             tar.add(src, arcname=".")
 
             if metadata:
+                tar_info = tarfile.TarInfo(metadata.name)
+                tar_info.size = len(metadata.content)
+
                 tar.addfile(
-                    tarfile.TarInfo(metadata.name),
+                    tar_info,
                     io.BytesIO(metadata.content),
                 )
 

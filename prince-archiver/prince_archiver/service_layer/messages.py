@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Literal
 from uuid import UUID, uuid4
 
 from pydantic import AwareDatetime, BaseModel, Field, Json
@@ -34,16 +35,26 @@ class ImportedImagingEvent(ImportImagingEvent):
     id: UUID
 
 
+# For exporting out
 class MessageInfo(BaseModel):
     id: str | bytes
     stream_name: str
     group_name: str
 
 
-# For exporting out
 class ExportImagingEvent(CommonImagingEvent):
     local_path: Path
+    metadata: dict
     message_info: MessageInfo
+
+
+class BaseSchema(BaseModel):
+    pass
+
+
+class Schema(CommonImagingEvent, BaseSchema):
+    schema_version: Literal["0.1.0a1"] = "0.1.0a1"
+    metadata: dict
 
 
 class Checksum(BaseModel):
