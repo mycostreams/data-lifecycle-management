@@ -1,0 +1,15 @@
+---
+services:
+ aws-cli:
+    image: amazon/aws-cli
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_ENDPOINT_URL: https://objectstore.surf.nl
+      AWS_DEFAULT_REGION: default
+    volumes:
+      - ./config:/aws
+    env_file:
+      - .env
+      - ../../.env
+  
