@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from prince_archiver.models import read
 
-from .dependencies import get_file_system, get_session
+from .deps import get_file_system, get_session
 from .models import (
     ArchiveModel,
     ArchivesModel,

@@ -8,15 +8,19 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from prince_archiver.definitions import EventType
-from prince_archiver.entrypoints.api.app import AppState, create_app
-from prince_archiver.entrypoints.api.dependencies import get_file_system, get_session
+from prince_archiver.entrypoints.state_manager.api.deps import (
+    get_file_system,
+    get_session,
+)
+from prince_archiver.entrypoints.state_manager.app import create_app
+from prince_archiver.entrypoints.state_manager.state import State
 
 
 @pytest.fixture(name="client")
 async def fixture_client(
     session: AsyncSession,
 ) -> AsyncGenerator[AsyncClient, None]:
-    app = create_app(_state=AsyncMock(AppState))
+    app = create_app(_state=AsyncMock(State))
 
     file_system = AsyncMock()
     file_system._url.return_value = "http://test.com"

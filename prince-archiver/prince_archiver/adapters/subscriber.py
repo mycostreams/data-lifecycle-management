@@ -70,6 +70,8 @@ class ManagedSubscriber:
         await self.queue.bind(self.exchange)
         await self.queue.consume(self.message_handler)
 
+        LOGGER.info("Consuming `%s`", self.exchange_config.name)
+
     async def __aexit__(self, exc_type, exc_value, exc_tb):
         if self.exit_stack:
             await self.exit_stack.aclose()

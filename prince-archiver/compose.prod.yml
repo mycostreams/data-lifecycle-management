@@ -60,17 +60,6 @@ services:
       - .env
       - ../.env
 
-  api:
-    environment:
-      <<: [*aws-env-variables, *sentry-env-variables]
-    labels: *log-labels
-    deploy:
-      restart_policy:
-        condition: on-failure
-    env_file:
-      - .env
-      - ../.env
-
   aws-cli:
     image: amazon/aws-cli
     environment:
