@@ -8,7 +8,6 @@ It consists of the following services:
 - `exporter`
 - `purger`
 - `state-manager`
-- `api`
 
 `mock-prince` simulates the  `prince` experiment setup. It produces new image data at configurable
 intervals, after which it publishes messages to the `dlm:new-imaging-event`
@@ -28,10 +27,8 @@ The `state-manager` service is responsible for persisting information relating t
 state of the raw image data. To this end, it consumes the `dlm:new-imaging-event` and 
 `dlm:new-imaging-event` streams, updating the local state when messages are received. 
 It also subscribes to messages published by the `surf-archvier` services via RabbitMQ, which 
-informs the service of the location of the raw data within the data archive. 
-
-The `api` acts as a gateway to access information related to the latest state of the 
-imaging events. This allows users get presigned URLs to retrieve raw image data from object storage
+informs the service of the location of the raw data within the data archive.  The `state-manager` service 
+also provides a RestAPI. This allows users get presigned URLs to retrieve raw image data from object storage
 and to find out where the image exist within the data archive. 
 
 
