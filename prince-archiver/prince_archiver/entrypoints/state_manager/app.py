@@ -6,9 +6,9 @@ from typing import AsyncIterator, TypedDict
 from fastapi import FastAPI
 
 from prince_archiver.adapters.s3 import managed_file_system
+from prince_archiver.api import router
 from prince_archiver.models import init_mappers
 
-from .api import router
 from .state import State, get_state
 
 LOGGER = logging.getLogger(__name__)

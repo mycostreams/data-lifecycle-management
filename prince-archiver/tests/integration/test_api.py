@@ -8,7 +8,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from prince_archiver.definitions import EventType
-from prince_archiver.entrypoints.state_manager.api.deps import (
+from prince_archiver.api.deps import (
     get_file_system,
     get_session,
 )

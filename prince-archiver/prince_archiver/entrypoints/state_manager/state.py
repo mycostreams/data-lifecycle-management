@@ -8,6 +8,7 @@ import redis.asyncio as redis
 from prince_archiver.adapters.s3 import file_system_factory
 from prince_archiver.adapters.streams import Consumer, Stream
 from prince_archiver.adapters.subscriber import ManagedSubscriber
+from prince_archiver.api import APIState
 from prince_archiver.service_layer.handlers.state import (
     add_data_archive_entry,
     import_imaging_event,
@@ -27,7 +28,6 @@ from prince_archiver.service_layer.streams import (
 )
 from prince_archiver.service_layer.uow import UnitOfWork, get_session_maker
 
-from .api.deps import APIState
 from .consumers import (
     Ingester,
     SubscriberMessageHandler,
