@@ -5,7 +5,6 @@ from fastapi import Depends, Request
 from s3fs import S3FileSystem
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-
 SessionmakerT = async_sessionmaker[AsyncSession]
 
 
