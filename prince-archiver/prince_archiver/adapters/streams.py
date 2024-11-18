@@ -14,7 +14,7 @@ T = TypeVar("T")
 
 
 def get_id(dt: datetime) -> int:
-    return int(dt.timestamp())
+    return int(dt.timestamp() * 1e3)
 
 
 @dataclass

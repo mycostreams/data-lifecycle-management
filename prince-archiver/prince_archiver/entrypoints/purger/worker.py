@@ -44,7 +44,7 @@ async def shutdown(ctx: dict):
 
 
 class WorkerSettings:
-    queue_name = "arq:queue-event-ingester"
+    queue_name = "arq:queue-purger"
 
     cron_jobs = [
         cron(delete_src, hour={*range(0, 24, 2)}, minute={0}),

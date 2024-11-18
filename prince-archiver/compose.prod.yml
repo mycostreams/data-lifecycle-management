@@ -4,7 +4,12 @@ x-aws-env-variables: &aws-env-variables
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
   AWS_ENDPOINT_URL: https://objectstore.surf.nl
   AWS_REGION_NAME: default
-  AWS_BUCKET_NAME: "mycostreams-raw-data"
+  AWS_BUCKET_NAME: ${AWS_BUCKET_NAME:-mycostreams-raw-data}"
+
+
+x-sentry-env-variables: &sentry-env-variables
+  SENTRY_DSN: ${SENTRY_DSN}
+  SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
 
 
 x-log-labels: &log-labels
@@ -13,24 +18,10 @@ x-log-labels: &log-labels
 
 
 services:
-  event-ingester:
-    environment:
-      SENTRY_DSN: ${SENTRY_DSN}
-    volumes:
-      - cifs_mount:/data/prince
-    labels: *log-labels
-    deploy:
-      restart_policy:
-        condition: on-failure
-    env_file:
-      - .env
-      - ../.env
-
   state-manager:
     environment:
-      <<: *aws-env-variables
+      <<: [*aws-env-variables, *sentry-env-variables]
       RABBITMQ_DSN: ${RABBITMQ_DSN}
-      SENTRY_DSN: ${SENTRY_DSN}
     labels: *log-labels
     deploy:
       restart_policy:
@@ -39,12 +30,28 @@ services:
       - .env
       - ../.env
 
-  upload-worker:
+  exporter:
     environment:
-      <<: *aws-env-variables
-      SENTRY_DSN: ${SENTRY_DSN}
+      <<: [*aws-env-variables, *sentry-env-variables]
     volumes:
-      - cifs_mount:/data/prince:ro
+      - prince_mount:/data/prince:ro
+      - tsu_exp001_mount:/data/tsu-exp001:ro
+      - tsu_exp002_mount:/data/tsu-exp002:ro
+    labels: *log-labels
+    deploy:
+      restart_policy:
+        condition: on-failure
+    env_file:
+      - .env
+      - ../.env
+
+  purger:
+    environment:
+      <<: *sentry-env-variables
+    volumes:
+      - prince_mount:/data/prince
+      - tsu_exp001_mount:/data/tsu-exp001
+      - tsu_exp002_mount:/data/tsu-exp002
     labels: *log-labels
     deploy:
       restart_policy:
@@ -55,8 +62,7 @@ services:
 
   api:
     environment:
-      <<: *aws-env-variables
-      SENTRY_DSN: ${SENTRY_DSN}
+      <<: [*aws-env-variables, *sentry-env-variables]
     labels: *log-labels
     deploy:
       restart_policy:
@@ -86,9 +92,10 @@ networks:
 
 
 volumes:
-  cifs_mount: 
+  prince_mount: 
     driver_opts:
       type: cifs
-      device: //prince.amolf.nl/Data/Prince2/Images/
+      device: //prince.amolf.nl/Data/Prince2
       o: username=${AMOLF_USERNAME},password=${AMOLF_PASSWORD}
-
+  tsu_exp_001_mount:
+  tsu_exp_002_mount:
