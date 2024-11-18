@@ -17,7 +17,7 @@ Add bucket lifecycle configuration:
 docker compose run --rm \
     aws-cli s3api put-bucket-lifecycle-configuration \
     --bucket mycostreams-raw-data \
-    --lifecycle-configuration file://delete-expired-files.json
+    --lifecycle-configuration file://delete-prod-files.json
 ```
 
 
