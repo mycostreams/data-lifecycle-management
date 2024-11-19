@@ -1,13 +1,11 @@
 import logging
 import os
 from datetime import date, timedelta
-from functools import partial
 from typing import Optional
 from uuid import UUID, uuid4
 
 from arq import cron
 from arq.connections import RedisSettings
-from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from zoneinfo import ZoneInfo
 
@@ -20,8 +18,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
-    USERNAME: str = Field(default=...)
-    PASSWORD: str = Field(default=...)
+    USERNAME: str
+    PASSWORD: str
     HOST: str = "archive.surfsara.nl"
 
     ARCHIVE_TRANSITION_DAYS: int = 1
