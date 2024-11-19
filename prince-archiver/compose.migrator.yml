@@ -1,0 +1,11 @@
+---
+name: data-migrations
+
+services:
+  data-migrator:
+    image: mycostreams/prince-archiver:${TAG:-latest}
+    environment:
+      POSTGRES_DSN: postgresql+asyncpg://postgres:postgres@host.docker.internal:5432/postgres
+    volumes:
+     - ./archive-migration.py:/app/archive-migration.py
+     - ./prince_archiver:/app/prince_archiver
