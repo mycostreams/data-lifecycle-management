@@ -9,6 +9,10 @@ handlers:
     formatter: simple
     stream: ext://sys.stdout
 loggers:
+  uvicorn:
+    level: DEBUG
+    handlers: [console]
+    propagate: false
   prince_archiver:
     level: DEBUG
     handlers: [console]

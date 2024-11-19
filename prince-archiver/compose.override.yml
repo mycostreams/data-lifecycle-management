@@ -36,6 +36,7 @@ services:
 
   state-manager:
     environment:
+      <<: *aws-env-variables
       RABBITMQ_DSN: amqp://guest:guest@rabbitmq:5672
     <<: *code-volumes
 
@@ -48,11 +49,6 @@ services:
     environment:
       SRC_SYSTEMS_DELETE: '["prince"]'
     <<: *code-and-data-volumes
-
-  api:
-    environment:
-      <<: *aws-env-variables
-    <<: *code-volumes
 
   prestart:
     <<: *code-volumes
