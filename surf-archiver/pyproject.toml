@@ -38,6 +38,10 @@ types-pyyaml = "^6.0.12.20240917"
 surf-archiver-cli = 'surf_archiver.cli:app'
 
 
+[tool.mypy]
+plugins = "pydantic.mypy"
+
+
 [[tool.mypy.overrides]]
 module = [
     "pika.*",

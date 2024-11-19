@@ -33,25 +33,29 @@ class Settings(BaseSettings):
     )
 
 
-async def run_archiving(
-    ctx: dict,
-    *,
-    mode: Mode,
-    _date: Optional[date] = None,
-    _job_id: Optional[UUID] = None,
-):
-    job_id = _job_id or uuid4()
+class CronArchiver:
+    def __init__(self, mode: Mode):
+        self.mode = mode
 
-    settings: Settings = ctx["settings"]
-    client_factory: ArchiveClientFactory = ctx["client_factory"]
+    async def run(
+        self,
+        ctx: dict,
+        *,
+        _date: Optional[date] = None,
+        _job_id: Optional[UUID] = None,
+    ):
+        job_id = _job_id or uuid4()
 
-    delta = timedelta(days=settings.ARCHIVE_TRANSITION_DAYS)
-    archive_files_from = _date or date.today() - delta
+        settings: Settings = ctx["settings"]
+        client_factory: ArchiveClientFactory = ctx["client_factory"]
 
-    LOGGER.info("[%s] Initiating archiving for %s", job_id, archive_files_from)
+        delta = timedelta(days=settings.ARCHIVE_TRANSITION_DAYS)
+        archive_files_from = _date or date.today() - delta
 
-    async with client_factory.get_managed_client() as client:
-        await client.archive(archive_files_from, job_id=job_id, mode=mode)
+        LOGGER.info("[%s] Initiating archiving for %s", job_id, archive_files_from)
+
+        async with client_factory.get_managed_client() as client:
+            await client.archive(archive_files_from, job_id=job_id, mode=self.mode)
 
 
 async def startup(ctx: dict):
@@ -72,14 +76,14 @@ class WorkerSettings:
 
     cron_jobs = [
         cron(
-            partial(run_archiving, mode=Mode.STITCH),
+            CronArchiver(Mode.STITCH).run,
             name="archive-images",
             hour={3},
             minute={0},
             timeout=timedelta(minutes=2),
         ),
         cron(
-            partial(run_archiving, mode=Mode.VIDEO),
+            CronArchiver(Mode.VIDEO).run,
             name="archive-videos",
             hour={4},
             minute={0},

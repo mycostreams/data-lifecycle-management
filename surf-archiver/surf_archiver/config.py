@@ -10,17 +10,18 @@ from pydantic_settings import (
 
 HOME_PATH = Path.home()
 
-DEFAULT_CONFIG_PATH = HOME_PATH / ".surf-archiver" / "config.yaml"
+DEFAULT_CONFIG_DIR = HOME_PATH / ".surf-archiver"
+DEFAULT_CONFIG_FILE = DEFAULT_CONFIG_DIR / "config.yaml"
 
 
 class Config(BaseSettings):
+    log_file: Optional[Path] = DEFAULT_CONFIG_DIR / "app.log"
+
     bucket: str = "prince-archiver-dev"
     target_dir: Path = HOME_PATH / "prince"
 
     connection_url: str = "amqp://guest:guest@localhost:5672"
     exchange_name: str = "surf-data-archive"
-
-    log_file: Optional[Path] = HOME_PATH / ".surf-archiver" / "app.log"
 
     model_config = SettingsConfigDict(env_prefix="surf_archiver_")
 

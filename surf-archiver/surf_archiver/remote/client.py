@@ -15,7 +15,7 @@ LOGGER = logging.getLogger(__name__)
 class ArchiveClient:
     COMMAND = textwrap.dedent(
         """\
-        nohup surf-archiver archive \\
+        nohup surf-archiver-cli archive \\
             --job-id={job_id} --mode={mode} {date} > /dev/null 2>&1 &
         """
     )
