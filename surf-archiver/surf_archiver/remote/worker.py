@@ -1,6 +1,7 @@
 import logging
 import os
 from datetime import date, timedelta
+from functools import partial
 from typing import Optional
 from uuid import UUID, uuid4
 
@@ -10,6 +11,7 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from zoneinfo import ZoneInfo
 
+from surf_archiver.definitions import Mode
 from surf_archiver.log import configure_remote_logging
 
 from .client import ArchiveClientFactory
@@ -34,6 +36,7 @@ class Settings(BaseSettings):
 async def run_archiving(
     ctx: dict,
     *,
+    mode: Mode,
     _date: Optional[date] = None,
     _job_id: Optional[UUID] = None,
 ):
@@ -48,7 +51,7 @@ async def run_archiving(
     LOGGER.info("[%s] Initiating archiving for %s", job_id, archive_files_from)
 
     async with client_factory.get_managed_client() as client:
-        await client.archive(archive_files_from, job_id=job_id)
+        await client.archive(archive_files_from, job_id=job_id, mode=mode)
 
 
 async def startup(ctx: dict):
@@ -68,7 +71,20 @@ class WorkerSettings:
     queue_name = "arq:queue-surf-archiver-remote"
 
     cron_jobs = [
-        cron(run_archiving, hour={3}, minute={0}, timeout=timedelta(minutes=2)),
+        cron(
+            partial(run_archiving, mode=Mode.STITCH),
+            name="archive-images",
+            hour={3},
+            minute={0},
+            timeout=timedelta(minutes=2),
+        ),
+        cron(
+            partial(run_archiving, mode=Mode.VIDEO),
+            name="archive-videos",
+            hour={4},
+            minute={0},
+            timeout=timedelta(minutes=2),
+        ),
     ]
 
     on_startup = startup

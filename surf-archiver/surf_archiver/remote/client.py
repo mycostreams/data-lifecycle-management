@@ -1,4 +1,5 @@
 import logging
+import textwrap
 from contextlib import asynccontextmanager
 from datetime import date
 from typing import Any, AsyncGenerator, Optional
@@ -6,11 +7,18 @@ from uuid import UUID, uuid4
 
 import asyncssh
 
+from surf_archiver.definitions import Mode
+
 LOGGER = logging.getLogger(__name__)
 
 
 class ArchiveClient:
-    COMMAND = "nohup surf-archiver archive --job-id={job_id} {date} > /dev/null 2>&1 &"
+    COMMAND = textwrap.dedent(
+        """\
+        nohup surf-archiver archive \\
+            --job-id={job_id} --mode={mode} {date} > /dev/null 2>&1 &
+        """
+    )
 
     def __init__(self, conn: asyncssh.SSHClientConnection):
         self.conn = conn
@@ -19,13 +27,18 @@ class ArchiveClient:
         self,
         date_: date,
         job_id: Optional[UUID] = None,
+        mode: Mode = Mode.STITCH,
         *,
         timeout: float = 30,
     ):
         job_id = job_id or uuid4()
 
         LOGGER.info("[%s] Archiving %s", job_id, date_)
-        cmd = self._build_command(date=date_.isoformat(), job_id=job_id.hex)
+        cmd = self._build_command(
+            date=date_.isoformat(),
+            mode=mode.value,
+            job_id=job_id.hex,
+        )
         await self.conn.run(cmd, check=True, timeout=timeout)
 
     def _build_command(self, **kwargs: Any) -> str:
