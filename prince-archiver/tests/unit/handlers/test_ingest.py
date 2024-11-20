@@ -1,12 +1,8 @@
 from dataclasses import dataclass
-from datetime import UTC, datetime
-from pathlib import Path
 from uuid import uuid4
 
 import pytest
-from pydantic import BaseModel
 
-from prince_archiver.definitions import EventType, System
 from prince_archiver.domain.models import ImagingEvent
 from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.handlers.state import import_imaging_event
@@ -19,35 +15,30 @@ from .utils import MockUnitOfWork
 
 
 @dataclass
-class _SrcDirInfo:
-    local_path: Path
-    img_count: int
-
-
-class _MsgKwargs(BaseModel):
-    system: System
+class _MsgKwargs:
+    system: str
     experiment_id: str
-    type: EventType
-    timestamp: datetime
-    src_dir_info: _SrcDirInfo
+    type: str
+    timestamp: str
+    src_dir_info: dict
     metadata: dict
 
 
 @pytest.fixture()
-def msg_kwargs() -> _MsgKwargs:
+def msg_kwargs(metadata: dict) -> _MsgKwargs:
     """
     Kwargs which can be passed into `ImportImagingEvent` and `ImportedImagingEvent`.
     """
     return _MsgKwargs(
-        system=System.PRINCE,
+        system="prince",
         experiment_id="test_id",
-        timestamp=datetime(2000, 1, 1, tzinfo=UTC),
-        type=EventType.STITCH,
-        src_dir_info=_SrcDirInfo(
-            local_path="test/path",
-            img_count=1,
-        ),
-        metadata={"key": "value"},
+        timestamp="2000-01-01T00:00:00+00:00",
+        type="stitch",
+        src_dir_info={
+            "local_path": "test/path",
+            "img_count": 1,
+        },
+        metadata=metadata,
     )
 
 
@@ -57,10 +48,8 @@ async def test_import_imaging_event_successful(
 ):
     ref_id = uuid4()
 
-    msg = ImportImagingEvent(
-        ref_id=ref_id,
-        **msg_kwargs.model_dump(),
-    )
+    msg = ImportImagingEvent(ref_id=ref_id, **msg_kwargs.__dict__)
+
     await import_imaging_event(msg, uow)
 
     imaging_event = await uow.imaging_events.get_by_ref_id(ref_id)
@@ -79,7 +68,7 @@ async def test_import_imaging_event_already_imported(
 ):
     msg = ImportImagingEvent(
         ref_id=unexported_imaging_event.ref_id,
-        **msg_kwargs.model_dump(),
+        **msg_kwargs.__dict__,
     )
     with pytest.raises(ServiceLayerException):
         await import_imaging_event(msg, uow)

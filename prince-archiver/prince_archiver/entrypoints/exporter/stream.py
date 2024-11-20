@@ -14,7 +14,10 @@ LOGGER = logging.getLogger(__name__)
 class Ingester(AbstractIngester):
     async def consume(self):
         async for message in self.streamer:
-            await self.handler(message)
+            try:
+                await self.handler(message)
+            except Exception as exc:
+                LOGGER.exception(exc)
 
 
 async def message_handler(message: IncomingMessage, *, redis: ArqRedis):

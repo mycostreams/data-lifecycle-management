@@ -11,7 +11,6 @@ from pydantic import FilePath, RedisDsn
 from pydantic_settings import BaseSettings
 
 from prince_archiver.adapters.streams import Stream
-from prince_archiver.definitions import EventType, System
 from prince_archiver.log import configure_logging
 from prince_archiver.service_layer.messages import ImagingEventStream
 from prince_archiver.service_layer.streams import Message, Streams
@@ -34,11 +33,33 @@ def _create_event() -> ImagingEventStream:
         ref_id=ref_id,
         experiment_id="test-id",
         timestamp=now(),
-        type=EventType.STITCH,
-        system=System.PRINCE,
+        type="stitch",
+        system="prince",
         img_count=1,
-        metadata={"application": {"application": "mock-prince"}},
-        local_path=Path(ref_id.hex[:6]),
+        metadata={
+            "application": {
+                "application": "mock-prince",
+                "version": "v0.1.0",
+                "user": "mock-user",
+            },
+            "camera": {
+                "model": "mock-model",
+                "station_name": "mock-station",
+                "exposure_time": 0.01,
+                "frame_rate": None,
+                "frame_size": (1, 1),
+                "binning": "1x1",
+                "gain": 1,
+                "gamma": 1,
+                "intensity": [0, 0, 0],
+                "bits_per_pixel": 0,
+            },
+            "stitching": {
+                "last_focused_at": "2000-01-01T00:00:00+00:00",
+                "grid_size": (1, 1),
+            },
+        },
+        local_path=ref_id.hex[:6],
     )
 
 

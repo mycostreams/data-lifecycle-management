@@ -41,7 +41,11 @@ async def import_handler(
         "img_count": data.img_count,
         "local_path": data.local_path,
     }
-    mapped_message = ImportImagingEvent(**dict(data), src_dir_info=src_dir_info)
+    mapped_message = ImportImagingEvent(
+        **data.model_dump(exclude={"metadata"}),
+        metadata=data.metadata.model_dump(mode="json"),
+        src_dir_info=src_dir_info,
+    )
 
     messagebus = messagebus_factory()
     async with message.process():

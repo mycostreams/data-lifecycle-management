@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 from typing import Literal
 from uuid import UUID, uuid4
@@ -16,6 +17,46 @@ class CommonImagingEvent(BaseModel):
     system: System = Field(default=System.PRINCE)
 
 
+class Application(BaseModel):
+    application: str
+    version: str
+    user: str
+
+
+class Camera(BaseModel):
+    model: str
+    station_name: str
+    exposure_time: float
+    frame_rate: float | None
+    frame_size: tuple[int, int] | None
+    binning: str
+    gain: float | None
+    gamma: float | None
+    intensity: list[float]
+    bits_per_pixel: float
+
+
+class Stitching(BaseModel):
+    last_focused_at: datetime | None
+    grid_size: tuple[int, int]
+
+
+class Metadata(BaseModel):
+    application: Application
+    camera: Camera
+    stitching: Stitching | None = None
+
+
+# Schemas for writing to file
+class BaseSchema(BaseModel):
+    pass
+
+
+class Schema(CommonImagingEvent, BaseSchema):
+    schema_version: Literal["0.1.0a1"]
+    metadata: Metadata
+
+
 # For importing imaging events into system
 class SrcDirInfo(BaseModel):
     local_path: Path
@@ -23,7 +64,7 @@ class SrcDirInfo(BaseModel):
 
 
 class ImagingEventStream(SrcDirInfo, CommonImagingEvent):
-    metadata: Json[dict] | dict = Field(default_factory=dict)
+    metadata: Json[Metadata] | Metadata
 
 
 class ImportImagingEvent(CommonImagingEvent):
@@ -42,24 +83,15 @@ class MessageInfo(BaseModel):
     group_name: str
 
 
-class ExportImagingEvent(CommonImagingEvent):
-    local_path: Path
-    metadata: dict
-    message_info: MessageInfo
-
-
-class BaseSchema(BaseModel):
-    pass
-
-
-class Schema(CommonImagingEvent, BaseSchema):
-    schema_version: Literal["0.1.0a1"] = "0.1.0a1"
-    metadata: dict
-
-
 class Checksum(BaseModel):
     hex: str
     algorithm: Algorithm = Algorithm.SHA256
+
+
+class ExportImagingEvent(CommonImagingEvent):
+    local_path: Path
+    metadata: Metadata
+    message_info: MessageInfo
 
 
 class ExportedImagingEvent(BaseModel):
