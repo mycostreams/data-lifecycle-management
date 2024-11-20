@@ -27,7 +27,7 @@ class _MsgKwargs:
 @pytest.fixture()
 def msg_kwargs(metadata: dict) -> _MsgKwargs:
     """
-    Kwargs which can be passed into `ImportImagingEvent` and `ImportedImagingEvent`.
+    Kwargs which can be passed into `ImportImagingEvent` and `ImportImagingEvent`.
     """
     return _MsgKwargs(
         system="prince",

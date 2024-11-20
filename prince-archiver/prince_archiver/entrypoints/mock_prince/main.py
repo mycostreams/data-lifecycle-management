@@ -12,7 +12,7 @@ from pydantic_settings import BaseSettings
 
 from prince_archiver.adapters.streams import Stream
 from prince_archiver.log import configure_logging
-from prince_archiver.service_layer.messages import ImagingEventStream
+from prince_archiver.service_layer.messages import NewImagingEvent
 from prince_archiver.service_layer.streams import Message, Streams
 from prince_archiver.test_utils.utils import make_timestep_directory
 from prince_archiver.utils import now
@@ -27,9 +27,9 @@ class Settings(BaseSettings):
     SRC_IMG: FilePath
 
 
-def _create_event() -> ImagingEventStream:
+def _create_event() -> NewImagingEvent:
     ref_id = uuid4()
-    return ImagingEventStream(
+    return NewImagingEvent(
         ref_id=ref_id,
         experiment_id="test-id",
         timestamp=now(),
@@ -77,7 +77,7 @@ def create_app(*, settings: Settings | None = None) -> FastAPI:
     app = FastAPI(lifespan=lifespan)
 
     @app.post("/timestep", status_code=200)
-    async def create_event(data: ImagingEventStream) -> Response:
+    async def create_event(data: NewImagingEvent) -> Response:
         logging.info("[%s] Added timestep", data.ref_id)
 
         make_timestep_directory(

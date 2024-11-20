@@ -7,7 +7,7 @@ import httpx
 from behave import *  # noqa:
 
 from prince_archiver.definitions import EventType, System
-from prince_archiver.service_layer.streams import ImagingEventStream
+from prince_archiver.service_layer.messages import NewImagingEvent
 from prince_archiver.test_utils.utils import Timer
 
 
@@ -25,7 +25,7 @@ def step_impl(context):
 
     context.ref_id = ref_id
 
-    event = ImagingEventStream(
+    event = NewImagingEvent(
         ref_id=ref_id,
         experiment_id=f"test-id-{ref_id.hex[:6]}",
         timestamp=datetime(2000, 1, 1, tzinfo=timezone.utc),
