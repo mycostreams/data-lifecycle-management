@@ -16,7 +16,7 @@ async def test_persist_imaging_event_successful(
 ):
     msg = ExportedImagingEvent(
         ref_id=unexported_imaging_event.ref_id,
-        checksum={"hex":"test", "algorithm": "sha256"},
+        checksum={"hex": "test", "algorithm": "sha256"},
         size=1024,
         key="target",
         timestamp="2000-01-01T00:00:00+00:00",
@@ -33,7 +33,7 @@ async def test_persist_imaging_event_successful(
 async def test_persist_imaging_event_non_existent_reference():
     msg = ExportedImagingEvent(
         ref_id=uuid4(),
-        checksum={"hex":"test", "algorithm": "sha256"},
+        checksum={"hex": "test", "algorithm": "sha256"},
         size=1024,
         key="target",
         timestamp="2000-01-01T00:00:00+00:00",
