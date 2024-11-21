@@ -74,5 +74,5 @@ volumes:
       type: cifs
       device: //prince.amolf.nl/Data/Prince2
       o: username=${AMOLF_USERNAME},password=${AMOLF_PASSWORD}
-  tsu_exp_001_mount:
-  tsu_exp_002_mount:
+  tsu_exp001_mount:
+  tsu_exp002_mount:
