@@ -25,6 +25,8 @@ services:
     volumes:
       - ./prince_archiver:/app/prince_archiver
     labels: *log-labels
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     deploy:
       restart_policy:
         condition: on-failure
@@ -37,6 +39,8 @@ services:
       - tsu_exp001_mount:/data/tsu-exp001:ro
       - tsu_exp002_mount:/data/tsu-exp002:ro
     labels: *log-labels
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     deploy:
       restart_policy:
         condition: on-failure
@@ -49,6 +53,8 @@ services:
       - tsu_exp001_mount:/data/tsu-exp001
       - tsu_exp002_mount:/data/tsu-exp002
     labels: *log-labels
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     deploy:
       restart_policy:
         condition: on-failure
