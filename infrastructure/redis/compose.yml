@@ -28,7 +28,7 @@ services:
     env_file:
       - ./../../.env
       - path: ./.env
-        requied: false
+        required: false
 
 volumes:
   redis_data:
