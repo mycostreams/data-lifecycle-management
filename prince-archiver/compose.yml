@@ -9,64 +9,59 @@ x-redis-env-variable: &redis-env-variable
 
 
 services:
-  event-ingester:
+  state-manager:
     image: mycostreams/prince-archiver:${TAG:-latest}
     build:
       context: .
-    command: ["arq", "prince_archiver.entrypoints.event_ingester.WorkerSettings"]
-    environment: 
-      <<: *redis-env-variable
-      SRC_DIR: /data
-    depends_on:
-      prestart:
-        condition: service_completed_successfully
-    networks:
-      - default
-
-  state-manager:
-    image: mycostreams/prince-archiver:${TAG:-latest}
-    command: ["arq", "prince_archiver.entrypoints.state_manager.WorkerSettings"]
-    environment:
-      <<: [*postgres-env-variable, *redis-env-variable]
-    depends_on:
-      prestart:
-        condition: service_completed_successfully
-    networks:
-      - default
-
-  upload-worker:
-    image: mycostreams/prince-archiver:${TAG:-latest}
-    command: ["arq", "prince_archiver.entrypoints.upload_worker.WorkerSettings"]
-    environment: 
-      <<: *redis-env-variable
-      SRC_DIR: /data
-    depends_on:
-      prestart:
-        condition: service_completed_successfully
-    networks:
-      - default
-  
-  api:
-    image: mycostreams/prince-archiver:${TAG:-latest}
     command: [
       "uvicorn",
       "--factory",
-      "prince_archiver.entrypoints.api.app:create_app",
-      "--host=0.0.0.0"
+      "--host=0.0.0.0",
+      "--log-config=/app/prince_archiver/logging.yml",
+      "prince_archiver.entrypoints.state_manager.app:create_app"
     ]
     ports:
       - 127.0.0.1:8000:8000
     environment:
-      <<: *postgres-env-variable
+      <<: [*postgres-env-variable, *redis-env-variable]
     depends_on:
       prestart:
         condition: service_completed_successfully
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`api.localhost`)"
+    healthcheck:
+      test: curl --fail http://0.0.0.0:8000/health || exit 1
+      interval: 1m
+      timeout: 1s
+      retries: 5
     networks:
       - default
       - traefik-public
+
+  exporter:
+    image: mycostreams/prince-archiver:${TAG:-latest}
+    command: ["arq", "prince_archiver.entrypoints.exporter.WorkerSettings"]
+    environment: 
+      <<: *redis-env-variable
+      SRC_DIR: /data
+    depends_on:
+      prestart:
+        condition: service_completed_successfully
+    networks:
+      - default
+
+  purger:
+    image: mycostreams/prince-archiver:${TAG:-latest}
+    command: ["arq", "prince_archiver.entrypoints.purger.WorkerSettings"]
+    environment: 
+      <<: *redis-env-variable
+      SRC_DIR: /data
+    depends_on:
+      prestart:
+        condition: service_completed_successfully
+    networks:
+      - default
 
   prestart:
     image: mycostreams/prince-archiver:${TAG:-latest}

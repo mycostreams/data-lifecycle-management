@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
@@ -8,13 +9,15 @@ from uuid import uuid4
 
 from redis.asyncio import Redis
 
+LOGGER = logging.getLogger(__name__)
+
 ResponseT = list[tuple[str, list[tuple[bytes, dict[bytes, bytes]]]]]
 
 T = TypeVar("T")
 
 
 def get_id(dt: datetime) -> int:
-    return int(dt.timestamp())
+    return int(dt.timestamp() * 1e3)
 
 
 @dataclass
@@ -114,6 +117,8 @@ class Stream:
     ) -> AsyncGenerator[AbstractIncomingMessageT, None]:
         stream_id: int | str = 0
         stop_event = stop_event or asyncio.Event()
+
+        LOGGER.info("Consuming `%s`", self.name)
         while not stop_event.is_set():
             response: ResponseT = await self.redis.xreadgroup(
                 groupname=consumer.group_name,

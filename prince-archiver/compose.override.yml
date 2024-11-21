@@ -34,25 +34,21 @@ services:
         condition: service_completed_successfully
     <<: *code-and-data-volumes
 
-  event-ingester:
-    environment:
-      SRC_SYSTEMS_DELETE: '["prince"]'
-    <<: *code-and-data-volumes
-
   state-manager:
     environment:
+      <<: *aws-env-variables
       RABBITMQ_DSN: amqp://guest:guest@rabbitmq:5672
     <<: *code-volumes
 
-  upload-worker:
+  exporter:
     environment:
       <<: *aws-env-variables
     <<: *code-and-data-volumes
 
-  api:
+  purger:
     environment:
-      <<: *aws-env-variables
-    <<: *code-volumes
+      SRC_SYSTEMS_DELETE: '["prince"]'
+    <<: *code-and-data-volumes
 
   prestart:
     <<: *code-volumes
@@ -107,11 +103,12 @@ services:
     networks:
       - default
 
+
 networks:
   traefik-public:
+
 
 volumes:
   input_data:
   rabbitmq_data:
   redis_data:
-  

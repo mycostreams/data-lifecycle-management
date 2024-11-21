@@ -8,15 +8,15 @@ from prince_archiver.adapters.streams import (
     AbstractOutgoingMessage,
 )
 
+from .dto import ExportedImagingEvent, NewImagingEvent
 from .exceptions import InvalidStreamMessage
-from .messages import ExportedImagingEvent, ImagingEventStream
 
 LOGGER = logging.getLogger(__name__)
 
 
 class Streams(StrEnum):
-    imaging_events = "data-lifecycle-management:imaging-events"
-    upload_events = "data-lifecycle-management:export-events"
+    imaging_events = "dlm:imaging-events"
+    upload_events = "dlm:export-events"
 
 
 class Group(StrEnum):
@@ -25,17 +25,17 @@ class Group(StrEnum):
 
 
 class Message(AbstractOutgoingMessage):
-    def __init__(self, data: ImagingEventStream):
+    def __init__(self, data: NewImagingEvent):
         self.data = data
 
     def fields(self) -> dict:
         return self.data.model_dump(mode="json", round_trip=True)
 
 
-class IncomingMessage(AbstractIncomingMessage[ImagingEventStream]):
-    def processed_data(self) -> ImagingEventStream:
+class IncomingMessage(AbstractIncomingMessage[NewImagingEvent]):
+    def processed_data(self) -> NewImagingEvent:
         try:
-            return ImagingEventStream(
+            return NewImagingEvent(
                 **{k.decode(): v.decode() for k, v in self.raw_data.items()},
             )
         except ValidationError as exc:

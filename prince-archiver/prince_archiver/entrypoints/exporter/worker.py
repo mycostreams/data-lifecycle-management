@@ -7,7 +7,7 @@ from arq.connections import RedisSettings
 
 from prince_archiver.log import configure_logging
 from prince_archiver.models import init_mappers
-from prince_archiver.service_layer.messages import ExportImagingEvent
+from prince_archiver.service_layer.dto import ExportImagingEvent
 
 from .settings import Settings
 from .state import State, get_managed_state
@@ -62,6 +62,8 @@ async def shutdown(ctx: dict):
 
 
 class WorkerSettings:
+    queue_name = "arq:queue-exporter"
+
     functions = [run_export]
     on_startup = startup
     on_shutdown = shutdown

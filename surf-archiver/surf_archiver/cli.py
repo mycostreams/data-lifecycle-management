@@ -8,7 +8,7 @@ from uuid import UUID, uuid4
 import typer
 
 from .archiver import ArchiveParams, ArchiverConfig, ManagedArchiver
-from .config import DEFAULT_CONFIG_PATH, get_config
+from .config import DEFAULT_CONFIG_FILE, get_config
 from .definitions import Mode
 from .log import configure_logging
 from .main import run_archiving
@@ -29,7 +29,7 @@ def archive(
     date: datetime,
     job_id: Annotated[UUID, typer.Option(default_factory=uuid4)],
     mode: Annotated[Mode, typer.Option()] = Mode.STITCH,
-    config_path: Annotated[Path, typer.Option()] = DEFAULT_CONFIG_PATH,
+    config_path: Annotated[Path, typer.Option()] = DEFAULT_CONFIG_FILE,
 ):
     config = get_config(config_path)
     if config.log_file:

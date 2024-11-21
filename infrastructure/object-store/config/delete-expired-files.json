@@ -1,0 +1,47 @@
+{
+    "Rules": [
+        {
+            "ID": "id-1",
+            "Filter": {
+                "Prefix": "backups/"
+            },
+            "Status": "Enabled",
+            "Expiration": {
+                "Days": 30
+            }
+        },
+        {
+            "ID": "id-2",
+            "Filter": {
+                "Tag": {
+                    "Key": "archived",
+                    "Value": "true"
+                }
+            },
+            "Status": "Enabled",
+            "Expiration": {
+                "Days": 7
+            }
+        },
+        {
+            "ID": "id-3",
+            "Filter": {
+                "Prefix": "images/"
+            },
+            "Status": "Enabled",
+            "Expiration": {
+                "Days": 14
+            }
+        },
+        {
+            "ID": "id-4",
+            "Filter": {
+                "Prefix": "videos/"
+            },
+            "Status": "Enabled",
+            "Expiration": {
+                "Days": 14
+            }
+        }
+    ]
+}

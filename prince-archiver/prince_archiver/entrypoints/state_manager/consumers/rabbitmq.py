@@ -3,15 +3,17 @@ from typing import Generator
 
 from aio_pika.abc import AbstractIncomingMessage
 
-from prince_archiver.service_layer.external_dto import UpdateArchiveEntries
+from prince_archiver.service_layer.dto import (
+    AddDataArchiveEntry,
+    NewDataArchiveEntries,
+)
 from prince_archiver.service_layer.messagebus import MessagebusFactoryT
-from prince_archiver.service_layer.messages import AddDataArchiveEntry, ArchiveMember
 
 LOGGER = logging.getLogger(__name__)
 
 
 class SubscriberMessageHandler:
-    DTO_CLASS = UpdateArchiveEntries
+    DTO_CLASS = NewDataArchiveEntries
 
     def __init__(
         self,
@@ -46,8 +48,5 @@ class SubscriberMessageHandler:
             )
 
     @staticmethod
-    def _get_member(key: str):
-        return ArchiveMember(
-            src_key=key,
-            member_key=key.split("/")[-1],
-        )
+    def _get_member(key: str) -> dict[str, str]:
+        return {"src_key": key, "member_key": key.split("/")[-1]}

@@ -37,18 +37,30 @@ services:
 
   state-manager:
     image: prince-archiver-e2e
-    command: ["arq", "prince_archiver.entrypoints.state_manager.WorkerSettings"]
+    command: [
+      "uvicorn",
+      "--factory",
+      "--host=0.0.0.0",
+      "prince_archiver.entrypoints.state_manager.app:create_app"
+    ]
+    ports:
+      - 127.0.0.1:8002:8000
     environment:
       <<: *env-variables
+    healthcheck:
+      test: curl --fail http://0.0.0.0:8000/health || exit 1
+      interval: 10s
+      timeout: 1s
+      retries: 5
     depends_on:
       prestart:
         condition: service_completed_successfully
     networks:
       - prince-archiver-e2e
 
-  upload-worker:
+  exporter:
     image: prince-archiver-e2e
-    command: ["arq", "prince_archiver.entrypoints.upload_worker.WorkerSettings"]
+    command: ["arq", "prince_archiver.entrypoints.exporter.WorkerSettings"]
     environment: 
       <<: *env-variables
     depends_on:
@@ -59,25 +71,6 @@ services:
     networks:
       - prince-archiver-e2e
 
-  api:
-    image: prince-archiver-e2e
-    command: [
-      "uvicorn",
-      "--factory",
-      "prince_archiver.entrypoints.api.app:create_app",
-      "--host=0.0.0.0"
-    ]
-    expose:
-      - 8000
-    ports:
-      - 127.0.0.1:8002:8000
-    environment:
-      <<: *env-variables
-    depends_on:
-      prestart:
-        condition: service_completed_successfully
-    networks:
-      - prince-archiver-e2e
 
   prestart:
     image: prince-archiver-e2e
@@ -148,11 +141,11 @@ services:
       retries: 3
     networks:
       - prince-archiver-e2e
-      
 
 
 networks:
   prince-archiver-e2e:
+
 
 volumes:
   input_data:

@@ -3,21 +3,21 @@ from unittest.mock import AsyncMock
 import pytest
 from arq import Retry
 
-from prince_archiver.definitions import EventType, System
-from prince_archiver.entrypoints.upload_worker.worker import State, run_export
+from prince_archiver.entrypoints.exporter.worker import State, run_export
+from prince_archiver.service_layer.dto import ExportImagingEvent
 from prince_archiver.service_layer.handlers.export import ExportHandler
-from prince_archiver.service_layer.messages import ExportImagingEvent
 
 
 @pytest.fixture(name="workflow_payload")
-def fixture_workflow_payload():
+def fixture_workflow_payload(metadata: dict) -> dict:
     return {
         "ref_id": "8b5b871a23454f9bb22b2e6fbae51764",
         "experiment_id": "test_id",
         "timestamp": "2001-01-01T00:00:00+00:00",
-        "type": EventType.STITCH,
-        "system": System.PRINCE,
+        "type": "stitch",
+        "system": "prince",
         "local_path": "test/path",
+        "metadata": metadata,
         "message_info": {
             "id": "test-id",
             "stream_name": "test-stream",
