@@ -58,6 +58,11 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+  
+  prestart:
+    labels: *log-labels
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   aws-cli:
     image: amazon/aws-cli
