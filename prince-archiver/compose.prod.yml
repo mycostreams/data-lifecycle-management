@@ -26,9 +26,6 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    env_file:
-      - .env
-      - ../.env
 
   exporter:
     environment:
@@ -41,9 +38,6 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    env_file:
-      - .env
-      - ../.env
 
   purger:
     environment:
@@ -56,9 +50,6 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
-    env_file:
-      - .env
-      - ../.env
 
   aws-cli:
     image: amazon/aws-cli
@@ -68,9 +59,6 @@ services:
     volumes:
       - ${POSTGRES_BACKUP_DIR:-${PWD}/backups}:/aws/postgres
     labels: *log-labels
-    env_file:
-      - .env
-      - ../.env
     profiles:
       - tools
 

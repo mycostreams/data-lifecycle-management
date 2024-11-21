@@ -25,10 +25,6 @@ services:
       - redis_data:/aws/redis
     profiles:
       - tools
-    env_file:
-      - ./../../.env
-      - path: ./.env
-        required: false
 
 volumes:
   redis_data:

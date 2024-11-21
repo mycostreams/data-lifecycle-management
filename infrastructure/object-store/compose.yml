@@ -9,7 +9,5 @@ services:
       AWS_DEFAULT_REGION: default
     volumes:
       - ./config:/aws
-    env_file:
-      - .env
-      - ../../.env
+
   
