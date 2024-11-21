@@ -4,7 +4,8 @@ from uuid import UUID, uuid4
 from pydantic import AwareDatetime, BaseModel, Field, Json
 
 from prince_archiver.utils import now
-from .common import CommonImagingEvent, Metadata, Checksum, SrcDirInfo
+
+from .common import Checksum, CommonImagingEvent, Metadata, SrcDirInfo
 
 
 class ImportImagingEvent(CommonImagingEvent):
