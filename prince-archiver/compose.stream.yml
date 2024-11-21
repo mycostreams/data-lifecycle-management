@@ -11,4 +11,5 @@ services:
       REDIS_DSN: redis://host.docker.internal:6380
     volumes:
       - ./prince_archiver:/app/prince_archiver
+      - ./ping.py:/app/ping.py
       - ./stream_ingester.py:/app/stream_ingester.py
