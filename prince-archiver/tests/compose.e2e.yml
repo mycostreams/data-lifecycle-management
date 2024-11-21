@@ -47,6 +47,11 @@ services:
       - 127.0.0.1:8002:8000
     environment:
       <<: *env-variables
+    healthcheck:
+      test: curl --fail http://0.0.0.0:8000/health || exit 1
+      interval: 10s
+      timeout: 1s
+      retries: 5
     depends_on:
       prestart:
         condition: service_completed_successfully

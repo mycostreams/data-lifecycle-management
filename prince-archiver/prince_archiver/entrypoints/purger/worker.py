@@ -1,6 +1,5 @@
 import logging
 import os
-from contextlib import AsyncExitStack
 
 from arq import ArqRedis, cron
 from arq.connections import RedisSettings
@@ -20,13 +19,10 @@ LOGGER = logging.getLogger(__name__)
 async def startup(ctx: dict):
     configure_logging()
 
-    LOGGER.info("Starting up data ingester")
+    LOGGER.info("Starting up purger")
     redis: ArqRedis = ctx["redis"]
 
-    stack = await AsyncExitStack().__aenter__()
     settings = Settings()
-
-    stack = AsyncExitStack()
 
     state = State(
         settings=settings,
@@ -35,12 +31,6 @@ async def startup(ctx: dict):
     )
 
     ctx["state"] = state
-    ctx["stack"] = stack
-
-
-async def shutdown(ctx: dict):
-    stack: AsyncExitStack = ctx["stack"]
-    await stack.aclose()
 
 
 class WorkerSettings:
@@ -53,7 +43,6 @@ class WorkerSettings:
     timezone = ZoneInfo("Europe/Amsterdam")
 
     on_startup = startup
-    on_shutdown = shutdown
     redis_settings = RedisSettings.from_dsn(
         os.getenv("REDIS_DSN", "redis://localhost:6379"),
     )

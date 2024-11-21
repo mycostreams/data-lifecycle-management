@@ -23,6 +23,12 @@ RUN poetry install --only-root
 # The runtime image, used to just run the code provided its virtual environment
 FROM python:3.12-slim-bullseye as runtime
 
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
+
+
 ENV VENV_PATH=/app/.venv
 ENV PATH=$VENV_PATH/bin:$PATH
 

@@ -4,7 +4,7 @@ import logging
 
 from prince_archiver.domain import models
 from prince_archiver.domain.value_objects import Checksum
-from prince_archiver.service_layer import messages
+from prince_archiver.service_layer import dto
 from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.uow import AbstractUnitOfWork
 
@@ -12,7 +12,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 async def import_imaging_event(
-    message: messages.ImportImagingEvent,
+    message: dto.ImportImagingEvent,
     uow: AbstractUnitOfWork,
 ):
     LOGGER.info("[%s] Importing imaging event", message.ref_id)
@@ -29,7 +29,7 @@ async def import_imaging_event(
         uow.imaging_events.add(imaging_event)
 
         uow.add_message(
-            messages.ImportedImagingEvent(
+            dto.ImportedImagingEvent(
                 id=imaging_event.id,
                 **message.model_dump(),
             ),
@@ -41,7 +41,7 @@ async def import_imaging_event(
 
 
 async def persist_imaging_event_export(
-    message: messages.ExportedImagingEvent,
+    message: dto.ExportedImagingEvent,
     uow: AbstractUnitOfWork,
 ):
     """
@@ -73,7 +73,7 @@ async def persist_imaging_event_export(
 
 
 async def add_data_archive_entry(
-    message: messages.AddDataArchiveEntry,
+    message: dto.AddDataArchiveEntry,
     uow: AbstractUnitOfWork,
 ):
     LOGGER.info("[%s] Updating archive entries %s", message.job_id, message.path)
@@ -93,7 +93,7 @@ async def add_data_archive_entry(
 
         for member in entry.members:
             uow.add_message(
-                messages.ArchivedImagingEvent(
+                dto.ArchivedImagingEvent(
                     src_key=member.src_key,
                     data_archive_entry_id=entry.id,
                 )
