@@ -1,29 +1,11 @@
 from pathlib import Path
-from typing import Literal
 from uuid import UUID, uuid4
 
 from pydantic import AwareDatetime, BaseModel, Field, Json
 
-from prince_archiver.definitions import Algorithm, EventType, System
 from prince_archiver.utils import now
 
-
-class CommonImagingEvent(BaseModel):
-    ref_id: UUID
-    experiment_id: str
-    timestamp: AwareDatetime
-    type: EventType = Field(default=EventType.STITCH)
-    system: System = Field(default=System.PRINCE)
-
-
-# For importing imaging events into system
-class SrcDirInfo(BaseModel):
-    local_path: Path
-    img_count: int
-
-
-class ImagingEventStream(SrcDirInfo, CommonImagingEvent):
-    metadata: Json[dict] | dict = Field(default_factory=dict)
+from .common import Checksum, CommonImagingEvent, Metadata, SrcDirInfo
 
 
 class ImportImagingEvent(CommonImagingEvent):
@@ -44,22 +26,8 @@ class MessageInfo(BaseModel):
 
 class ExportImagingEvent(CommonImagingEvent):
     local_path: Path
-    metadata: dict
+    metadata: Metadata
     message_info: MessageInfo
-
-
-class BaseSchema(BaseModel):
-    pass
-
-
-class Schema(CommonImagingEvent, BaseSchema):
-    schema_version: Literal["0.1.0a1"] = "0.1.0a1"
-    metadata: dict
-
-
-class Checksum(BaseModel):
-    hex: str
-    algorithm: Algorithm = Algorithm.SHA256
 
 
 class ExportedImagingEvent(BaseModel):

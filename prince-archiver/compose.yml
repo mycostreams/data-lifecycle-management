@@ -30,6 +30,11 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`api.localhost`)"
+    healthcheck:
+      test: curl --fail http://0.0.0.0:8000/health || exit 1
+      interval: 1m
+      timeout: 1s
+      retries: 5
     networks:
       - default
       - traefik-public

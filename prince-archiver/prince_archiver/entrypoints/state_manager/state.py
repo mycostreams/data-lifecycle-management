@@ -9,17 +9,17 @@ from prince_archiver.adapters.s3 import file_system_factory
 from prince_archiver.adapters.streams import Consumer, Stream
 from prince_archiver.adapters.subscriber import ManagedSubscriber
 from prince_archiver.api import APIState
+from prince_archiver.service_layer.dto import (
+    AddDataArchiveEntry,
+    ExportedImagingEvent,
+    ImportImagingEvent,
+)
 from prince_archiver.service_layer.handlers.state import (
     add_data_archive_entry,
     import_imaging_event,
     persist_imaging_event_export,
 )
 from prince_archiver.service_layer.messagebus import MessageBus
-from prince_archiver.service_layer.messages import (
-    AddDataArchiveEntry,
-    ExportedImagingEvent,
-    ImportImagingEvent,
-)
 from prince_archiver.service_layer.streams import (
     Group,
     IncomingExportMessage,
