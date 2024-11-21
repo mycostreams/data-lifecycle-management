@@ -3,9 +3,9 @@ from uuid import uuid4
 import pytest
 
 from prince_archiver.domain.models import ImagingEvent
+from prince_archiver.service_layer.dto import ExportedImagingEvent
 from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.handlers.state import persist_imaging_event_export
-from prince_archiver.service_layer.messages import ExportedImagingEvent
 
 from .utils import MockUnitOfWork
 

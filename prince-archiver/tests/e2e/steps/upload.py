@@ -4,7 +4,7 @@ from typing import Callable
 import httpx
 from behave import *  # noqa:
 
-from prince_archiver.service_layer.messages import NewImagingEvent
+from prince_archiver.service_layer.dto import NewImagingEvent
 from prince_archiver.test_utils.utils import Timer
 
 

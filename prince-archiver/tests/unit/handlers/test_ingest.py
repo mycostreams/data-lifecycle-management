@@ -4,12 +4,12 @@ from uuid import uuid4
 import pytest
 
 from prince_archiver.domain.models import ImagingEvent
-from prince_archiver.service_layer.exceptions import ServiceLayerException
-from prince_archiver.service_layer.handlers.state import import_imaging_event
-from prince_archiver.service_layer.messages import (
+from prince_archiver.service_layer.dto import (
     ImportedImagingEvent,
     ImportImagingEvent,
 )
+from prince_archiver.service_layer.exceptions import ServiceLayerException
+from prince_archiver.service_layer.handlers.state import import_imaging_event
 
 from .utils import MockUnitOfWork
 

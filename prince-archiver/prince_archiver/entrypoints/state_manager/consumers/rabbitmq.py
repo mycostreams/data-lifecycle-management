@@ -3,11 +3,11 @@ from typing import Generator
 
 from aio_pika.abc import AbstractIncomingMessage
 
-from prince_archiver.service_layer.messagebus import MessagebusFactoryT
-from prince_archiver.service_layer.messages import (
+from prince_archiver.service_layer.dto import (
     AddDataArchiveEntry,
     NewDataArchiveEntries,
 )
+from prince_archiver.service_layer.messagebus import MessagebusFactoryT
 
 LOGGER = logging.getLogger(__name__)
 

@@ -8,8 +8,8 @@ from prince_archiver.adapters.streams import (
     AbstractOutgoingMessage,
 )
 
+from .dto import ExportedImagingEvent, NewImagingEvent
 from .exceptions import InvalidStreamMessage
-from .messages import ExportedImagingEvent, NewImagingEvent
 
 LOGGER = logging.getLogger(__name__)
 

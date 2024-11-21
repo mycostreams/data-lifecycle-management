@@ -12,7 +12,7 @@ from pydantic_settings import BaseSettings
 
 from prince_archiver.adapters.streams import Stream
 from prince_archiver.log import configure_logging
-from prince_archiver.service_layer.messages import NewImagingEvent
+from prince_archiver.service_layer.dto import NewImagingEvent
 from prince_archiver.service_layer.streams import Message, Streams
 from prince_archiver.test_utils.utils import make_timestep_directory
 from prince_archiver.utils import now

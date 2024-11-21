@@ -2,9 +2,9 @@ import logging
 from typing import Callable
 
 from prince_archiver.adapters.streams import AbstractIngester
+from prince_archiver.service_layer.dto import ImportImagingEvent
 from prince_archiver.service_layer.exceptions import ServiceLayerException
 from prince_archiver.service_layer.messagebus import MessageBus
-from prince_archiver.service_layer.messages import ImportImagingEvent
 from prince_archiver.service_layer.streams import IncomingExportMessage, IncomingMessage
 
 LOGGER = logging.getLogger(__name__)

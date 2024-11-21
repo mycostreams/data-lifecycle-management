@@ -4,8 +4,8 @@ import pytest
 from arq import Retry
 
 from prince_archiver.entrypoints.exporter.worker import State, run_export
+from prince_archiver.service_layer.dto import ExportImagingEvent
 from prince_archiver.service_layer.handlers.export import ExportHandler
-from prince_archiver.service_layer.messages import ExportImagingEvent
 
 
 @pytest.fixture(name="workflow_payload")

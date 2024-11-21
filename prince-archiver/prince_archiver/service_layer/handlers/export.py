@@ -11,7 +11,7 @@ import s3fs
 from prince_archiver.adapters.file import ArchiveFile, MetaData, PathManager
 from prince_archiver.adapters.streams import MessageInfo, Stream
 from prince_archiver.domain.value_objects import Checksum
-from prince_archiver.service_layer import messages
+from prince_archiver.service_layer import dto
 from prince_archiver.service_layer.streams import OutgoingExportMessage
 from prince_archiver.utils import now
 
@@ -26,11 +26,11 @@ class _ExportInfo:
     timestamp: datetime = field(default_factory=now)
 
 
-SchemaMapperT = Callable[[messages.ExportImagingEvent], messages.BaseSchema]
+SchemaMapperT = Callable[[dto.ExportImagingEvent], dto.BaseSchema]
 
 
-def default_schema_mapper(msg: messages.ExportImagingEvent) -> messages.BaseSchema:
-    return messages.Schema(**dict(msg))
+def default_schema_mapper(msg: dto.ExportImagingEvent) -> dto.BaseSchema:
+    return dto.Schema(**dict(msg))
 
 
 class Exporter:
@@ -41,7 +41,7 @@ class Exporter:
     def __init__(
         self,
         s3: s3fs.S3FileSystem,
-        key_generator: Callable[[messages.ExportImagingEvent], str],
+        key_generator: Callable[[dto.ExportImagingEvent], str],
         path_manager: PathManager,
         *,
         schema_mapper: SchemaMapperT = default_schema_mapper,
@@ -53,7 +53,7 @@ class Exporter:
         self.schema_mapper = schema_mapper
         self.timeout = timeout
 
-    async def export(self, message: messages.ExportImagingEvent) -> _ExportInfo:
+    async def export(self, message: dto.ExportImagingEvent) -> _ExportInfo:
         LOGGER.info("[%s] Exporting", message.ref_id)
 
         key = self.key_generator(message)
@@ -70,7 +70,7 @@ class Exporter:
     @asynccontextmanager
     async def _get_temp_archive(
         self,
-        message: messages.ExportImagingEvent,
+        message: dto.ExportImagingEvent,
     ) -> AsyncGenerator[ArchiveFile, None]:
         src_dir = self.path_manager.get_src_dir(message.system, message.local_path)
         metadata = self._get_metadata(message)
@@ -81,7 +81,7 @@ class Exporter:
         async with asyncio.timeout(timeout or self.timeout):
             await self.s3._put_file(path, key)
 
-    def _get_metadata(self, message: messages.ExportImagingEvent) -> MetaData:
+    def _get_metadata(self, message: dto.ExportImagingEvent) -> MetaData:
         schema = self.schema_mapper(message)
         return MetaData(schema.model_dump_json(indent=4).encode())
 
@@ -94,7 +94,7 @@ class Publisher:
     def __init__(self, stream: Stream):
         self.stream = stream
 
-    async def publish(self, message: messages.ExportedImagingEvent):
+    async def publish(self, message: dto.ExportedImagingEvent):
         LOGGER.info("[%s] Publishing export", message.ref_id)
         await self.stream.add(OutgoingExportMessage(message))
 
@@ -114,12 +114,12 @@ class ExportHandler:
         self.publisher = publisher
         self.stream = stream
 
-    async def process(self, message: messages.ExportImagingEvent):
+    async def process(self, message: dto.ExportImagingEvent):
         upload_info = await self.exporter.export(message)
 
         kwargs: dict[str, Any] = {**dict(message), **upload_info.__dict__}
 
         await self.publisher.publish(
-            messages.ExportedImagingEvent(**kwargs),
+            dto.ExportedImagingEvent(**kwargs),
         )
         await self.stream.ack(MessageInfo(**dict(message.message_info)))
