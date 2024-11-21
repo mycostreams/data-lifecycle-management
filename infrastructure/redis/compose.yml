@@ -26,8 +26,9 @@ services:
     profiles:
       - tools
     env_file:
-      - .env
-      - ../../.env
+      - ./../../.env
+      - path: ./.env
+        requied: false
 
 volumes:
   redis_data:
