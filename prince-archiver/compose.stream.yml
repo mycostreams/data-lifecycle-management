@@ -13,3 +13,5 @@ services:
       - ./prince_archiver:/app/prince_archiver
       - ./ping.py:/app/ping.py
       - ./stream_ingester.py:/app/stream_ingester.py
+    extra_hosts:
+          - "host.docker.internal:host-gateway"
