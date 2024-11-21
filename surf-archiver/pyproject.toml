@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "surf-archiver"
-version = "0.1.1a2"
+version = "0.1.1a3"
 description = ""
 authors = ["Isaac Williams <i.williams@amolf.nl>"]
 readme = "README.md"
