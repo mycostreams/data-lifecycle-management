@@ -35,9 +35,9 @@ services:
     environment:
       <<: [*aws-env-variables, *sentry-env-variables]
     volumes:
-      - prince_mount:/data/prince:ro
-      - tsu_exp001_mount:/data/tsu-exp001:ro
+      - prince_mount:/data/prince/Images:ro
       - tsu_exp002_mount:/data/tsu-exp002:ro
+      - tsu_exp003_mount:/data/tsu-exp003:ro
     labels: *log-labels
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -49,9 +49,9 @@ services:
     environment:
       <<: *sentry-env-variables
     volumes:
-      - prince_mount:/data/prince
-      - tsu_exp001_mount:/data/tsu-exp001
+      - prince_mount:/data/prince/Images
       - tsu_exp002_mount:/data/tsu-exp002
+      - tsu_exp003_mount:/data/tsu-exp003
     labels: *log-labels
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -85,7 +85,7 @@ volumes:
   prince_mount: 
     driver_opts:
       type: cifs
-      device: //prince.amolf.nl/Data/Prince2
+      device: //prince.amolf.nl/Data/Prince2/Images
       o: username=${AMOLF_USERNAME},password=${AMOLF_PASSWORD}
-  tsu_exp001_mount:
   tsu_exp002_mount:
+  tsu_exp003_mount:
