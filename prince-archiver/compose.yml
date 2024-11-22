@@ -28,8 +28,10 @@ services:
       prestart:
         condition: service_completed_successfully
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`api.localhost`)"
+      - traefik.enable=true
+      - traefik.http.services.api.loadbalancer.server.port=8000
+      - traefik.http.routers.api.entrypoints=web
+      - traefik.http.routers.api.rule=Host(`api.localhost`)
     healthcheck:
       test: curl --fail http://0.0.0.0:8000/health || exit 1
       interval: 1m
@@ -94,8 +96,11 @@ services:
     networks:
       - default
 
+
 networks:
-  default:
+  traefik-public:
+    external: true
+
 
 volumes:
   postgres_data:
