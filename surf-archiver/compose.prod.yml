@@ -14,7 +14,7 @@ services:
       SENTRY_DSN: ${SENTRY_DSN}
     labels:
       logging: loki
-      logging_jobname: ${DEPLOYMENT_NAME-:surf-archiver}
+      logging_jobname: ${DEPLOYMENT_NAME-:surf-archiver-prod}
     deploy:
       restart_policy:
         condition: on-failure
