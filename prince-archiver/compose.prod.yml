@@ -61,6 +61,8 @@ services:
   
   prestart:
     labels: *log-labels
+    volumes:
+      - ./prince_archiver:/app/prince_archiver
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
