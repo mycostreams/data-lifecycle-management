@@ -15,7 +15,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Streams(StrEnum):
-    imaging_events = "dlm:imaging-events"
+    imaging_events = "dlm:new-imaging-event"
     upload_events = "dlm:export-events"
 
 

@@ -16,3 +16,4 @@ level = "DEBUG"
 [providers]
   [providers.docker]
     exposedByDefault = false
+    network = "traefik-public"
