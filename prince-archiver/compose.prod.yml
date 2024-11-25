@@ -22,8 +22,6 @@ services:
     environment:
       <<: [*aws-env-variables, *sentry-env-variables]
       RABBITMQ_DSN: ${RABBITMQ_DSN}
-    volumes:
-      - ./prince_archiver:/app/prince_archiver
     labels: *log-labels
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -61,8 +59,6 @@ services:
   
   prestart:
     labels: *log-labels
-    volumes:
-      - ./prince_archiver:/app/prince_archiver
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
