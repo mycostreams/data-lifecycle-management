@@ -12,6 +12,8 @@ services:
       USERNAME: ${SURF_USERNAME}
       PASSWORD: ${SURF_PASSWORD}
       SENTRY_DSN: ${SENTRY_DSN}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     labels:
       logging: loki
       logging_jobname: ${DEPLOYMENT_NAME-:surf-archiver-prod}
