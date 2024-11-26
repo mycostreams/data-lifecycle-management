@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Annotated
 from uuid import UUID, uuid4
 
-from sqlalchemy import ForeignKey, UniqueConstraint, text
+from sqlalchemy import BigInteger, ForeignKey, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.types import TIMESTAMP, Enum, Uuid
@@ -94,7 +94,7 @@ class EventArchive(Base):
     __tablename__ = "event_archives"
 
     id: Mapped[uuid_pk]
-    size: Mapped[int]
+    size: Mapped[int] = mapped_column(BigInteger)
 
     imaging_event_id: Mapped[UUID] = mapped_column(
         ForeignKey("imaging_events.id"),
