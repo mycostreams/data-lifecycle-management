@@ -97,10 +97,5 @@ services:
       - default
 
 
-networks:
-  traefik-public:
-    external: true
-
-
 volumes:
   postgres_data:

@@ -68,7 +68,7 @@ services:
       <<: *aws-env-variables
       AWS_DEFAULT_REGION: default
     volumes:
-      - ${POSTGRES_BACKUP_DIR:-${PWD}/backups}:/aws/postgres
+      - ${POSTGRES_BACKUP_DIR:-${PWD}/backups}:/aws
     labels: *log-labels
     profiles:
       - tools
