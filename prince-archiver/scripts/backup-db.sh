@@ -13,4 +13,4 @@ trap "rm -f $TARGET_PATH" EXIT
 docker compose exec db pg_dump --username postgres postgres > $TARGET_PATH
 
 docker compose -f compose.yml -f compose.prod.yml run --rm \
-    aws-cli s3 cp postgres/$FILENAME s3://mycostreams-raw-data/backups/db/$FILENAME
+    aws-cli s3 cp $FILENAME s3://mycostreams-raw-data/backups/db/$FILENAME

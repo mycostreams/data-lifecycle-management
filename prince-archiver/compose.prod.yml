@@ -4,7 +4,7 @@ x-aws-env-variables: &aws-env-variables
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
   AWS_ENDPOINT_URL: https://objectstore.surf.nl
   AWS_REGION_NAME: default
-  AWS_BUCKET_NAME: ${AWS_BUCKET_NAME:-mycostreams-raw-data}"
+  AWS_BUCKET_NAME: ${AWS_BUCKET_NAME:-mycostreams-raw-data}
 
 
 x-sentry-env-variables: &sentry-env-variables
@@ -14,7 +14,7 @@ x-sentry-env-variables: &sentry-env-variables
 
 x-log-labels: &log-labels
   logging: loki
-  logging_jobname: ${DEPLOYMENT_NAME-:morricone}
+  logging_jobname: ${DEPLOYMENT_NAME-:prince-archiver-prod}
 
 
 services:
@@ -23,42 +23,44 @@ services:
       <<: [*aws-env-variables, *sentry-env-variables]
       RABBITMQ_DSN: ${RABBITMQ_DSN}
     labels: *log-labels
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     deploy:
       restart_policy:
         condition: on-failure
-    env_file:
-      - .env
-      - ../.env
 
   exporter:
     environment:
       <<: [*aws-env-variables, *sentry-env-variables]
     volumes:
-      - prince_mount:/data/prince:ro
-      - tsu_exp001_mount:/data/tsu-exp001:ro
+      - prince_mount:/data/prince/Images:ro
       - tsu_exp002_mount:/data/tsu-exp002:ro
+      - tsu_exp003_mount:/data/tsu-exp003:ro
     labels: *log-labels
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     deploy:
       restart_policy:
         condition: on-failure
-    env_file:
-      - .env
-      - ../.env
 
   purger:
     environment:
       <<: *sentry-env-variables
     volumes:
-      - prince_mount:/data/prince
-      - tsu_exp001_mount:/data/tsu-exp001
+      - prince_mount:/data/prince/Images
       - tsu_exp002_mount:/data/tsu-exp002
+      - tsu_exp003_mount:/data/tsu-exp003
     labels: *log-labels
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     deploy:
       restart_policy:
         condition: on-failure
-    env_file:
-      - .env
-      - ../.env
+  
+  prestart:
+    labels: *log-labels
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   aws-cli:
     image: amazon/aws-cli
@@ -66,11 +68,8 @@ services:
       <<: *aws-env-variables
       AWS_DEFAULT_REGION: default
     volumes:
-      - ${POSTGRES_BACKUP_DIR:-${PWD}/backups}:/aws/postgres
+      - ${POSTGRES_BACKUP_DIR:-${PWD}/backups}:/aws
     labels: *log-labels
-    env_file:
-      - .env
-      - ../.env
     profiles:
       - tools
 
@@ -84,7 +83,7 @@ volumes:
   prince_mount: 
     driver_opts:
       type: cifs
-      device: //prince.amolf.nl/Data/Prince2
+      device: //prince.amolf.nl/Data/Prince2/Images
       o: username=${AMOLF_USERNAME},password=${AMOLF_PASSWORD}
-  tsu_exp_001_mount:
-  tsu_exp_002_mount:
+  tsu_exp002_mount:
+  tsu_exp003_mount:

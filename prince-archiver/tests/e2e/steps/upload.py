@@ -1,13 +1,10 @@
-from datetime import datetime, timezone
-from pathlib import Path
 from uuid import uuid4
 from typing import Callable
 
 import httpx
 from behave import *  # noqa:
 
-from prince_archiver.definitions import EventType, System
-from prince_archiver.service_layer.streams import ImagingEventStream
+from prince_archiver.service_layer.dto import NewImagingEvent
 from prince_archiver.test_utils.utils import Timer
 
 
@@ -25,14 +22,37 @@ def step_impl(context):
 
     context.ref_id = ref_id
 
-    event = ImagingEventStream(
+    event = NewImagingEvent(
         ref_id=ref_id,
         experiment_id=f"test-id-{ref_id.hex[:6]}",
-        timestamp=datetime(2000, 1, 1, tzinfo=timezone.utc),
-        type=EventType.STITCH,
-        system=System.PRINCE,
-        local_path=Path(ref_id.hex[:6]),
+        timestamp="2000-01-01T00:00:00+00:00",
+        type="stitch",
+        system="prince",
+        local_path=ref_id.hex[:6],
         img_count=1,
+        metadata={
+            "application": {
+                "application": "test_application",
+                "version": "v0.1.0",
+                "user": "test_user",
+            },
+            "camera": {
+                "model": "test_model",
+                "station_name": "test_station",
+                "exposure_time": 0.01,
+                "frame_rate": 10.0,
+                "frame_size": (1, 1),
+                "binning": "1x1",
+                "gain": 1,
+                "gamma": 1,
+                "intensity": [0, 0, 0],
+                "bits_per_pixel": 0,
+            },
+            "stitching": {
+                "last_focused_at": "2000-01-01T00:00:00+00:00",
+                "grid_size": (1, 1),
+            },
+        },
     )
 
     resp = client.post(

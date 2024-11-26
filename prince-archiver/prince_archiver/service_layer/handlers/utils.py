@@ -1,7 +1,7 @@
 from datetime import UTC
 
 from prince_archiver.definitions import EventType
-from prince_archiver.service_layer.messages import CommonImagingEvent
+from prince_archiver.service_layer.dto import CommonImagingEvent
 
 
 def get_target_key(imaging_event: CommonImagingEvent, bucket: str) -> str:

@@ -6,10 +6,10 @@ from uuid import UUID, uuid4
 
 from arq import cron
 from arq.connections import RedisSettings
-from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from zoneinfo import ZoneInfo
 
+from surf_archiver.definitions import Mode
 from surf_archiver.log import configure_remote_logging
 
 from .client import ArchiveClientFactory
@@ -18,8 +18,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
-    USERNAME: str = Field(default=...)
-    PASSWORD: str = Field(default=...)
+    USERNAME: str
+    PASSWORD: str
     HOST: str = "archive.surfsara.nl"
 
     ARCHIVE_TRANSITION_DAYS: int = 1
@@ -31,24 +31,29 @@ class Settings(BaseSettings):
     )
 
 
-async def run_archiving(
-    ctx: dict,
-    *,
-    _date: Optional[date] = None,
-    _job_id: Optional[UUID] = None,
-):
-    job_id = _job_id or uuid4()
+class CronArchiver:
+    def __init__(self, mode: Mode):
+        self.mode = mode
 
-    settings: Settings = ctx["settings"]
-    client_factory: ArchiveClientFactory = ctx["client_factory"]
+    async def run(
+        self,
+        ctx: dict,
+        *,
+        _date: Optional[date] = None,
+        _job_id: Optional[UUID] = None,
+    ):
+        job_id = _job_id or uuid4()
 
-    delta = timedelta(days=settings.ARCHIVE_TRANSITION_DAYS)
-    archive_files_from = _date or date.today() - delta
+        settings: Settings = ctx["settings"]
+        client_factory: ArchiveClientFactory = ctx["client_factory"]
 
-    LOGGER.info("[%s] Initiating archiving for %s", job_id, archive_files_from)
+        delta = timedelta(days=settings.ARCHIVE_TRANSITION_DAYS)
+        archive_files_from = _date or date.today() - delta
 
-    async with client_factory.get_managed_client() as client:
-        await client.archive(archive_files_from, job_id=job_id)
+        LOGGER.info("[%s] Initiating archiving for %s", job_id, archive_files_from)
+
+        async with client_factory.get_managed_client() as client:
+            await client.archive(archive_files_from, job_id=job_id, mode=self.mode)
 
 
 async def startup(ctx: dict):
@@ -68,7 +73,20 @@ class WorkerSettings:
     queue_name = "arq:queue-surf-archiver-remote"
 
     cron_jobs = [
-        cron(run_archiving, hour={3}, minute={0}, timeout=timedelta(minutes=2)),
+        cron(
+            CronArchiver(Mode.STITCH).run,
+            name="archive-images",
+            hour={3},
+            minute={0},
+            timeout=timedelta(minutes=2),
+        ),
+        cron(
+            CronArchiver(Mode.VIDEO).run,
+            name="archive-videos",
+            hour={4},
+            minute={0},
+            timeout=timedelta(minutes=2),
+        ),
     ]
 
     on_startup = startup

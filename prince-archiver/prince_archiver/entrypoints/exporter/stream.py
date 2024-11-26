@@ -5,7 +5,7 @@ import logging
 from arq import ArqRedis
 
 from prince_archiver.adapters.streams import AbstractIngester
-from prince_archiver.service_layer.messages import ExportImagingEvent
+from prince_archiver.service_layer.dto import ExportImagingEvent
 from prince_archiver.service_layer.streams import IncomingMessage
 
 LOGGER = logging.getLogger(__name__)
@@ -14,7 +14,10 @@ LOGGER = logging.getLogger(__name__)
 class Ingester(AbstractIngester):
     async def consume(self):
         async for message in self.streamer:
-            await self.handler(message)
+            try:
+                await self.handler(message)
+            except Exception as exc:
+                LOGGER.exception(exc)
 
 
 async def message_handler(message: IncomingMessage, *, redis: ArqRedis):

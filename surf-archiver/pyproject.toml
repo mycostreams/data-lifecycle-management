@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "surf-archiver"
-version = "0.1.1a2"
+version = "0.1.1a3"
 description = ""
-authors = ["Isaac Williams <isaac.andrew.williams@gmail.com>"]
+authors = ["Isaac Williams <i.williams@amolf.nl>"]
 readme = "README.md"
 
 
@@ -35,7 +35,11 @@ types-pyyaml = "^6.0.12.20240917"
 
 
 [tool.poetry.scripts]
-surf-archiver = 'surf_archiver.cli:app'
+surf-archiver-cli = 'surf_archiver.cli:app'
+
+
+[tool.mypy]
+plugins = "pydantic.mypy"
 
 
 [[tool.mypy.overrides]]
