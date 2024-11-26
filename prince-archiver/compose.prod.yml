@@ -4,7 +4,7 @@ x-aws-env-variables: &aws-env-variables
   AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
   AWS_ENDPOINT_URL: https://objectstore.surf.nl
   AWS_REGION_NAME: default
-  AWS_BUCKET_NAME: ${AWS_BUCKET_NAME:-mycostreams-raw-data}"
+  AWS_BUCKET_NAME: ${AWS_BUCKET_NAME:-mycostreams-raw-data}
 
 
 x-sentry-env-variables: &sentry-env-variables
@@ -68,7 +68,7 @@ services:
       <<: *aws-env-variables
       AWS_DEFAULT_REGION: default
     volumes:
-      - ${POSTGRES_BACKUP_DIR:-${PWD}/backups}:/aws/postgres
+      - ${POSTGRES_BACKUP_DIR:-${PWD}/backups}:/aws
     labels: *log-labels
     profiles:
       - tools

@@ -22,7 +22,7 @@ services:
       AWS_ENDPOINT_URL: https://objectstore.surf.nl
       AWS_DEFAULT_REGION: default
     volumes:
-      - redis_data:/aws/redis
+      - redis_data:/aws
     profiles:
       - tools
 
