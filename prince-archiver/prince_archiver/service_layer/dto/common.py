@@ -39,10 +39,16 @@ class Stitching(BaseModel):
     grid_size: tuple[int, int]
 
 
+class Video(BaseModel):
+    duration: int
+    location: tuple[float, float, float]
+
+
 class Metadata(BaseModel):
     application: Application
     camera: Camera
     stitching: Stitching | None = None
+    video: Video | None = None
 
 
 class SrcDirInfo(BaseModel):
