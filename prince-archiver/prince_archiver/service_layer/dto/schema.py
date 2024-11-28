@@ -11,5 +11,5 @@ class BaseSchema(BaseModel):
 
 
 class Schema(CommonImagingEvent, BaseSchema):
-    schema_version: Literal["1a0"] = "1a0"
+    schema_version: Literal["1a1"] = "1a1"
     metadata: Metadata
