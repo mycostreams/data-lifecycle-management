@@ -90,7 +90,7 @@ services:
 
 networks:
   traefik-public:
-  external: true
+    external: true
 
 
 volumes:
