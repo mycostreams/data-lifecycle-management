@@ -10,7 +10,7 @@ on:
     paths: 
       - 'prince-archiver/**'
       - '.github/workflows/prince-archiver.yaml'
-  
+
 
 defaults:
   run:
@@ -40,10 +40,6 @@ jobs:
   tests:
     name: Unit tests
     needs: static-analysis
-    strategy:
-      fail-fast: true
-      matrix:
-        python-version: ["3.12"]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -51,32 +47,29 @@ jobs:
         run: pipx install poetry
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.12"
           cache: poetry
       - name: Install dependencies
-        run: |
-          poetry env use ${{ matrix.python-version }} 
-          poetry install
+        run: poetry install
       - name: Unit tests
         run: poetry run pytest tests/unit
       - name: Integration tests
         run: poetry run pytest tests/integration
-          
 
-
-  # e2e-tests:
-  #   name: E2E tests
-  #   needs: integration-tests
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - name: Install poetry
-  #       run: pipx install poetry
-  #     - uses: actions/setup-python@v5
-  #       with:
-  #         python-version: "3.12"
-  #         cache: poetry
-  #     - name: Install dependencies
-  #       run: poetry install
-  #     - name: Run tests
-  #       run: ./scripts/run-e2e-tests.sh
+  e2e-tests:
+    name: E2E tests
+    needs: tests
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: poetry
+      - name: Install dependencies
+        run: poetry install
+      - name: Run tests
+        run: ./scripts/run-e2e-tests.sh
