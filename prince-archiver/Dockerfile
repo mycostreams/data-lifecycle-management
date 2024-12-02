@@ -1,5 +1,5 @@
 # The builder image, used to build the virtual environment
-FROM python:3.12-bullseye as builder
+FROM python:3.12-bullseye AS builder
 
 ENV POETRY_VERSION=1.8.3 \
     POETRY_HOME=/opt/poetry \
@@ -21,7 +21,7 @@ RUN poetry install --only-root
 
 
 # The runtime image, used to just run the code provided its virtual environment
-FROM python:3.12-slim-bullseye as runtime
+FROM python:3.12-slim-bullseye AS runtime
 
 
 RUN apt-get update && \
