@@ -31,6 +31,6 @@ async def delete_src(ctx: dict):
             continue
 
         src_dir = state.path_manager.get_src_dir(data.system, data.local_path)
-        if src_dir.exists():
+        if await src_dir.exists():
             LOGGER.info("[%s] Deleting src directory", data.ref_id)
             await src_dir.rm()

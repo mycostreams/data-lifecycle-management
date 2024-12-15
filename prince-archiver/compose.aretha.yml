@@ -1,0 +1,103 @@
+---
+x-aws-env-variables: &aws-env-variables
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+  AWS_ENDPOINT_URL: https://objectstore.surf.nl
+  AWS_REGION_NAME: default
+  AWS_BUCKET_NAME: ${AWS_BUCKET_NAME}
+
+
+x-sentry-env-variables: &sentry-env-variables
+  SENTRY_DSN: ${SENTRY_DSN}
+  SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-staging}
+
+
+x-log-labels: &log-labels
+  logging: loki
+  logging_jobname: prince-archiver-staging
+
+
+services:
+  state-manager:
+    environment:
+      <<: [*aws-env-variables, *sentry-env-variables]
+      RABBITMQ_DSN: amqp://guest:guest@rabbitmq:5672
+    labels: *log-labels
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  exporter:
+    environment:
+      <<: [*aws-env-variables, *sentry-env-variables]
+    volumes:
+      - prince_mount:/data/prince:ro
+      - tsu_exp002_mount:/data/tsu-exp002:ro
+      - tsu_exp003_mount:/data/tsu-exp003/Images:ro
+    labels: *log-labels
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  purger:
+    environment:
+      <<: *sentry-env-variables
+      SRC_SYSTEMS_DELETE: ${SRC_SYSTEMS_DELETE}
+    volumes:
+      - prince_mount:/data/prince
+      - tsu_exp002_mount:/data/tsu-exp002
+      - tsu_exp003_mount:/data/tsu-exp003/Images
+    labels: *log-labels
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  prestart:
+    labels: *log-labels
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  aws-cli:
+    image: amazon/aws-cli
+    environment:
+      <<: *aws-env-variables
+      AWS_DEFAULT_REGION: default
+    volumes:
+      - ${POSTGRES_BACKUP_DIR:-${PWD}/backups}:/aws
+    labels: *log-labels
+    profiles:
+      - tools
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    networks:
+      - default
+
+
+networks:
+  traefik-public:
+    external: true
+
+
+volumes:
+  prince_mount:
+  tsu_exp002_mount:
+  tsu_exp003_mount:
+    driver_opts:
+      type: cifs
+      device: //tsu-exp003.amolf.nl/Data/Images
+      o: username=${AMOLF_USERNAME},password=${AMOLF_PASSWORD}
