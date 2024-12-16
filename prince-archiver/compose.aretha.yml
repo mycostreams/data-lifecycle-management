@@ -98,7 +98,7 @@ volumes:
     driver_opts:
       type: cifs
       device: //sun.amolf.nl/shimizu-tmp/TEMP/MOCK_ARETHA
-      o: username=${AMOLF_USERNAME},password=${AMOLF_PASSWORD}
+      o: username=${AMOLF_USERNAME},password=${AMOLF_PASSWORD},vers=2.0
   tsu_exp002_mount:
   tsu_exp003_mount:
     driver_opts:
