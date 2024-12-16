@@ -36,7 +36,7 @@ services:
     environment:
       <<: [*aws-env-variables, *sentry-env-variables]
     volumes:
-      - prince_mount:/data/prince:ro
+      - prince_mount:/data/prince/Images:ro
       - tsu_exp002_mount:/data/tsu-exp002:ro
       - tsu_exp003_mount:/data/tsu-exp003/Images:ro
     labels: *log-labels
