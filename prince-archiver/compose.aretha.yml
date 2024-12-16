@@ -51,7 +51,7 @@ services:
       <<: *sentry-env-variables
       SRC_SYSTEMS_DELETE: ${SRC_SYSTEMS_DELETE}
     volumes:
-      - prince_mount:/data/prince
+      - prince_mount:/data/prince/Images
       - tsu_exp002_mount:/data/tsu-exp002
       - tsu_exp003_mount:/data/tsu-exp003/Images
     labels: *log-labels
@@ -95,6 +95,10 @@ networks:
 
 volumes:
   prince_mount:
+    driver_opts:
+      type: cifs
+      device: //sun.amolf.nl/shimizu-tmp/TEMP/MOCK_ARETHA
+      o: username=${AMOLF_USERNAME},password=${AMOLF_PASSWORD}
   tsu_exp002_mount:
   tsu_exp003_mount:
     driver_opts:
