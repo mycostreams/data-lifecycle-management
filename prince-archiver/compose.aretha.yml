@@ -37,7 +37,7 @@ services:
       <<: [*aws-env-variables, *sentry-env-variables]
     volumes:
       - prince_mount:/data/prince/Images:ro
-      - tsu_exp002_mount:/data/tsu-exp002:ro
+      - tsu_exp002_mount:/data/tsu-exp002/Images:ro
       - tsu_exp003_mount:/data/tsu-exp003/Images:ro
     labels: *log-labels
     extra_hosts:
@@ -52,7 +52,7 @@ services:
       SRC_SYSTEMS_DELETE: ${SRC_SYSTEMS_DELETE}
     volumes:
       - prince_mount:/data/prince/Images
-      - tsu_exp002_mount:/data/tsu-exp002
+      - tsu_exp002_mount:/data/tsu-exp002/Images
       - tsu_exp003_mount:/data/tsu-exp003/Images
     labels: *log-labels
     extra_hosts:
@@ -95,11 +95,11 @@ networks:
 
 volumes:
   prince_mount:
+  tsu_exp002_mount:
     driver_opts:
       type: cifs
       device: //sun.amolf.nl/shimizu-tmp/TEMP/MOCK_ARETHA
       o: username=${AMOLF_USERNAME},password=${AMOLF_PASSWORD},vers=2.0
-  tsu_exp002_mount:
   tsu_exp003_mount:
     driver_opts:
       type: cifs
