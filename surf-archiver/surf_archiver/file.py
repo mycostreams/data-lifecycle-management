@@ -41,10 +41,11 @@ class ExperimentFileSystem:
         files = await self.s3._glob(
             f"{self.bucket_name}/{mode.value}/*/*/*.tar",
         )
-        tagged_files = []
-        for file in files:
-            if await self._has_tag(file, "archived", "false"):
-                tagged_files.append(file)
+        # tagged_files = []
+        # for file in files:
+        #     if await self._has_tag(file, "archived", "false"):
+        #         tagged_files.append(file)
+        tagged_files = files
         return self._group_files(tagged_files)
 
     async def _has_tag(self, file: str, tag_key: str, tag_value: str) -> bool:
