@@ -115,7 +115,6 @@ class ArchiveFileSystem:
         target.parent.mkdir(parents=True, exist_ok=True)
         with TarFile.open(target, "w") as tar:
             tar.add(temp_dir.path, arcname=".")
-
     @staticmethod
     @contextmanager
     def get_temp_dir() -> Generator[_TempDir, None, None]:

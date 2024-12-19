@@ -76,7 +76,7 @@ class Archiver(AbstractArchiver):
 
         for info, files in grouped_files.items():
             experiment_id,date = info
-            tar_name = archive_params.date.strftime(f"{date}.tar")
+            tar_name = f"{date}.tar"
             path = Path(archive_params.mode.value, experiment_id, tar_name)
             if not self.archive_file_system.exists(path):
                 yield _TargetArchive(
