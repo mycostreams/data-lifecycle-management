@@ -36,16 +36,34 @@ class ExperimentFileSystem:
 
     async def list_files_by_date(
         self,
-        date: DateT,
         mode: Mode = Mode.STITCH,
     ) -> dict[str, list[str]]:
-        date_prefix = date.strftime("%Y%m%d")
-
         files = await self.s3._glob(
-            f"{self.bucket_name}/{mode.value}/*/{date_prefix}/*.tar",
+            f"{self.bucket_name}/{mode.value}/*/*/*.tar",
         )
-        return self._group_files(files)
+        tagged_files = []
+        for file in files:
+            if await self._has_tag(file, "archived", "false"):
+                tagged_files.append(file)
+        return self._group_files(tagged_files)
 
+    async def _has_tag(self, file: str, tag_key: str, tag_value: str) -> bool:
+        """
+        Check if the file has the given tag by using the S3 API to fetch tags.
+        """
+        bucket, key, version_id = self.s3.split_path(file)
+
+        # Fetch tags for the object
+        response = await self.s3._call_s3(
+            "get_object_tagging",
+            Bucket=bucket,
+            Key=key,
+            **version_id_kw(version_id),
+        )
+
+        # Parse and check the tags
+        tags = {tag["Key"]: tag["Value"] for tag in response.get("TagSet", [])}
+        return tags.get(tag_key) == tag_value
     async def get_files(self, files: list[str], target_dir: Path):
         await self.s3._get(files, f"{target_dir}/", batch_size=self.batch_size)
 

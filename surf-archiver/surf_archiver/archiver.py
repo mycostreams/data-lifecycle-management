@@ -70,8 +70,7 @@ class Archiver(AbstractArchiver):
         self,
         archive_params: ArchiveParams,
     ) -> AsyncGenerator[_TargetArchive, None]:
-        grouped_files = await self.experiment_file_system.list_files_by_date(
-            archive_params.date, archive_params.mode
+        grouped_files = await self.experiment_file_system.list_files_by_date(archive_params.mode
         )
         LOGGER.info("Count %i", len(grouped_files))
 
