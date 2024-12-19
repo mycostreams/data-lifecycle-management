@@ -118,5 +118,5 @@ class ArchiveFileSystem:
     @staticmethod
     @contextmanager
     def get_temp_dir() -> Generator[_TempDir, None, None]:
-        with TemporaryDirectory(dir = "/archive/mycostreams/temp") as _temp_path:
+        with TemporaryDirectory() as _temp_path:
             yield _TempDir(Path(_temp_path))
