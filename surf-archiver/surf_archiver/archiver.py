@@ -86,7 +86,7 @@ class Archiver(AbstractArchiver):
     async def _create_archive(self, target_archive: _TargetArchive):
         with self.archive_file_system.get_temp_dir() as temp_dir:
             src_files = target_archive.src_files
-
+            LOGGER.info("Num_files %i", len(src_files))
             await self.experiment_file_system.get_files(src_files, temp_dir.path)
             await self.archive_file_system.add(temp_dir, target_archive.target)
 
