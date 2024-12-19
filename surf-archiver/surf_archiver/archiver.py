@@ -74,8 +74,9 @@ class Archiver(AbstractArchiver):
         )
         LOGGER.info("Count %i", len(grouped_files))
 
-        tar_name = archive_params.date.strftime("%Y-%m-%d.tar")
-        for experiment_id, files in grouped_files.items():
+        for info, files in grouped_files.items():
+            experiment_id,date = info
+            tar_name = archive_params.date.strftime(f"{date}.tar")
             path = Path(archive_params.mode.value, experiment_id, tar_name)
             if not self.archive_file_system.exists(path):
                 yield _TargetArchive(
