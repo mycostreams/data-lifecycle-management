@@ -1,6 +1,7 @@
 import asyncio
 from collections import defaultdict
 from contextlib import asynccontextmanager, contextmanager
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from tarfile import TarFile
 from tempfile import TemporaryDirectory
@@ -35,17 +36,44 @@ class ExperimentFileSystem:
         self.batch_size = -1
 
     async def list_files_by_date(
-        self,
-        mode: Mode = Mode.STITCH,
+            self,
+            mode: Mode = Mode.STITCH,
     ) -> dict[str, list[str]]:
         files = await self.s3._glob(
             f"{self.bucket_name}/{mode.value}/*/*/*.tar",
         )
         untagged_files = []
+        one_day_ago = datetime.now(timezone.utc) - timedelta(days=1)
+
         for file in files:
             if not await self._has_tag(file, "archived", "true"):
-                untagged_files.append(file)
+                # Check if the file is older than one day
+                if await self._is_older_than(file, one_day_ago):
+                    untagged_files.append(file)
+
         return self._group_files(untagged_files)
+
+    async def _is_older_than(self, file: str, cutoff_date: datetime) -> bool:
+        """
+        Check if the file is older than the specified cutoff_date.
+        """
+        bucket, key, version_id = self.s3.split_path(file)
+
+        # Fetch metadata for the object
+        response = await self.s3._call_s3(
+            "head_object",
+            Bucket=bucket,
+            Key=key,
+            **version_id_kw(version_id),
+        )
+
+        # Parse the LastModified timestamp
+        last_modified = response.get("LastModified")
+        if not last_modified:
+            raise ValueError(f"LastModified timestamp not found for file: {file}")
+
+        # Compare timestamps
+        return last_modified < cutoff_date
 
     async def _has_tag(self, file: str, tag_key: str, tag_value: str) -> bool:
         """
@@ -64,6 +92,7 @@ class ExperimentFileSystem:
         # Parse and check the tags
         tags = {tag["Key"]: tag["Value"] for tag in response.get("TagSet", [])}
         return tags.get(tag_key) == tag_value
+
     async def get_files(self, files: list[str], target_dir: Path):
         await self.s3._get(files, f"{target_dir}/", batch_size=self.batch_size)
 
