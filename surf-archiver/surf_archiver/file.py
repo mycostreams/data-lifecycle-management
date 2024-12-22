@@ -6,6 +6,7 @@ from pathlib import Path
 from tarfile import TarFile
 from tempfile import TemporaryDirectory
 from typing import AsyncGenerator, Generator, Optional
+from datetime import date
 
 from s3fs import S3FileSystem
 from s3fs.core import version_id_kw
@@ -39,6 +40,8 @@ class ExperimentFileSystem:
             self,
             mode: Mode = Mode.STITCH,
     ) -> dict[str, list[str]]:
+        date_today = date.today()
+        date_prefix = date_today.strftime("%Y%m%d")
         files = await self.s3._glob(
             f"{self.bucket_name}/{mode.value}/*/*/*.tar",
         )
@@ -48,32 +51,10 @@ class ExperimentFileSystem:
         for file in files:
             if not await self._has_tag(file, "archived", "true"):
                 # Check if the file is older than one day
-                if await self._is_older_than(file, one_day_ago):
+                if file.split('/')[-2]<date_prefix:
                     untagged_files.append(file)
 
         return self._group_files(untagged_files)
-
-    async def _is_older_than(self, file: str, cutoff_date: datetime) -> bool:
-        """
-        Check if the file is older than the specified cutoff_date.
-        """
-        bucket, key, version_id = self.s3.split_path(file)
-
-        # Fetch metadata for the object
-        response = await self.s3._call_s3(
-            "head_object",
-            Bucket=bucket,
-            Key=key,
-            **version_id_kw(version_id),
-        )
-
-        # Parse the LastModified timestamp
-        last_modified = response.get("LastModified")
-        if not last_modified:
-            raise ValueError(f"LastModified timestamp not found for file: {file}")
-
-        # Compare timestamps
-        return last_modified < cutoff_date
 
     async def _has_tag(self, file: str, tag_key: str, tag_value: str) -> bool:
         """
