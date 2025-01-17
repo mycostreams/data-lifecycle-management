@@ -5,7 +5,7 @@ from datetime import date
 from pathlib import Path
 from tarfile import TarFile
 from tempfile import TemporaryDirectory
-from typing import AsyncGenerator, Generator, Optional
+from typing import AsyncGenerator, Generator, Optional, Tuple
 
 from s3fs import S3FileSystem
 from s3fs.core import version_id_kw
@@ -89,7 +89,7 @@ class ExperimentFileSystem:
 
     @staticmethod
     def _group_files(files: list[str]) -> dict[str, list[str]]:
-        data: dict[(str, str), list[str]] = defaultdict(list)
+        data: dict[Tuple[str, str], list[str]] = defaultdict(list)
         for file_obj, file in zip(map(Path, files), files):
             data[(file_obj.parent.parent.name, file_obj.parent.name)].append(file)
         return data
