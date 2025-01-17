@@ -1,0 +1,49 @@
+---
+
+services:
+  export-ingester:
+    image: export-ingester
+    build:
+      context: .
+    command: ["arq", "export_ingester.worker.WorkerSettings"]
+    environment: 
+      REDIS_DSN: redis://redis:6379
+      BASE_URL: ${BASE_URL:-http://mock-api:8000}
+      SFTP_USERNAME: ${SFTP_USERNAME:-foo}
+      SFTP_PASSWORD: ${SFTP_PASSWORD:-pass}
+      SFTP_HOST: ${SFTP_HOST:-sftp}
+      SBATCH_COMMAND: ${SBATCH_COMMAND:-sbatch}
+
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - "./export_ingester:/app/export_ingester"
+
+  redis:
+    image: redis:7.2.4
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mock-api:
+    image: export-ingester
+    command: ["fastapi", "dev", "export_ingester/test_utils/api.py", "--host=0.0.0.0"]
+    ports:
+      - 127.0.0.1:8000:8000
+    volumes:
+      - "./export_ingester:/app/export_ingester"
+    profiles:
+      - dev
+
+  sftp:
+    image: atmoz/sftp
+    command: "foo:pass:1001"
+    volumes:
+      - ./sftp-data:/home/foo/daily-uploads
+    ports:
+      - "127.0.0.1:2222:22"
+    profiles:
+      - dev
