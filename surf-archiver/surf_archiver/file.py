@@ -37,7 +37,7 @@ class ExperimentFileSystem:
     async def list_files_by_date(
         self,
         mode: Mode = Mode.STITCH,
-    ) -> dict[str, list[str]]:
+    ) -> dict[Tuple[str, str], list[str]]:
         date_today = date.today()
         date_prefix = date_today.strftime("%Y%m%d")
         files = await self.s3._glob(
