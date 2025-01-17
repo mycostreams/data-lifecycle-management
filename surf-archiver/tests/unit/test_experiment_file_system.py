@@ -1,10 +1,3 @@
-from unittest.mock import AsyncMock
-
-from s3fs import S3FileSystem
-
-from surf_archiver.file import ExperimentFileSystem
-
-
 # async def test_list_files_by_date():
 #     mock_s3 = AsyncMock(S3FileSystem)
 #     mock_s3._glob.return_value = [
