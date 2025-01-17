@@ -88,7 +88,7 @@ class ExperimentFileSystem:
         )
 
     @staticmethod
-    def _group_files(files: list[str]) -> dict[str, list[str]]:
+    def _group_files(files: list[str]) -> dict[Tuple[str, str], list[str]]:
         data: dict[Tuple[str, str], list[str]] = defaultdict(list)
         for file_obj, file in zip(map(Path, files), files):
             data[(file_obj.parent.parent.name, file_obj.parent.name)].append(file)
