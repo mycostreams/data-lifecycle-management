@@ -37,7 +37,7 @@ async def test_new_files_are_archived(
 
     expected = [
         ArchiveEntry(
-            path="images/test-id/2000-01-01.tar",
+            path="images/test-id/20000101.tar",
             src_keys=["test-bucket/images/test-id/20000101/0000.tar"],
         )
     ]
