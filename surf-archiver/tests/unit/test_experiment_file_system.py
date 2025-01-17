@@ -24,5 +24,5 @@ async def test_list_files_by_date():
         ],
     }
 
-    output = await file_system.list_files_by_date(date(2000, 1, 1))
+    output = await file_system.list_files_by_date()
     assert output == expected

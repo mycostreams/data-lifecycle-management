@@ -41,7 +41,6 @@ async def test_new_files_are_archived(
             src_keys=["test-bucket/images/test-id/20000101/0000.tar"],
         )
     ]
-
     archives = await archiver.archive(archive_params)
 
     assert archives == expected
