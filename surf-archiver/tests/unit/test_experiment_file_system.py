@@ -1,4 +1,3 @@
-from datetime import date
 from unittest.mock import AsyncMock
 
 from s3fs import S3FileSystem
