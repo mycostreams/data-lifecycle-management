@@ -1,18 +1,16 @@
 import asyncio
 from collections import defaultdict
 from contextlib import asynccontextmanager, contextmanager
-from datetime import datetime, timedelta, timezone
+from datetime import date
 from pathlib import Path
 from tarfile import TarFile
 from tempfile import TemporaryDirectory
 from typing import AsyncGenerator, Generator, Optional
-from datetime import date
 
 from s3fs import S3FileSystem
 from s3fs.core import version_id_kw
 
 from .definitions import Mode
-from .utils import DateT
 
 
 @asynccontextmanager
@@ -37,8 +35,8 @@ class ExperimentFileSystem:
         self.batch_size = -1
 
     async def list_files_by_date(
-            self,
-            mode: Mode = Mode.STITCH,
+        self,
+        mode: Mode = Mode.STITCH,
     ) -> dict[str, list[str]]:
         date_today = date.today()
         date_prefix = date_today.strftime("%Y%m%d")
@@ -46,12 +44,10 @@ class ExperimentFileSystem:
             f"{self.bucket_name}/{mode.value}/*/*/*.tar",
         )
         untagged_files = []
-        one_day_ago = datetime.now(timezone.utc) - timedelta(days=1)
-
         for file in files:
             if not await self._has_tag(file, "archived", "true"):
                 # Check if the file is older than one day
-                if file.split('/')[-2]<date_prefix:
+                if file.split("/")[-2] < date_prefix:
                     untagged_files.append(file)
 
         return self._group_files(untagged_files)
@@ -95,7 +91,7 @@ class ExperimentFileSystem:
     def _group_files(files: list[str]) -> dict[str, list[str]]:
         data: dict[(str, str), list[str]] = defaultdict(list)
         for file_obj, file in zip(map(Path, files), files):
-            data[(file_obj.parent.parent.name,file_obj.parent.name)].append(file)
+            data[(file_obj.parent.parent.name, file_obj.parent.name)].append(file)
         return data
 
 
@@ -125,6 +121,7 @@ class ArchiveFileSystem:
         target.parent.mkdir(parents=True, exist_ok=True)
         with TarFile.open(target, "w") as tar:
             tar.add(temp_dir.path, arcname=".")
+
     @staticmethod
     @contextmanager
     def get_temp_dir() -> Generator[_TempDir, None, None]:
