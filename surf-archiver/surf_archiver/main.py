@@ -18,11 +18,11 @@ class Payload(BaseMessage):
 async def run_archiving(
     archive_params: ArchiveParams,
     managed_achviver: AbstractManagedArchiver,
-    managed_publisher: AbstractManagedPublisher,
+    # managed_publisher: AbstractManagedPublisher,
 ):
     async with AsyncExitStack() as stack:
         archiver = await stack.enter_async_context(managed_achviver)
-        publisher = await stack.enter_async_context(managed_publisher)
+        # publisher = await stack.enter_async_context(managed_publisher)
 
         archives = await archiver.archive(archive_params)
 
@@ -31,4 +31,4 @@ async def run_archiving(
             date=archive_params.date,
             archives=archives,
         )
-        await publisher.publish(payload)
+        # await publisher.publish(payload)
