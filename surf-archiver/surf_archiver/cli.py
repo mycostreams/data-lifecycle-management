@@ -12,6 +12,7 @@ from .config import DEFAULT_CONFIG_FILE, get_config
 from .definitions import Mode
 from .log import configure_logging
 from .main import run_archiving
+
 # from .publisher import ManagedPublisher, PublisherConfig
 
 LOGGER = logging.getLogger(__name__)
