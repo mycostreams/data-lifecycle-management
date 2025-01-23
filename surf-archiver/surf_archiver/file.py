@@ -85,23 +85,23 @@ class ExperimentFileSystem:
             Key=key,
             **version_id_kw(version_id),
         )
-        current_tags = response.get('TagSet', [])
+        current_tags = response.get("TagSet", [])
 
         # Convert the list of tag dictionaries to a dictionary for easier manipulation
-        tag_dict = {tag_item['Key']: tag_item['Value'] for tag_item in current_tags}
+        tag_dict = {tag_item["Key"]: tag_item["Value"] for tag_item in current_tags}
 
         # Update the specific tags
         tag_dict.update(tags)
 
         # Convert the dictionary back to the list of tag dictionaries
-        updated_tags = [{'Key': k, 'Value': v} for k, v in tag_dict.items()]
+        updated_tags = [{"Key": k, "Value": v} for k, v in tag_dict.items()]
 
         # Set the updated tags for the object
         await self.s3._call_s3(
             "put_object_tagging",
             Bucket=bucket,
             Key=key,
-            Tagging={'TagSet': updated_tags},
+            Tagging={"TagSet": updated_tags},
             **version_id_kw(version_id),
         )
 
