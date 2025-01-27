@@ -38,6 +38,7 @@ async def main():
     )
     end = datetime.now(tz=UTC) - state.settings.SRC_LIFESPAN
     start = end - timedelta(hours=3)
+    LOGGER.info(f"end is {end} and start is {start}")
     await delete_src(ctx={"state": state})
     async for message in state.stream.range(start, end, msg_cls=IncomingMessage):
         data = message.processed_data()
