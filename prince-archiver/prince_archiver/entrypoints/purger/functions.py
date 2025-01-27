@@ -24,7 +24,7 @@ async def delete_src(ctx: dict):
     state: State = ctx["state"]
     end = datetime.now(tz=UTC) - state.settings.SRC_LIFESPAN
     start = end - timedelta(hours=3)
-
+    LOGGER.info(state.settings)
     async for message in state.stream.range(start, end, msg_cls=IncomingMessage):
         data = message.processed_data()
         if data.system not in state.settings.SRC_SYSTEMS_DELETE:
