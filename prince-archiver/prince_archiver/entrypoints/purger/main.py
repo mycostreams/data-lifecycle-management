@@ -1,5 +1,6 @@
 import logging
 import os
+import asyncio
 
 from arq import ArqRedis, cron
 from arq import create_pool
@@ -43,3 +44,6 @@ async def main():
     async for message in state.stream.range(start, end, msg_cls=IncomingMessage):
         data = message.processed_data()
         LOGGER.info(data)
+
+if __name__ == "__main__":
+    asyncio.run(main())
