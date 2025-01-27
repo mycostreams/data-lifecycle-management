@@ -24,26 +24,26 @@ LOGGER = logging.getLogger(__name__)
 
 async def main():
     # Step 1: Initialize Redis connection
-    redis = await create_pool(
-        RedisSettings.from_dsn(os.getenv("REDIS_DSN", "redis://localhost:6379"))
-    )
+    # redis = await create_pool(
+    #     RedisSettings.from_dsn(os.getenv("REDIS_DSN", "redis://localhost:6379"))
+    # )
 
     # Step 2: Load settings
     settings = Settings()
-
+    print(settings)
     # Step 3: Initialize State object
-    state = State(
-        settings=settings,
-        stream=Stream(redis=redis, name=Streams.imaging_events),
-        path_manager=PathManager(settings.SRC_DIR),
-    )
-    end = datetime.now(tz=UTC) - state.settings.SRC_LIFESPAN
+    # state = State(
+    #     settings=settings,
+    #     stream=Stream(redis=redis, name=Streams.imaging_events),
+    #     path_manager=PathManager(settings.SRC_DIR),
+    # )
+    end = datetime.now(tz=UTC) - settings.SRC_LIFESPAN
     start = end - timedelta(hours=3)
     LOGGER.info(f"end is {end} and start is {start}")
-    await delete_src(ctx={"state": state})
-    async for message in state.stream.range(start, end, msg_cls=IncomingMessage):
-        data = message.processed_data()
-        LOGGER.info(data)
+    # await delete_src(ctx={"state": state})
+    # async for message in state.stream.range(start, end, msg_cls=IncomingMessage):
+    #     data = message.processed_data()
+    #     LOGGER.info(data)
 
 if __name__ == "__main__":
     asyncio.run(main())
