@@ -25,7 +25,7 @@ LOGGER = logging.getLogger(__name__)
 async def main():
     # Step 1: Initialize Redis connection
     redis = await create_pool(
-        RedisSettings.from_dsn(os.getenv("REDIS_DSN", "redis://host.docker.internal:6379"))
+        RedisSettings.from_dsn(os.getenv("REDIS_DSN", "redis://localhost:6379"))
     )
 
     # Step 2: Load settings
