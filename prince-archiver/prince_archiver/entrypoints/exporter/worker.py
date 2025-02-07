@@ -25,6 +25,7 @@ async def run_export(
     try:
         await state.export_handler.process(dto)
     except* (OSError, TimeoutError) as exc:
+        LOGGER.info("Problem exporting: [%s] Will retry", exc)
         job_try: int = ctx.get("job_try", 1)
         raise Retry(defer=job_try * (3 * 60)) from exc
 
