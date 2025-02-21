@@ -47,7 +47,7 @@ services:
 
   purger:
     environment:
-      SRC_SYSTEMS_DELETE: '["prince"]'
+      SRC_SYSTEMS_DELETE: ${SRC_SYSTEMS_DELETE}
     <<: *code-and-data-volumes
 
   prestart:

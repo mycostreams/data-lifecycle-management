@@ -46,6 +46,9 @@ services:
   purger:
     environment:
       <<: *sentry-env-variables
+      SRC_SYSTEMS_DELETE: ${SRC_SYSTEMS_DELETE}
+      SRC_LIFESPAN: ${SRC_LIFESPAN}
+
     volumes:
       - prince_mount:/data/prince/Images
       - tsu_exp002_mount:/data/tsu-exp002

@@ -31,6 +31,9 @@ async def startup(ctx: dict):
     )
 
     ctx["state"] = state
+    LOGGER.info(f"Purging from {len(settings.SRC_SYSTEMS_DELETE)} systems")
+    for system in settings.SRC_SYSTEMS_DELETE:
+        LOGGER.info(f"Set up to purge from {system}")
 
 
 class WorkerSettings:
