@@ -44,7 +44,7 @@ async def run_video_archiving(ctx: dict, *, _date: date | None = None):
         "sbatch --time=22:00:00 --partition=staging "
         "--nodes=1 --ntasks=1 --job-name=surf_archive"
         " --output=archive_%j.out --error=archive_%j.err"
-        " --wrap='surf-archiver-cli archive --mode=video"
+        " --wrap='surf-archiver-cli archive --mode=videos"
         " 2024-12-19'"
     )
     settings: Settings = ctx["settings"]
