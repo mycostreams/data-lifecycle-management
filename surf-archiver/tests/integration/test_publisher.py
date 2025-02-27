@@ -21,7 +21,6 @@ async def fixture_publisher(
         connection_url=connection_url,
         exchange_name=random_str,
     )
-
     async with ManagedPublisher(config) as publisher:
         yield publisher
 

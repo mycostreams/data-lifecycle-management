@@ -12,7 +12,8 @@ from .config import DEFAULT_CONFIG_FILE, get_config
 from .definitions import Mode
 from .log import configure_logging
 from .main import run_archiving
-from .publisher import ManagedPublisher, PublisherConfig
+
+# from .publisher import ManagedPublisher, PublisherConfig
 
 LOGGER = logging.getLogger(__name__)
 
@@ -39,10 +40,10 @@ def archive(
         bucket_name=config.bucket,
         base_path=config.target_dir,
     )
-    publisher_config = PublisherConfig(
-        exchange_name=config.exchange_name,
-        connection_url=config.connection_url,
-    )
+    # publisher_config = PublisherConfig(
+    #     exchange_name=config.exchange_name,
+    #     connection_url=config.connection_url,
+    # )
 
     archive_params = ArchiveParams(
         date=date,
@@ -55,7 +56,7 @@ def archive(
             run_archiving(
                 archive_params,
                 ManagedArchiver(archiver_config),
-                ManagedPublisher(publisher_config),
+                # ManagedPublisher(publisher_config),
             )
         )
     except Exception as err:

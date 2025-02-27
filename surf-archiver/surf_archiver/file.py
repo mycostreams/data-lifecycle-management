@@ -75,15 +75,33 @@ class ExperimentFileSystem:
 
     async def tag(self, path: str, *, _tags: Optional[dict[str, str]] = None):
         tags = _tags or {"archived": "true"}
-        tag = {"TagSet": [{"Key": k, "Value": v} for k, v in tags.items()]}
 
         bucket, key, version_id = self.s3.split_path(path)
 
+        # Retrieve the current tags
+        response = await self.s3._call_s3(
+            "get_object_tagging",
+            Bucket=bucket,
+            Key=key,
+            **version_id_kw(version_id),
+        )
+        current_tags = response.get("TagSet", [])
+
+        # Convert the list of tag dictionaries to a dictionary for easier manipulation
+        tag_dict = {tag_item["Key"]: tag_item["Value"] for tag_item in current_tags}
+
+        # Update the specific tags
+        tag_dict.update(tags)
+
+        # Convert the dictionary back to the list of tag dictionaries
+        updated_tags = [{"Key": k, "Value": v} for k, v in tag_dict.items()]
+
+        # Set the updated tags for the object
         await self.s3._call_s3(
             "put_object_tagging",
             Bucket=bucket,
             Key=key,
-            Tagging=tag,
+            Tagging={"TagSet": updated_tags},
             **version_id_kw(version_id),
         )
 
