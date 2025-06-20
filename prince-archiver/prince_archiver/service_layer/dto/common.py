@@ -34,6 +34,7 @@ class Camera(BaseModel):
     bits_per_pixel: float
     pixel_size: float | None
 
+
 class Stitching(BaseModel):
     last_focused_at: datetime | None
     grid_size: tuple[int, int]
@@ -45,6 +46,7 @@ class Video(BaseModel):
     magnification: float | None
     type: str | None
     video_nr: int | None
+
 
 class Metadata(BaseModel):
     application: Application
