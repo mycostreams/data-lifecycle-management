@@ -14,6 +14,16 @@ from .state import State, get_managed_state
 
 LOGGER = logging.getLogger(__name__)
 
+RETRY_SCHEDULE = [
+    10,  # 1st retry: 10 seconds
+    10 * 60,  # 2nd retry: 10 minutes
+    60 * 60,  # 3rd retry: 1 hour
+    24 * 60 * 60,  # 4th retry: 1 day
+    24 * 60 * 60,  # 5th retry: 1 days
+]
+# Sum of all these retry should always be inferior to purger delay
+MAX_RETRIES = len(RETRY_SCHEDULE)
+
 
 async def run_export(
     ctx: dict,
@@ -26,7 +36,14 @@ async def run_export(
         await state.export_handler.process(dto)
     except* (OSError, TimeoutError) as exc:
         job_try: int = ctx.get("job_try", 1)
-        raise Retry(defer=job_try * (3 * 60)) from exc
+        delay_seconds = RETRY_SCHEDULE[job_try - 1]
+        LOGGER.info(
+            "Problem exporting: [%s] Will retry #%d after %s seconds",
+            exc,
+            job_try,
+            delay_seconds,
+        )
+        raise Retry(defer=delay_seconds) from exc
 
 
 async def startup(ctx: dict):
@@ -69,7 +86,7 @@ class WorkerSettings:
     on_shutdown = shutdown
 
     keep_result = 0
-    max_retries = 5
+    max_retries = MAX_RETRIES
     max_jobs = 2
 
     redis_settings = RedisSettings.from_dsn(

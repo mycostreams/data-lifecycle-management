@@ -71,12 +71,13 @@ class Archiver(AbstractArchiver):
         archive_params: ArchiveParams,
     ) -> AsyncGenerator[_TargetArchive, None]:
         grouped_files = await self.experiment_file_system.list_files_by_date(
-            archive_params.date, archive_params.mode
+            archive_params.mode
         )
         LOGGER.info("Count %i", len(grouped_files))
 
-        tar_name = archive_params.date.strftime("%Y-%m-%d.tar")
-        for experiment_id, files in grouped_files.items():
+        for info, files in grouped_files.items():
+            experiment_id, date = info
+            tar_name = f"{date}.tar"
             path = Path(archive_params.mode.value, experiment_id, tar_name)
             if not self.archive_file_system.exists(path):
                 yield _TargetArchive(
@@ -86,7 +87,7 @@ class Archiver(AbstractArchiver):
     async def _create_archive(self, target_archive: _TargetArchive):
         with self.archive_file_system.get_temp_dir() as temp_dir:
             src_files = target_archive.src_files
-
+            LOGGER.info("Num_files %i", len(src_files))
             await self.experiment_file_system.get_files(src_files, temp_dir.path)
             await self.archive_file_system.add(temp_dir, target_archive.target)
 

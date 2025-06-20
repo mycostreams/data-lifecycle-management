@@ -1,16 +1,16 @@
 import asyncio
 from collections import defaultdict
 from contextlib import asynccontextmanager, contextmanager
+from datetime import date
 from pathlib import Path
 from tarfile import TarFile
 from tempfile import TemporaryDirectory
-from typing import AsyncGenerator, Generator, Optional
+from typing import AsyncGenerator, Generator, Optional, Tuple
 
 from s3fs import S3FileSystem
 from s3fs.core import version_id_kw
 
 from .definitions import Mode
-from .utils import DateT
 
 
 @asynccontextmanager
@@ -36,15 +36,39 @@ class ExperimentFileSystem:
 
     async def list_files_by_date(
         self,
-        date: DateT,
         mode: Mode = Mode.STITCH,
-    ) -> dict[str, list[str]]:
-        date_prefix = date.strftime("%Y%m%d")
-
+    ) -> dict[Tuple[str, str], list[str]]:
+        date_today = date.today()
+        date_prefix = date_today.strftime("%Y%m%d")
         files = await self.s3._glob(
-            f"{self.bucket_name}/{mode.value}/*/{date_prefix}/*.tar",
+            f"{self.bucket_name}/{mode.value}/*/*/*.tar",
         )
-        return self._group_files(files)
+        untagged_files = []
+        for file in files:
+            if not await self._has_tag(file, "archived", "true"):
+                # Check if the file is older than one day
+                if file.split("/")[-2] < date_prefix:
+                    untagged_files.append(file)
+
+        return self._group_files(untagged_files)
+
+    async def _has_tag(self, file: str, tag_key: str, tag_value: str) -> bool:
+        """
+        Check if the file has the given tag by using the S3 API to fetch tags.
+        """
+        bucket, key, version_id = self.s3.split_path(file)
+
+        # Fetch tags for the object
+        response = await self.s3._call_s3(
+            "get_object_tagging",
+            Bucket=bucket,
+            Key=key,
+            **version_id_kw(version_id),
+        )
+
+        # Parse and check the tags
+        tags = {tag["Key"]: tag["Value"] for tag in response.get("TagSet", [])}
+        return tags.get(tag_key) == tag_value
 
     async def get_files(self, files: list[str], target_dir: Path):
         await self.s3._get(files, f"{target_dir}/", batch_size=self.batch_size)
@@ -64,10 +88,10 @@ class ExperimentFileSystem:
         )
 
     @staticmethod
-    def _group_files(files: list[str]) -> dict[str, list[str]]:
-        data: dict[str, list[str]] = defaultdict(list)
+    def _group_files(files: list[str]) -> dict[Tuple[str, str], list[str]]:
+        data: dict[Tuple[str, str], list[str]] = defaultdict(list)
         for file_obj, file in zip(map(Path, files), files):
-            data[file_obj.parent.parent.name].append(file)
+            data[(file_obj.parent.parent.name, file_obj.parent.name)].append(file)
         return data
 
 

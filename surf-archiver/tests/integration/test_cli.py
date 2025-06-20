@@ -87,7 +87,7 @@ def test_app(
     assert result.exit_code == 0
 
     assert config.log_file and config.log_file.exists()
-    assert (config.target_dir / "images" / "test-id" / "2000-01-01.tar").exists()
+    assert (config.target_dir / "images" / "test-id" / "20000101.tar").exists()
 
     message_waiter.wait()
     assert message_waiter.message
