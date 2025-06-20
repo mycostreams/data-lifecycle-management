@@ -42,7 +42,8 @@ class Stitching(BaseModel):
 class Video(BaseModel):
     duration: int
     location: tuple[float, float, float]
-
+    magnification: int | None
+    type: str | None
 
 class Metadata(BaseModel):
     application: Application
