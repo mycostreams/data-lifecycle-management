@@ -32,7 +32,7 @@ class Camera(BaseModel):
     gamma: float | None
     intensity: list[float]
     bits_per_pixel: float
-    pixel_size: float | None
+    pixel_size: float | None = None
 
 
 class Stitching(BaseModel):
@@ -43,9 +43,9 @@ class Stitching(BaseModel):
 class Video(BaseModel):
     duration: int
     location: tuple[float, float, float]
-    magnification: float | None
-    type: str | None
-    video_nr: int | None
+    magnification: float | None = None
+    type: str | None = None
+    video_nr: int | None = None
 
 
 class Metadata(BaseModel):
