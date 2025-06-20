@@ -39,6 +39,7 @@ async def run_archiving(ctx: dict, *, _date: date | None = None):
     async with get_managed_export_ingester(settings) as ingester:
         await ingester.run_sbatch_command(archive_command)
 
+
 async def run_video_archiving(ctx: dict, *, _date: date | None = None):
     archive_command = (
         "sbatch --time=22:00:00 --partition=staging "
@@ -50,6 +51,7 @@ async def run_video_archiving(ctx: dict, *, _date: date | None = None):
     settings: Settings = ctx["settings"]
     async with get_managed_export_ingester(settings) as ingester:
         await ingester.run_sbatch_command(archive_command)
+
 
 class WorkerSettings:
     cron_jobs = [
