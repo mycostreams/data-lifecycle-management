@@ -56,6 +56,7 @@ class Exporter:
     async def export(self, message: dto.ExportImagingEvent) -> _ExportInfo:
         LOGGER.info("[%s] Exporting", message.ref_id)
 
+        # Get address to export location
         key = self.key_generator(message)
 
         async with (
@@ -72,8 +73,12 @@ class Exporter:
         self,
         message: dto.ExportImagingEvent,
     ) -> AsyncGenerator[ArchiveFile, None]:
+        # source directory is the following format:
+        # /data/<system>/<message local path>
         src_dir = self.path_manager.get_src_dir(message.system, message.local_path)
         metadata = self._get_metadata(message)
+
+        # Create a tar file and return the tar address
         async with src_dir.get_temp_archive(metadata=metadata) as archive_file:
             yield archive_file
 

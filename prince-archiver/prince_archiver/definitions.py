@@ -10,6 +10,7 @@ class System(StrEnum):
 class EventType(StrEnum):
     STITCH = auto()
     VIDEO = auto()
+    OVERVIEW = auto()
 
 
 class Algorithm(StrEnum):
