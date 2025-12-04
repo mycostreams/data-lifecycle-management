@@ -20,13 +20,13 @@ def get_target_key(imaging_event: CommonImagingEvent, bucket: str) -> str:
     """
     match imaging_event.type:
         case EventType.STITCH:
-            event_type="images"
+            event_type = "images"
         case EventType.VIDEO:
-            event_type="videos"
+            event_type = "videos"
         case EventType.OVERVIEW:
-            event_type="images"
+            event_type = "images"
         case _:
-            event_type="videos"
+            event_type = "videos"
 
     ref_timestamp = imaging_event.timestamp.astimezone(UTC)
 
