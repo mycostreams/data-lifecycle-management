@@ -5,7 +5,17 @@ from prince_archiver.service_layer.dto import CommonImagingEvent
 
 
 def get_target_key(imaging_event: CommonImagingEvent, bucket: str) -> str:
-    event_type = "images" if imaging_event.type == EventType.STITCH else "videos"
+    match imaging_event.type:
+        case EventType.STITCH:
+            event_type = "images"
+        case EventType.VIDEO:
+            event_type = "videos"
+        case EventType.OVERVIEW:
+            event_type = "overview"
+        case other:
+            raise KeyError(f"Unknown event type {other}")
+
+    # event_type = "images" if imaging_event.type == EventType.STITCH else "videos"
 
     ref_timestamp = imaging_event.timestamp.astimezone(UTC)
 
