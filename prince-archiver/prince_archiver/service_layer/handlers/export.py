@@ -54,7 +54,9 @@ class Exporter:
         self.timeout = timeout
 
     async def export(self, message: dto.ExportImagingEvent) -> _ExportInfo:
-        LOGGER.info("[%s] Exporting", message.ref_id)
+        LOGGER.info(
+            "[%s][%s][%s] Exporting", message.ref_id, message.type, message.system
+        )
 
         # Get address to export location
         key = self.key_generator(message)
