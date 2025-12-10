@@ -12,6 +12,7 @@ class Settings(BaseSettings):
 
     BASE_URL: HttpUrl
     SBATCH_COMMAND: str
+    SBATCH_VIDEO_COMMAND: str = "sbatch /home/svstaalduine/orchestrator/orchestrator/bash_scripts/daily_videos.sh /scratch-shared/amftrack_prod/daily_video"
     TIME_RANGE: timedelta = timedelta(days=4)
     model_config = SettingsConfigDict(
         env_file=Path(__file__).parent.parent / ".env",
