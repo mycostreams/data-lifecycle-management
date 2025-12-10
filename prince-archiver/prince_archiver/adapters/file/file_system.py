@@ -103,7 +103,11 @@ class AsyncFileSystem:
 
         target.parent.mkdir(parents=True, exist_ok=True)
         with tarfile.open(target, "a") as tar:
-            tar.add(src, arcname=".")
+
+            if src.is_dir():
+                tar.add(src, arcname=".")
+            else:
+                tar.add(src, arcname=src.name)
 
             if metadata:
                 tar_info = tarfile.TarInfo(metadata.name)
