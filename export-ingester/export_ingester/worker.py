@@ -26,6 +26,11 @@ async def run_ingestion(ctx: dict, *, _date: date | None = None):
     async with get_managed_export_ingester(settings) as ingester:
         await ingester.run_sbatch_command(settings.SBATCH_COMMAND)
 
+async def run_video_ingestion(ctx: dict, *, _date: date | None = None):
+    settings: Settings = ctx["settings"]
+    async with get_managed_export_ingester(settings) as ingester:
+        await ingester.run_sbatch_command(settings.SBATCH_VIDEO_COMMAND)
+
 
 async def run_video_ingestion(ctx: dict, *, _date: date | None = None):
     settings: Settings = ctx["settings"]
@@ -44,6 +49,19 @@ async def run_archiving(ctx: dict, *, _date: date | None = None):
     settings: Settings = ctx["settings"]
     async with get_managed_export_ingester(settings) as ingester:
         await ingester.run_sbatch_command(archive_command)
+
+async def run_video_archiving(ctx: dict, *, _date: date | None = None):
+    archive_command = (
+        "sbatch --time=22:00:00 --partition=staging "
+        "--nodes=1 --ntasks=1 --job-name=surf_archive"
+        " --output=archive_%j.out --error=archive_%j.err"
+        " --wrap='surf-archiver-cli archive --mode=video"
+        " 2024-12-19'"
+    )
+    settings: Settings = ctx["settings"]
+    async with get_managed_export_ingester(settings) as ingester:
+        await ingester.run_sbatch_command(archive_command)
+
 
 
 async def run_video_archiving(ctx: dict, *, _date: date | None = None):
