@@ -18,6 +18,8 @@ class PaginatedResponse(BaseModel, Generic[DataT]):
 
 class EventType(StrEnum):
     STITCH = auto()
+    VIDEO = auto()
+    OVERVIEW = auto()
 
 
 class ExportParams(Params):
