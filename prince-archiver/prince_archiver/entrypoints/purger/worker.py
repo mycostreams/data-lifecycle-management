@@ -33,7 +33,7 @@ async def startup(ctx: dict):
     )
 
     ctx["state"] = state
-    
+
     await delete_src(ctx)  # initial run on startup
 
 
