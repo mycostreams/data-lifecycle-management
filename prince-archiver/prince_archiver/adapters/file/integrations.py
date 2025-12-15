@@ -1,8 +1,8 @@
 import asyncio
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import AsyncGenerator
 
 from prince_archiver.definitions import System
 from prince_archiver.domain.value_objects import Checksum
