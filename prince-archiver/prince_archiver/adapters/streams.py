@@ -1,10 +1,11 @@
 import asyncio
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import AsyncGenerator, Awaitable, Callable, Generic, Type, TypeVar
+from typing import Generic, TypeVar
 from uuid import uuid4
 
 from redis.asyncio import Redis
@@ -92,7 +93,7 @@ class Stream:
         start: datetime,
         end: datetime,
         *,
-        msg_cls: Type[AbstractIncomingMessageT],
+        msg_cls: type[AbstractIncomingMessageT],
     ) -> AsyncGenerator[AbstractIncomingMessageT, None]:
         response: list[tuple[bytes, dict[bytes, bytes]]] = await self.redis.xrange(
             name=self.name,
@@ -112,7 +113,7 @@ class Stream:
         self,
         consumer: Consumer,
         *,
-        msg_cls: Type[AbstractIncomingMessageT],
+        msg_cls: type[AbstractIncomingMessageT],
         stop_event: asyncio.Event | None = None,
     ) -> AsyncGenerator[AbstractIncomingMessageT, None]:
         stream_id: int | str = 0
