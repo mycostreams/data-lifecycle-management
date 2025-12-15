@@ -25,7 +25,10 @@ async def delete_src(ctx: dict):
     end = datetime.now(tz=UTC) - state.settings.SRC_LIFESPAN
     start = end - timedelta(hours=3)
 
+    LOGGER.info("Deleting src files before %s", end.isoformat())
+
     async for message in state.stream.range(start, end, msg_cls=IncomingMessage):
+        LOGGER.info("Processing message: %s", message)
         data = message.processed_data()
 
         if data.system not in state.settings.SRC_SYSTEMS_DELETE:
