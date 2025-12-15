@@ -1,9 +1,9 @@
 import logging
 import os
+from zoneinfo import ZoneInfo
 
 from arq import ArqRedis, cron
 from arq.connections import RedisSettings
-from zoneinfo import ZoneInfo
 
 from prince_archiver.adapters.file import PathManager
 from prince_archiver.adapters.streams import Stream
@@ -33,6 +33,8 @@ async def startup(ctx: dict):
     )
 
     ctx["state"] = state
+    
+    await delete_src(ctx)  # initial run on startup
 
 
 class WorkerSettings:
