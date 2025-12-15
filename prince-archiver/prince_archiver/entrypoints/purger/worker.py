@@ -24,6 +24,8 @@ async def startup(ctx: dict):
 
     settings = Settings()
 
+    LOGGER.info(f"SETTINGS: {settings.model_dump_json(indent=2)}")
+
     state = State(
         settings=settings,
         stream=Stream(redis=redis, name=Streams.imaging_events),
