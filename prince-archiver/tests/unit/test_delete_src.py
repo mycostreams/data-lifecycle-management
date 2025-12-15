@@ -56,6 +56,7 @@ async def test_src_dir_not_deleted(stream: Stream):
     src_dir = AsyncMock(SrcDir)
 
     path_manager.get_src_dir.return_value = src_dir
+    src_dir.path = "/data/tsu-exp003/test/path"
 
     state = State(
         settings=Settings(
