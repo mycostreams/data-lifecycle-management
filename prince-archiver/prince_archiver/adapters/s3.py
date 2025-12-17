@@ -12,10 +12,12 @@ class AWSSettings(Protocol):
     AWS_REGION_NAME: str | None
     UPLOAD_MAX_CONCURRENCY: int
 
+
 config = {
     "request_checksum_calculation": "WHEN_REQUIRED",
     "response_checksum_validation": "WHEN_REQUIRED",
 }
+
 
 def file_system_factory(settings: AWSSettings) -> S3FileSystem:
     client_kwargs = {}
@@ -29,7 +31,7 @@ def file_system_factory(settings: AWSSettings) -> S3FileSystem:
         client_kwargs=client_kwargs,
         asynchronous=True,
         max_concurrency=settings.UPLOAD_MAX_CONCURRENCY,
-        config_kwargs=config
+        config_kwargs=config,
     )
 
 
