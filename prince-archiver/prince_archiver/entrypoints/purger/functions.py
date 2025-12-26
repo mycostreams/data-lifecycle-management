@@ -39,7 +39,10 @@ async def delete_src(ctx: dict):
         if await src_dir.exists():
             LOGGER.info("[%s] Deleting src directory", data.ref_id)
             try:
-                await src_dir.rm()
+                if src_dir.is_dir():
+                    await src_dir.rm_tree()
+                else:
+                    await src_dir.rm()
             except FileNotFoundError:
                 LOGGER.info("[%s] Directory was already deleted", data.ref_id)
             except Exception as e:

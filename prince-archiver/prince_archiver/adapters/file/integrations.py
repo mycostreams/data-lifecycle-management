@@ -50,8 +50,14 @@ class SrcDir:
     async def copy(self, target_dir: Path):
         await self.file_system.copy_tree(self.path, target_dir)
 
-    async def rm(self):
+    async def rm_tree(self):
         await self.file_system.rm_tree(self.path)
+
+    async def rm(self):
+        await self.file_system.rm(self.path)
+
+    async def is_dir(self):
+        return self.path.is_dir()
 
     @asynccontextmanager
     async def get_temp_archive(
