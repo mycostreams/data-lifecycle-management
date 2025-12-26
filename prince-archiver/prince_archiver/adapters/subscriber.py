@@ -1,7 +1,7 @@
 import logging
+from collections.abc import Awaitable, Callable
 from contextlib import AsyncExitStack
 from dataclasses import dataclass
-from typing import Awaitable, Callable
 
 from aio_pika import ExchangeType, connect_robust
 from aio_pika.abc import (

@@ -1,10 +1,11 @@
 import asyncio
 import logging
+from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, AsyncGenerator, Callable
+from typing import Any
 
 import s3fs
 
