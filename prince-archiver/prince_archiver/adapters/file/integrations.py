@@ -51,10 +51,10 @@ class SrcDir:
         await self.file_system.copy_tree(self.path, target_dir)
 
     async def rm(self):
-        if self.path.is_dir():
-            await self.file_system.rm_tree(self.path)
-        else:
-            await self.file_system.rm(self.path)
+        # if self.path.is_dir():
+        await self.file_system.rm_tree(self.path)
+        # else:
+        #     await self.file_system.rm(self.path)
 
     async def is_dir(self):
         return self.path.is_dir()
