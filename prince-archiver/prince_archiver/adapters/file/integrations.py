@@ -52,7 +52,10 @@ class SrcDir:
 
     async def rm(self):
         # if self.path.is_dir():
-        await self.file_system.rm_tree(self.path)
+        try:
+            await self.file_system.rm_tree(self.path)
+        except NotADirectoryError:
+            await self.file_system.rm(self.path)
         # else:
         #     await self.file_system.rm(self.path)
 
