@@ -20,6 +20,8 @@ async def startup(ctx: dict):
 
     ctx["settings"] = Settings()
 
+    await run_ingestion(ctx)
+
 
 async def run_ingestion(ctx: dict, *, _date: date | None = None):
     settings: Settings = ctx["settings"]
