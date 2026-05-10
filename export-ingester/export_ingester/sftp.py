@@ -15,7 +15,7 @@ class SSHClient:
     async def remote_sbatch(self, sbatch_command: str) -> str:
         """Executes the sbatch command on the remote server with full logging."""
         try:
-            result = await self.conn.run(sbatch_command, check=False)
+            result = await self.conn.run(f"bash -l -c '{sbatch_command}'", check=False)
 
             logging.info(f"SBATCH command: {sbatch_command}")
             logging.info(f"Exit status: {result.exit_status}")
