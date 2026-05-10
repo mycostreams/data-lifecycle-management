@@ -12,28 +12,28 @@ class SSHClient:
     def __init__(self, conn: asyncssh.SSHClientConnection):
         self.conn = conn
 
-async def remote_sbatch(self, sbatch_command: str) -> str:
-    """Executes the sbatch command on the remote server with full logging."""
-    try:
-        result = await self.conn.run(sbatch_command, check=False)
+    async def remote_sbatch(self, sbatch_command: str) -> str:
+        """Executes the sbatch command on the remote server with full logging."""
+        try:
+            result = await self.conn.run(sbatch_command, check=False)
 
-        logging.info(f"SBATCH command: {sbatch_command}")
-        logging.info(f"Exit status: {result.exit_status}")
+            logging.info(f"SBATCH command: {sbatch_command}")
+            logging.info(f"Exit status: {result.exit_status}")
 
-        if result.stdout:
-            logging.info(f"STDOUT:\n{result.stdout}")
+            if result.stdout:
+                logging.info(f"STDOUT:\n{result.stdout}")
 
-        if result.stderr:
-            logging.error(f"STDERR:\n{result.stderr}")
+            if result.stderr:
+                logging.error(f"STDERR:\n{result.stderr}")
 
-        if result.exit_status != 0:
-            logging.warning("sbatch command failed")
+            if result.exit_status != 0:
+                logging.warning("sbatch command failed")
 
-        return result.stdout
+            return result.stdout
 
-    except Exception as e:
-        logging.exception(f"Unexpected error running sbatch: {e}")
-        return ""
+        except Exception as e:
+            logging.exception(f"Unexpected error running sbatch: {e}")
+            return ""
 
     async def pipe_exports(
         self,
