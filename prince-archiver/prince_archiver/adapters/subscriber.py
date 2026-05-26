@@ -25,6 +25,7 @@ class ExchangeConfig:
 class QueueConfig:
     name: str | None = "state-manager"
     durable: bool = True
+    exclusive: bool = False
 
 
 class ManagedSubscriber:
@@ -65,6 +66,7 @@ class ManagedSubscriber:
         self.queue = await self.channel.declare_queue(
             self.queue_config.name,
             durable=self.queue_config.durable,
+            exclusive=self.queue_config.exclusive,
         )
 
         await self.queue.bind(self.exchange)

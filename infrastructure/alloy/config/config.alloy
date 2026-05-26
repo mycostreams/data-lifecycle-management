@@ -86,9 +86,20 @@ loki.process "pipeline" {
 
   forward_to = [loki.write.grafana_cloud.receiver]
 
-  stage.multiline {
-    firstline = "^\\d{4}-\\d{2}-\\d{2} \\d{1,2}:\\d{2}:\\d{2},\\d{3}"
-    max_wait_time = "3s"
+  // Parse JSON log lines emitted by structlog and promote level/logger as
+  // indexed labels so Grafana can filter by them without a full-text scan.
+  stage.json {
+    expressions = {
+      level  = "level",
+      logger = "logger",
+    }
+  }
+
+  stage.labels {
+    values = {
+      level  = "",
+      logger = "",
+    }
   }
 
 }

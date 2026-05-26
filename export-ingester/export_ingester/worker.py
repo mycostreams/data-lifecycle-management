@@ -2,21 +2,50 @@ import logging
 import os
 from datetime import date
 
+import structlog
 from arq import cron
 from arq.connections import RedisSettings
 from zoneinfo import ZoneInfo
 
 from .ingest import Settings, get_managed_export_ingester
 
+LOGGER = logging.getLogger(__name__)
+
 
 def configure_logging():
-    logging.basicConfig(level=logging.INFO)
+    _pre_chain = [
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.add_logger_name,
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.stdlib.PositionalArgumentsFormatter(),
+        structlog.processors.StackInfoRenderer(),
+    ]
+    structlog.configure(
+        processors=_pre_chain
+        + [structlog.stdlib.ProcessorFormatter.wrap_for_formatter],
+        wrapper_class=structlog.stdlib.BoundLogger,
+        context_class=dict,
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        cache_logger_on_first_use=True,
+    )
+    formatter = structlog.stdlib.ProcessorFormatter(
+        foreign_pre_chain=_pre_chain,
+        processors=[
+            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+            structlog.processors.JSONRenderer(),
+        ],
+    )
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+    root = logging.getLogger()
+    root.addHandler(handler)
+    root.setLevel(logging.INFO)
 
 
 async def startup(ctx: dict):
     configure_logging()
 
-    logging.info("Starting up")
+    LOGGER.info("Starting up")
 
     ctx["settings"] = Settings()
 
@@ -62,6 +91,9 @@ async def run_video_archiving(ctx: dict, *, _date: date | None = None):
 
 
 class WorkerSettings:
+    health_check_key = "arq:health:export-ingester"
+    health_check_interval = 300
+
     cron_jobs = [
         cron(run_archiving, hour={1}, minute={21}),
         cron(run_video_ingestion, hour={7}, minute={16}),
