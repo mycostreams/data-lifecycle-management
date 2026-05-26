@@ -33,6 +33,9 @@ def _apply_structlog(pre_chain):
 
 
 def configure_logging(job_id: UUID, file: Path):
+    if logging.getLogger().handlers:
+        return
+
     file.parent.mkdir(exist_ok=True, parents=True)
 
     pre_chain = _build_pre_chain(
@@ -64,6 +67,9 @@ def configure_logging(job_id: UUID, file: Path):
 
 
 def configure_remote_logging():
+    if logging.getLogger().handlers:
+        return
+
     pre_chain = _build_pre_chain()
     _apply_structlog(pre_chain)
 

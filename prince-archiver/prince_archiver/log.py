@@ -4,6 +4,10 @@ import structlog
 
 
 def configure_logging():
+    root = logging.getLogger()
+    if root.handlers:
+        return
+
     _pre_chain = [
         structlog.stdlib.add_log_level,
         structlog.stdlib.add_logger_name,
