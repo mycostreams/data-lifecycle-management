@@ -33,10 +33,12 @@ def _apply_structlog(pre_chain):
 
 
 def configure_logging(job_id: UUID, file: Path):
-    if logging.getLogger().handlers:
-        return
-
     file.parent.mkdir(exist_ok=True, parents=True)
+
+    root = logging.getLogger()
+
+    if any(isinstance(h, logging.handlers.RotatingFileHandler) for h in root.handlers):
+        return
 
     pre_chain = _build_pre_chain(
         [structlog.processors.CallsiteParameterAdder([])] if False else None,
@@ -55,7 +57,6 @@ def configure_logging(job_id: UUID, file: Path):
     handler.setFormatter(formatter)
     handler.setLevel(logging.INFO)
 
-    root = logging.getLogger()
     root.addHandler(handler)
     root.setLevel(logging.DEBUG)
 
