@@ -39,9 +39,7 @@ def configure_logging(job_id: UUID, file: Path):
     file.parent.mkdir(exist_ok=True, parents=True)
 
     pre_chain = _build_pre_chain(
-        [structlog.processors.CallsiteParameterAdder([])]
-        if False
-        else None,
+        [structlog.processors.CallsiteParameterAdder([])] if False else None,
     )
     _apply_structlog(pre_chain)
 
@@ -53,9 +51,7 @@ def configure_logging(job_id: UUID, file: Path):
         ],
     )
 
-    handler = logging.handlers.RotatingFileHandler(
-        str(file), mode="a", backupCount=3
-    )
+    handler = logging.handlers.RotatingFileHandler(str(file), mode="a", backupCount=3)
     handler.setFormatter(formatter)
     handler.setLevel(logging.INFO)
 
