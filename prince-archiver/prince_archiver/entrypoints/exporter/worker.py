@@ -81,6 +81,8 @@ async def shutdown(ctx: dict):
 
 class WorkerSettings:
     queue_name = "arq:queue-exporter"
+    health_check_key = "arq:health:exporter"
+    health_check_interval = 300
 
     functions = [run_export]
     on_startup = startup

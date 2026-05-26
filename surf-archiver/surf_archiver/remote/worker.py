@@ -71,6 +71,8 @@ async def startup(ctx: dict):
 
 class WorkerSettings:
     queue_name = "arq:queue-surf-archiver-remote"
+    health_check_key = "arq:health:surf-archiver-remote"
+    health_check_interval = 300
 
     cron_jobs = [
         cron(

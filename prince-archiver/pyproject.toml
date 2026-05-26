@@ -20,6 +20,7 @@ redis = "^5.2.0"
 s3fs = { git = "https://github.com/fsspec/s3fs.git#ff8e4fe"}
 sentry-sdk = "^1.45.0"
 sqlalchemy = {extras = ["postgresql-asyncpg"], version = "^2.0.29"}
+structlog = "^24.0.0"
 tenacity = "^9.0.0"
 uvicorn = "^0.30.0"
 # boto3 = "1.35.99"
