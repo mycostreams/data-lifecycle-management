@@ -1,5 +1,19 @@
 # DevOps Runbook
 
+## Contributing workflow
+
+All changes must go through a pull request:
+
+1. Create a branch from `main`:
+   ```bash
+   git checkout -b your-feature-or-fix
+   ```
+2. Push the branch and open a pull request against `main`.
+3. GitHub Actions CI must pass (linting, tests) before the PR can be merged.
+4. Merge only after CI is green — do not push directly to `main`.
+
+---
+
 ## Deployment models
 
 There are two distinct deployment models in this repo.
