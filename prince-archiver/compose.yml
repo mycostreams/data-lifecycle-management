@@ -17,7 +17,6 @@ services:
       "uvicorn",
       "--factory",
       "--host=0.0.0.0",
-      "--log-config=/app/prince_archiver/logging.yml",
       "prince_archiver.entrypoints.state_manager.app:create_app"
     ]
     ports:
@@ -44,24 +43,38 @@ services:
   exporter:
     image: mycostreams/prince-archiver:${TAG:-latest}
     command: ["arq", "prince_archiver.entrypoints.exporter.WorkerSettings"]
-    environment: 
+    environment:
       <<: *redis-env-variable
       SRC_DIR: /data
     depends_on:
       prestart:
         condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-m", "arq",
+             "prince_archiver.entrypoints.exporter.WorkerSettings", "--check"]
+      interval: 10m
+      timeout: 30s
+      retries: 3
+      start_period: 2m
     networks:
       - default
 
   purger:
     image: mycostreams/prince-archiver:${TAG:-latest}
     command: ["arq", "prince_archiver.entrypoints.purger.WorkerSettings"]
-    environment: 
+    environment:
       <<: *redis-env-variable
       SRC_DIR: /data
     depends_on:
       prestart:
         condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-m", "arq",
+             "prince_archiver.entrypoints.purger.WorkerSettings", "--check"]
+      interval: 10m
+      timeout: 30s
+      retries: 3
+      start_period: 2m
     networks:
       - default
 
