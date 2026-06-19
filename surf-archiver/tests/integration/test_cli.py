@@ -8,7 +8,6 @@ from typer.testing import CliRunner
 
 from surf_archiver.cli import app
 from surf_archiver.config import Config
-from surf_archiver.test_utils import MessageWaiter
 
 
 @pytest.fixture(name="object_store_data")
@@ -38,15 +37,12 @@ def fixture_object_store_data(
 
 @pytest.fixture(name="config")
 def fixture_config(
-    connection_url: str,
     random_str: str,
     tmp_path: Path,
 ) -> Config:
     return Config(
         target_dir=tmp_path,
-        connection_url=connection_url,
         bucket=random_str,
-        exchange_name=random_str,
         log_file=tmp_path / "test.log",
     )
 
@@ -79,7 +75,6 @@ def test_app(
     runner: CliRunner,
     config_file: Path,
     config: Config,
-    message_waiter: MessageWaiter,
 ):
     cmd = ["archive", "--mode=images", f"--config-path={config_file}"]
     result = runner.invoke(app, cmd)
@@ -88,6 +83,3 @@ def test_app(
 
     assert config.log_file and config.log_file.exists()
     assert (config.target_dir / "images" / "test-id" / "20000101.tar").exists()
-
-    message_waiter.wait()
-    assert message_waiter.message

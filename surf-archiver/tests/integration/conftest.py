@@ -1,13 +1,9 @@
-import threading
 from typing import Generator
 
 import boto3
 import pytest
 from mypy_boto3_s3 import S3Client
 from testcontainers.localstack import LocalStackContainer
-from testcontainers.rabbitmq import RabbitMqContainer
-
-from surf_archiver.test_utils import MessageWaiter, Subscriber, SubscriberConfig
 
 
 @pytest.fixture(name="localstack", scope="session")
@@ -42,51 +38,3 @@ def fixture_s3_client(
     yield client
 
     client.close()
-
-
-@pytest.fixture(scope="session", name="rabbitmq")
-def fixture_rabbitmq() -> Generator[RabbitMqContainer, None, None]:
-    rabbitmq = RabbitMqContainer()
-
-    rabbitmq.start()
-
-    yield rabbitmq
-
-    rabbitmq.stop()
-
-
-@pytest.fixture(name="connection_url")
-def fixture_connection_url(rabbitmq: RabbitMqContainer) -> str:
-    username = rabbitmq.username
-    password = rabbitmq.password
-    host = rabbitmq.get_container_host_ip()
-    port = rabbitmq.get_exposed_port(rabbitmq.port)
-
-    return f"amqp://{username}:{password}@{host}:{port}"
-
-
-@pytest.fixture(name="message_waiter")
-def fixture_message_waiter(
-    connection_url: str,
-    random_str: str,
-) -> Generator[MessageWaiter, None, None]:
-    def _target(message_waiter: MessageWaiter, consume_event: threading.Event):
-        config = SubscriberConfig(
-            connection_url=connection_url,
-            exchange=random_str,
-        )
-
-        subscriber = Subscriber(config, consume_event)
-        subscriber.consume(message_waiter, timeout=3)
-
-    message_waiter = MessageWaiter()
-    consume_event = threading.Event()
-
-    thread = threading.Thread(target=_target, args=(message_waiter, consume_event))
-    thread.start()
-
-    consume_event.wait(timeout=2.0)
-
-    yield message_waiter
-
-    thread.join()

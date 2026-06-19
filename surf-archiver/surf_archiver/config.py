@@ -20,9 +20,6 @@ class Config(BaseSettings):
     bucket: str = "prince-archiver-dev"
     target_dir: Path = HOME_PATH / "prince"
 
-    connection_url: str = "amqp://guest:guest@localhost:5672"
-    exchange_name: str = "surf-data-archive"
-
     model_config = SettingsConfigDict(env_prefix="surf_archiver_")
 
 
