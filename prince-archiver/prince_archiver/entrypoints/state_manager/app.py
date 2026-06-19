@@ -7,6 +7,7 @@ from fastapi import FastAPI
 
 from prince_archiver.adapters.s3 import managed_file_system
 from prince_archiver.api import router
+from prince_archiver.log import configure_logging
 from prince_archiver.models import init_mappers
 
 from .state import State, get_state
@@ -39,6 +40,7 @@ async def lifespan(_: FastAPI, *, state: State) -> AsyncIterator[AppState]:
 
 
 def create_app(*, _state: State | None = None):
+    configure_logging()
     state = _state or get_state()
 
     app = FastAPI(

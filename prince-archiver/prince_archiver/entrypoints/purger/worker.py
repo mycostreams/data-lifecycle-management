@@ -39,6 +39,8 @@ async def startup(ctx: dict):
 
 class WorkerSettings:
     queue_name = "arq:queue-purger"
+    health_check_key = "arq:health:purger"
+    health_check_interval = 300
 
     cron_jobs = [
         cron(delete_src, hour={*range(0, 24, 2)}, minute={0}),

@@ -88,6 +88,7 @@ async def test_managed_subscriber(
         queue_config=QueueConfig(
             name=None,
             durable=False,
+            exclusive=True,
         ),
     )
     async with subscriber:

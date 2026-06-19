@@ -6,17 +6,23 @@ services:
     build:
       context: .
     command: ["arq", "export_ingester.worker.WorkerSettings"]
-    environment: 
+    environment:
       REDIS_DSN: redis://redis:6379
       BASE_URL: ${BASE_URL:-http://mock-api:8000}
       SFTP_USERNAME: ${SFTP_USERNAME:-foo}
       SFTP_PASSWORD: ${SFTP_PASSWORD:-pass}
       SFTP_HOST: ${SFTP_HOST:-sftp}
       SBATCH_COMMAND: ${SBATCH_COMMAND:-sbatch}
-
     depends_on:
       redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-m", "arq",
+             "export_ingester.worker.WorkerSettings", "--check"]
+      interval: 10m
+      timeout: 30s
+      retries: 3
+      start_period: 2m
     volumes:
       - "./export_ingester:/app/export_ingester"
 

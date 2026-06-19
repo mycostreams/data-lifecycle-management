@@ -16,7 +16,10 @@ class Ingester(AbstractIngester):
             try:
                 await self.handler(message)
             except ServiceLayerException:
-                pass
+                LOGGER.warning(
+                    "Skipped message due to ServiceLayerException",
+                    exc_info=True,
+                )
             except Exception as err:
                 LOGGER.exception(err)
 
