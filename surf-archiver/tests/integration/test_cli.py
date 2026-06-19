@@ -81,7 +81,7 @@ def test_app(
     config: Config,
     message_waiter: MessageWaiter,
 ):
-    cmd = ["archive", "2000-01-01", "--mode=images", f"--config-path={config_file}"]
+    cmd = ["archive", "--mode=images", f"--config-path={config_file}"]
     result = runner.invoke(app, cmd)
 
     assert result.exit_code == 0

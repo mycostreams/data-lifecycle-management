@@ -1,7 +1,6 @@
 import logging
 import textwrap
 from contextlib import asynccontextmanager
-from datetime import date
 from typing import Any, AsyncGenerator, Optional
 from uuid import UUID, uuid4
 
@@ -16,7 +15,7 @@ class ArchiveClient:
     COMMAND = textwrap.dedent(
         """\
         nohup surf-archiver-cli archive \\
-            --job-id={job_id} --mode={mode} {date} > /dev/null 2>&1 &
+            --job-id={job_id} --mode={mode} > /dev/null 2>&1 &
         """
     )
 
@@ -25,7 +24,6 @@ class ArchiveClient:
 
     async def archive(
         self,
-        date_: date,
         job_id: Optional[UUID] = None,
         mode: Mode = Mode.STITCH,
         *,
@@ -33,9 +31,8 @@ class ArchiveClient:
     ):
         job_id = job_id or uuid4()
 
-        LOGGER.info("[%s] Archiving %s", job_id, date_)
+        LOGGER.info("[%s] Archiving mode=%s", job_id, mode.value)
         cmd = self._build_command(
-            date=date_.isoformat(),
             mode=mode.value,
             job_id=job_id.hex,
         )

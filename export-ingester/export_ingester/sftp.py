@@ -1,4 +1,5 @@
 import logging
+import shlex
 from contextlib import asynccontextmanager
 from functools import partial
 from typing import AsyncGenerator, Callable
@@ -15,24 +16,27 @@ class SSHClient:
     async def remote_sbatch(self, sbatch_command: str) -> str:
         """Executes the sbatch command on the remote server with full logging."""
         try:
-            result = await self.conn.run(f"bash -l -c '{sbatch_command}'", check=False)
+            cmd = f"bash -l -c {shlex.quote(sbatch_command)}"
+            result = await self.conn.run(cmd, check=False)
 
-            logging.info(f"SBATCH command: {sbatch_command}")
-            logging.info(f"Exit status: {result.exit_status}")
+            logging.info("SBATCH command submitted: %s", sbatch_command)
+            logging.info("SBATCH exit status: %d", result.exit_status)
 
             if result.stdout:
-                logging.info(f"STDOUT:\n{result.stdout}")
+                logging.info("SBATCH stdout:\n%s", result.stdout)
 
             if result.stderr:
-                logging.error(f"STDERR:\n{result.stderr}")
+                logging.error("SBATCH stderr:\n%s", result.stderr)
 
             if result.exit_status != 0:
-                logging.warning("sbatch command failed")
+                logging.warning(
+                    "SBATCH command failed exit_status=%d", result.exit_status
+                )
 
             return result.stdout
 
         except Exception as e:
-            logging.exception(f"Unexpected error running sbatch: {e}")
+            logging.exception("Unexpected error running sbatch: %s", e)
             return ""
 
     async def pipe_exports(

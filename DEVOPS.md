@@ -2,7 +2,7 @@
 
 ## Contributing workflow
 
-All changes must go through a pull request:
+All changes must go through a pull request 
 
 1. Create a branch from `main`:
    ```bash

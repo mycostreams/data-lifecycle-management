@@ -1,5 +1,6 @@
 import logging
 from contextlib import AsyncExitStack
+from datetime import date
 from uuid import UUID
 
 from .archiver import AbstractManagedArchiver, ArchiveEntry, ArchiveParams
@@ -28,7 +29,7 @@ async def run_archiving(
 
         payload = Payload(
             job_id=archive_params.job_id,
-            date=archive_params.date,
+            date=date.today(),
             archives=archives,
         )
         await publisher.publish(payload)

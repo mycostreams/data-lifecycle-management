@@ -26,7 +26,6 @@ def now():
 
 @app.command()
 def archive(
-    date: datetime,
     job_id: Annotated[UUID, typer.Option(default_factory=uuid4)],
     mode: Annotated[Mode, typer.Option()] = Mode.STITCH,
     config_path: Annotated[Path, typer.Option()] = DEFAULT_CONFIG_FILE,
@@ -45,7 +44,6 @@ def archive(
     )
 
     archive_params = ArchiveParams(
-        date=date,
         mode=mode,
         job_id=job_id or uuid4(),
     )
