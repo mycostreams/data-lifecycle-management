@@ -1,4 +1,3 @@
-from datetime import date
 from unittest.mock import AsyncMock
 from uuid import UUID
 
@@ -21,7 +20,6 @@ def fixture_experiment_file_system() -> ExperimentFileSystem:
 @pytest.fixture(name="archive_params")
 def fixture_archive_params() -> ArchiveParams:
     return ArchiveParams(
-        date=date(2000, 1, 1),
         mode=Mode.STITCH,
         job_id=UUID("e889038f94224655b7374162d5e9a909"),
     )

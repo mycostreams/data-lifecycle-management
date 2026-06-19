@@ -42,16 +42,17 @@ class Archiver(AbstractArchiver):
         Files will be bundled per experiment id.
         """
         LOGGER.info(
-            "Archiving %s/%s",
-            archive_params.mode,
-            archive_params.date,
+            "Starting archive run mode=%s job_id=%s",
+            archive_params.mode.value,
+            archive_params.job_id,
         )
 
         archives: list[ArchiveEntry] = []
         async for target_archive in self._get_target_archives(archive_params):
             LOGGER.info(
-                "Creating archive for %s",
+                "Creating archive experiment=%s target=%s",
                 target_archive.experiment_id,
+                target_archive.target,
             )
             await self._create_archive(target_archive)
 
@@ -62,7 +63,11 @@ class Archiver(AbstractArchiver):
                 )
             )
 
-        LOGGER.info("Archiving complete")
+        LOGGER.info(
+            "Archive run complete mode=%s archives_created=%d",
+            archive_params.mode.value,
+            len(archives),
+        )
 
         return archives
 
@@ -73,7 +78,7 @@ class Archiver(AbstractArchiver):
         grouped_files = await self.experiment_file_system.list_files_by_date(
             archive_params.mode
         )
-        LOGGER.info("Count %i", len(grouped_files))
+        LOGGER.info("Pending archive groups found count=%d", len(grouped_files))
 
         for info, files in grouped_files.items():
             experiment_id, date = info
@@ -87,7 +92,7 @@ class Archiver(AbstractArchiver):
     async def _create_archive(self, target_archive: _TargetArchive):
         with self.archive_file_system.get_temp_dir() as temp_dir:
             src_files = target_archive.src_files
-            LOGGER.info("Num_files %i", len(src_files))
+            LOGGER.info("Downloading source files count=%d", len(src_files))
             await self.experiment_file_system.get_files(src_files, temp_dir.path)
             await self.archive_file_system.add(temp_dir, target_archive.target)
 

@@ -1,6 +1,6 @@
 import logging
 import os
-from datetime import date, timedelta
+from datetime import timedelta
 from typing import Optional
 from uuid import UUID, uuid4
 
@@ -22,8 +22,6 @@ class Settings(BaseSettings):
     PASSWORD: str
     HOST: str = "archive.surfsara.nl"
 
-    ARCHIVE_TRANSITION_DAYS: int = 1
-
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -39,21 +37,16 @@ class CronArchiver:
         self,
         ctx: dict,
         *,
-        _date: Optional[date] = None,
         _job_id: Optional[UUID] = None,
     ):
         job_id = _job_id or uuid4()
 
-        settings: Settings = ctx["settings"]
         client_factory: ArchiveClientFactory = ctx["client_factory"]
 
-        delta = timedelta(days=settings.ARCHIVE_TRANSITION_DAYS)
-        archive_files_from = _date or date.today() - delta
-
-        LOGGER.info("[%s] Initiating archiving for %s", job_id, archive_files_from)
+        LOGGER.info("[%s] Initiating archiving", job_id)
 
         async with client_factory.get_managed_client() as client:
-            await client.archive(archive_files_from, job_id=job_id, mode=self.mode)
+            await client.archive(job_id=job_id, mode=self.mode)
 
 
 async def startup(ctx: dict):
