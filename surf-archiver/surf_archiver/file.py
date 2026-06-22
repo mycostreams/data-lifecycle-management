@@ -116,11 +116,18 @@ class ArchiveFileSystem:
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(self.pool, self._add, temp_dir, target)
 
+    def delete(self, path: Path) -> None:
+        (self.base_path / path).unlink(missing_ok=True)
+
     def _add(self, temp_dir: _TempDir, target: Path):
         target = self.base_path / target
         target.parent.mkdir(parents=True, exist_ok=True)
-        with TarFile.open(target, "w") as tar:
-            tar.add(temp_dir.path, arcname=".")
+        try:
+            with TarFile.open(target, "w") as tar:
+                tar.add(temp_dir.path, arcname=".")
+        except Exception:
+            target.unlink(missing_ok=True)
+            raise
 
     @staticmethod
     @contextmanager

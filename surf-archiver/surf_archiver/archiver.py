@@ -96,9 +96,21 @@ class Archiver(AbstractArchiver):
             await self.experiment_file_system.get_files(src_files, temp_dir.path)
             await self.archive_file_system.add(temp_dir, target_archive.target)
 
-            await asyncio.gather(
+            results = await asyncio.gather(
                 *[self.experiment_file_system.tag(file) for file in src_files],
+                return_exceptions=True,
             )
+
+            failures = [r for r in results if isinstance(r, Exception)]
+            if failures:
+                LOGGER.error(
+                    "S3 tagging failed for %d/%d files in %s — rolling back tar",
+                    len(failures),
+                    len(src_files),
+                    target_archive.target,
+                )
+                self.archive_file_system.delete(target_archive.target)
+                raise failures[0]
 
 
 @dataclass
