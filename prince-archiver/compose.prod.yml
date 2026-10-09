@@ -34,7 +34,7 @@ services:
       <<: [*aws-env-variables, *sentry-env-variables]
     volumes:
       - prince_mount:/data/prince/Images:ro
-      - tsu_exp002_mount:/data/tsu-exp002/Video:ro
+      - tsu_exp002_mount:/data/tsu-exp002:ro
       - tsu_exp003_mount:/data/tsu-exp003:ro
     labels: *log-labels
     extra_hosts:
@@ -50,7 +50,7 @@ services:
       SRC_LIFESPAN: ${SRC_LIFESPAN}
     volumes:
       - prince_mount:/data/prince/Images
-      - tsu_exp002_mount:/data/tsu-exp002/Video
+      - tsu_exp002_mount:/data/tsu-exp002
       - tsu_exp003_mount:/data/tsu-exp003
     labels: *log-labels
     extra_hosts:
@@ -88,6 +88,10 @@ volumes:
       device: //prince.amolf.nl/Data/Prince2/Images
       o: username=${AMOLF_USERNAME},password=${AMOLF_PASSWORD}
   tsu_exp002_mount:
+    driver_opts:
+      type: cifs
+      device: //tsu-exp002.amolf.nl/Data
+      o: username=${AMOLF_USERNAME},password=${AMOLF_PASSWORD}
   tsu_exp003_mount:
     driver_opts:
       type: cifs

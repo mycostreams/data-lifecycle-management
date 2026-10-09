@@ -103,7 +103,7 @@ class WorkerSettings:
         cron(run_archiving, hour={1}, minute={21}),
         cron(run_video_ingestion, hour={7}, minute={16}),
         cron(run_video_archiving, hour={18}, minute={21}),
-        cron(run_ingestion, hour={11}, minute={21}),
+        cron(run_ingestion, hour={4}, minute={21}),
     ]
     timezone = ZoneInfo("Europe/Amsterdam")
 
