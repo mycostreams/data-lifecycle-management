@@ -75,6 +75,7 @@ async def run_video_ingestion(ctx: dict, *, _date: date | None = None):
 _ARCHIVE_SBATCH = (
     "sbatch --time=22:00:00 --partition=staging --nodes=1 --ntasks=1 --mem=64G"
     " --job-name=surf_archive"
+    " --mail-type=FAIL,TIME_LIMIT --mail-user=s.vstaalduine@amolf.nl"
     " --output=archive_%j.out --error=archive_%j.err"
     " --wrap='surf-archiver-cli archive --mode={mode}'"
 )

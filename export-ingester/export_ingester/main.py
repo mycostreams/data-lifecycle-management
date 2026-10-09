@@ -12,6 +12,7 @@ async def main():
     archive_command = (
         "sbatch --time=22:00:00 --partition=staging --nodes=1"
         " --ntasks=1 --mem=64G --job-name=surf_archive --output=archive_%j.out"
+        " --mail-type=FAIL,TIME_LIMIT --mail-user=s.vstaalduine@amolf.nl"
         " --error=archive_%j.err --wrap='surf-archiver-cli archive"
         " --mode=images 2024-12-19'"
     )
