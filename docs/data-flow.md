@@ -112,7 +112,11 @@ July starts mid-month; October is 12 days in. ARETHA (tsu-exp002/003) idle in Oc
 | tsu-exp003 | stitch | 2026-08 | 7727 | 11.24 | 362.7 | 1.46 | 122 |
 | tsu-exp003 | stitch | 2026-09 | 2781 | 4.29 | 153.1 | 1.54 | 50 |
 
-Derived (August = busiest full month):
+Longer view (state DB records start January 2026): Jan–Sep 2026 = 108 TB, ~12 TB/month, ~0.4 TB/day;
+peak March 2026 = 22 TB (videos ~0.67 GB each that month); ARETHA plates 74%, video 15%, PRINCE 12%.
+Monthly CSV and trend chart: docs repo, `presentations/2026-10-local-compute/data/transfer_monthly.csv`.
+
+Derived (August, a typical busy month):
 - **Ingest:** 14.5 TB/month → ~0.47 TB/day, peak day ~0.47 TB (exp003 363 + video 64 + PRINCE 40 GB). ~27 TB in 90 days.
 - **Frames:** ~250 ARETHA plate frames/day + ~50 PRINCE frames/day.
 - **GPU need if every frame got graph extraction:** ~300 frames × ~15 min ≈ 75 GPU-h/day → 3–4 GPUs busy around the clock. Closed loop alone (a handful of plates): 1 GPU.
