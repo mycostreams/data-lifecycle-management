@@ -119,7 +119,7 @@ Monthly CSV and trend chart: docs repo, `presentations/2026-10-local-compute/dat
 Derived (August, a typical busy month):
 - **Ingest:** 14.5 TB/month → ~0.47 TB/day, peak day ~0.47 TB (exp003 363 + video 64 + PRINCE 40 GB). ~27 TB in 90 days.
 - **Frames:** ~250 ARETHA plate frames/day + ~50 PRINCE frames/day.
-- **GPU need if every frame got graph extraction:** ~300 frames × ~15 min ≈ 75 GPU-h/day → 3–4 GPUs busy around the clock. Closed loop alone (a handful of plates): 1 GPU.
+- **If every frame got graph extraction:** only segmentation (~4 min/frame) runs on the GPU; graph extraction (~9 min on 16 cores) is CPU. ~240 frames/day ≈ 16 GPU-h + ~600 CPU core-h a day: one GPU, more cores. Closed loop alone (a handful of plates): 1 GPU.
 - **Local hot storage (decided):** raw data only for ~3 days, for closed-loop plates; older data is archived. Even the *full* stream for 3 days is only ~1.5 TB, so size for all of it plus derived outputs (~5–10 TB usable).
 - **Storage today:** S3 keeps 14 days ≈ 6.5 TB working set; keeping a year of raw ≈ 170 TB.
 
