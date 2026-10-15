@@ -13,6 +13,13 @@ class Settings(BaseSettings):
     BASE_URL: HttpUrl
     SBATCH_COMMAND: str
     SBATCH_VIDEO_COMMAND: str = "sbatch /home/svstaalduine/orchestrator/orchestrator/bash_scripts/daily_videos.sh /scratch-shared/amftrack_prod/daily_video"
+    SBATCH_OVERVIEW_COMMAND: str = (
+        "sbatch /home/svstaalduine/orchestrator/orchestrator/"
+        "bash_scripts/daily_overview.sh"
+    )
+    # Off until daily_overview has backfilled Dropbox: archiving tags `archived=true`,
+    # and the bucket lifecycle deletes such objects 7 days later (orchestrator#117).
+    OVERVIEW_ARCHIVE_ENABLED: bool = False
     TIME_RANGE: timedelta = timedelta(days=4)
     model_config = SettingsConfigDict(
         env_file=Path(__file__).parent.parent / ".env",

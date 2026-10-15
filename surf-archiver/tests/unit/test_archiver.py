@@ -110,3 +110,23 @@ async def test_partial_tagging_failure_rolls_back_tar(
         await archiver.archive(archive_params)
 
     archive_file_system.delete.assert_called_once()
+
+
+async def test_empty_experiment_id_is_archived_as_unassigned(
+    archive_params: ArchiveParams,
+):
+    experiment_file_system = AsyncMock(ExperimentFileSystem)
+    key = "test-bucket/overview/<empty>/20251211/114335.tar"
+    experiment_file_system.list_files_by_date.return_value = {
+        ("<empty>", "20251211"): [key]
+    }
+    archive_file_system = AsyncMock(ArchiveFileSystem)
+    archive_file_system.exists.return_value = False
+
+    archives = await Archiver(experiment_file_system, archive_file_system).archive(
+        ArchiveParams(mode=Mode.OVERVIEW, job_id=archive_params.job_id)
+    )
+
+    assert archives == [
+        ArchiveEntry(path="overview/unassigned/20251211.tar", src_keys=[key])
+    ]

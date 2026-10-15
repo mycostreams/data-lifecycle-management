@@ -82,6 +82,10 @@ class Archiver(AbstractArchiver):
 
         for info, files in grouped_files.items():
             experiment_id, date = info
+            # ARETHA's setup-week overviews (Dec 2025 - Jan 2026) carry no experiment
+            # id; S3 holds them under the literal `<empty>`. Tape gets a readable name.
+            if experiment_id == "<empty>":
+                experiment_id = "unassigned"
             tar_name = f"{date}.tar"
             path = Path(archive_params.mode.value, experiment_id, tar_name)
             if not self.archive_file_system.exists(path):

@@ -95,6 +95,21 @@ async def run_video_archiving(ctx: dict, *, _date: date | None = None):
         await ingester.run_sbatch_command(archive_command)
 
 
+async def run_overview_ingestion(ctx: dict, *, _date: date | None = None):
+    settings: Settings = ctx["settings"]
+    async with get_managed_export_ingester(settings) as ingester:
+        await ingester.run_sbatch_command(settings.SBATCH_OVERVIEW_COMMAND)
+
+
+async def run_overview_archiving(ctx: dict, *, _date: date | None = None):
+    settings: Settings = ctx["settings"]
+    if not settings.OVERVIEW_ARCHIVE_ENABLED:
+        LOGGER.info("Overview archiving disabled (OVERVIEW_ARCHIVE_ENABLED=false)")
+        return
+    async with get_managed_export_ingester(settings) as ingester:
+        await ingester.run_sbatch_command(_ARCHIVE_SBATCH.format(mode="overview"))
+
+
 class WorkerSettings:
     health_check_key = "arq:health:export-ingester"
     health_check_interval = 300
@@ -104,6 +119,8 @@ class WorkerSettings:
         cron(run_video_ingestion, hour={7}, minute={16}),
         cron(run_video_archiving, hour={18}, minute={21}),
         cron(run_ingestion, hour={11}, minute={21}),
+        cron(run_overview_ingestion, hour={8}, minute={16}),
+        cron(run_overview_archiving, hour={22}, minute={21}),
     ]
     timezone = ZoneInfo("Europe/Amsterdam")
 
