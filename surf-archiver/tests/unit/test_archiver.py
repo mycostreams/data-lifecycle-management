@@ -59,7 +59,7 @@ async def test_already_archived_files_are_skipped(
 
 async def test_tar_creation_failure_propagates(
     archive_params: ArchiveParams,
-    experiment_file_system: ExperimentFileSystem,
+    experiment_file_system: AsyncMock,
 ):
     archive_file_system = AsyncMock(ArchiveFileSystem)
     archive_file_system.exists.return_value = False
@@ -75,7 +75,7 @@ async def test_tar_creation_failure_propagates(
 
 async def test_tagging_failure_rolls_back_tar(
     archive_params: ArchiveParams,
-    experiment_file_system: ExperimentFileSystem,
+    experiment_file_system: AsyncMock,
 ):
     archive_file_system = AsyncMock(ArchiveFileSystem)
     archive_file_system.exists.return_value = False
