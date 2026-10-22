@@ -21,9 +21,10 @@ flowchart LR
   end
 
   subgraph SURF["SURF"]
-    OS[("SURF Object Store<br/>s3://mycostreams-raw-data<br/>images/ · videos/<br/>expire 14 d; 7 d after archived=true")]
+    OS[("SURF Object Store<br/>s3://mycostreams-raw-data<br/>images/ · videos/ · overview/<br/>live rules: expire 7 d after archived=true,<br/>30 d after archived=false")]
     subgraph SNEL["Snellius"]
       ARCH["surf_archive<br/>staging · 1 task · 64G · ≤22 h"]
+      OVW["daily_overview<br/>newest snapshot per plate → JPEG<br/>staging · 1 cpu"]
       DL["download + untar<br/>staging · 1 cpu · ≤50 jobs×20 objects<br/>≤1000 objects/run (tag processed≠true)"]
       ST["stitch (amftrack, dask, CPU)<br/>fat_rome · 128 cpu · 16 frames/job<br/>~48–68 GiB per frame"]
       VID["render mp4 per position<br/>(flow_analysis_comps)<br/>fat_rome · 128 cpu · 20/job"]
@@ -55,8 +56,11 @@ flowchart LR
   EXP -- "1 tar per event, continuous<br/>~0.47 TB/day" --> OS
   PUR -- "every 2 h: delete raw > 8 h old" --> AMOLF
 
-  EI -- "daily 01:21 images · 18:21 videos" --> ARCH
-  EI -- "daily 11:21 plates · 07:16 videos" --> DL
+  EI -- "daily 01:21 images · 18:21 videos ·<br/>22:21 overview (once enabled)" --> ARCH
+  EI -- "daily 04:21 plates (repo says 11:21, #134) · 07:16 videos" --> DL
+  EI -- "daily 08:16" --> OVW
+  OS -- "newest overview per plate" --> OVW
+  OVW -- "PLATE_OVERVIEW/EEE/plate_YYYYMMDD-HHMM.jpg,<br/>tag processed=true" --> DBX
 
   OS -- "pull day's tars" --> ARCH
   ARCH -- "nightly: 1 tar per plate-day" --> TAPE
@@ -86,12 +90,16 @@ flowchart LR
 
 ## Daily schedule (export-ingester cron, Europe/Amsterdam)
 
+The deployed images job runs at 04:21; `worker.py` says 11:21 and the difference is in no commit (#134).
+
 | Time  | Job | Snellius resources |
 |-------|-----|--------------------|
 | 01:21 | `surf_archive --mode=images` → tape | staging, 1 task, 64G, ≤22 h |
+| 04:21 | `daily.sh` (`SBATCH_COMMAND`) → download → stitch → Dropbox | staging launcher; fat_rome 128 cpu for stitching |
 | 07:16 | `daily_videos.sh` → download → render mp4 → Dropbox | staging launcher; fat_rome 128 cpu for rendering |
-| 11:21 | `daily.sh` (`SBATCH_COMMAND`) → download → stitch → Dropbox | staging launcher; fat_rome 128 cpu for stitching |
+| 08:16 | `daily_overview.sh` → newest overview per plate → JPEG → Dropbox `DATA/PLATE_OVERVIEW` | staging, 1 cpu |
 | 18:21 | `surf_archive --mode=videos` → tape | staging, 1 task, 64G, ≤22 h |
+| 22:21 | `surf_archive --mode=overview` → tape (empty ids as `overview/unassigned/`); off until `OVERVIEW_ARCHIVE_ENABLED=true` | staging, 1 task, 64G, ≤22 h |
 
 Not run daily (on-demand, Snakemake/legacy): segmentation (U-Net, GPU H100), skeleton/graph (amftrack), temporal graph (STHype), flows.
 
